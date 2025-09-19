@@ -10,7 +10,7 @@ import { db } from '@/db'
 
 const app = new Hono<AppEnv>()
 
-app.use('/datastar.js', serveStatic({ path: './public/datastar.js' }))
+app.use('/*', serveStatic({ root: './public' }))
 
 app.use('*', renderer())
 
