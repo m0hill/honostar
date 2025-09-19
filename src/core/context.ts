@@ -7,6 +7,7 @@ export type AppVariables = {
   bus: Bus
   clientId: string
   renderToString: (jsx: JSX.Element) => Promise<string>
+  renderFragmentToString: (jsx: JSX.Element) => Promise<string>
 }
 
 export type AppEnv = {

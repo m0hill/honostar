@@ -1,41 +1,34 @@
 import type { Handler } from 'hono'
-import { streamSSE } from 'hono/streaming'
-import { bus } from '@/core/bus'
+import { bus, type SSEPayload } from '@/core/bus'
+import { ServerSentEventGenerator } from '@/core/datastar/generator'
 
 export const sseEndpoint = (): Handler => {
-  return async c => {
+  return c => {
     const clientId = c.var.clientId
-    const topicsParam = c.req.query('topics')?.trim() ?? ''
-    const topics = topicsParam
-      .split(',')
-      .map(s => s.trim())
-      .filter(s => s.length > 0)
+    let unsubscribe: () => void
 
-    return streamSSE(c, async stream => {
-      const unsubs: Array<() => void> = []
+    return ServerSentEventGenerator.stream(
+      stream => {
+        const handleMessage = (msg: SSEPayload) => {
+          if (msg.event === 'datastar-patch-elements') {
+            stream.patchElements(msg.html, msg.options)
+          } else if (msg.event === 'datastar-patch-signals') {
+            stream.patchSignals(msg.signals, msg.options)
+          }
+        }
 
-      unsubs.push(
-        bus.subscribeClient(clientId, async msg => {
-          await stream.writeSSE(msg)
-        })
-      )
-
-      for (const t of topics) {
-        unsubs.push(
-          bus.subscribeTopic(t, async msg => {
-            await stream.writeSSE(msg)
-          })
-        )
+        unsubscribe = bus.subscribeClient(clientId, handleMessage)
+      },
+      {
+        keepalive: true,
+        onAbort: reason => {
+          console.log(`[SSE] Stream aborted for client ${clientId}:`, reason)
+          unsubscribe?.()
+        },
+        onError: error => {
+          console.error(`[SSE] Stream error for client ${clientId}:`, error)
+        },
       }
-
-      await stream.writeSSE({
-        event: 'connected',
-        data: JSON.stringify({ clientId, topics }),
-      })
-
-      stream.onAbort(() => {
-        for (const u of unsubs) u()
-      })
-    })
+    )
   }
 }

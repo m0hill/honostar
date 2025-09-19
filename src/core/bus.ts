@@ -1,11 +1,13 @@
+import type { PatchElementsOptions, PatchSignalsOptions } from '@/core/datastar/types'
+
 export type SSEPayload =
-  | { event: 'datastar-patch-elements'; data: string }
-  | { event: 'datastar-patch-signals'; data: string }
+  | { event: 'datastar-patch-elements'; html: string; options: PatchElementsOptions }
+  | { event: 'datastar-patch-signals'; signals: string; options: PatchSignalsOptions }
 
 type Sink = (msg: SSEPayload) => void
 
 class Channel {
-  private subs = new Set<Sink>()
+  public subs = new Set<Sink>()
   subscribe(fn: Sink) {
     this.subs.add(fn)
     return () => this.subs.delete(fn)
