@@ -10,3 +10,5 @@ export const db = drizzle({
   schema,
   logger: true,
 })
+
+export type DB = typeof db

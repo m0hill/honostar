@@ -15,6 +15,7 @@
     "exactOptionalPropertyTypes": true,
     "noImplicitReturns": true,
     "noImplicitAny": true,
+    "noEmit": true,
     "allowJs": true,
     "types": ["bun-types"],
     "baseUrl": ".",

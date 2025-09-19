@@ -1,8 +1,8 @@
 {
   "name": "bonsai",
   "scripts": {
-    "start": "bun run build:css && bun src/index.tsx",
-    "dev": "bunx concurrently \"bun run dev:css\" \"bun --hot src/index.tsx\"",
+    "start": "bun run build:css && bun src/index.ts",
+    "dev": "bunx concurrently \"bun run dev:css\" \"bun --hot src/index.ts\"",
     "build:css": "tailwindcss -i ./styles.css -o ./public/styles.css",
     "dev:css": "tailwindcss -i ./styles.css -o ./public/styles.css --watch",
     "lint": "bunx oxlint@latest",
