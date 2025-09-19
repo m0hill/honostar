@@ -1,0 +1,25 @@
+{
+  "name": "bonsai",
+  "scripts": {
+    "start": "bun run build:css && bun src/index.tsx",
+    "dev": "bunx concurrently \"bun run dev:css\" \"bun --hot src/index.tsx\"",
+    "build:css": "tailwindcss -i ./styles.css -o ./public/styles.css",
+    "dev:css": "tailwindcss -i ./styles.css -o ./public/styles.css --watch",
+    "lint": "bunx oxlint@latest",
+    "format": "biome check --write .",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.44.5",
+    "hono": "^4.9.7"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.2.4",
+    "@tailwindcss/cli": "^4.1.13",
+    "@types/bun": "latest",
+    "concurrently": "^9.2.1",
+    "drizzle-kit": "^0.31.4",
+    "tailwindcss": "^4.1.13"
+  }
+}
