@@ -1,3 +1,4 @@
+import type { Handler } from 'hono'
 import type { JSX } from 'hono/jsx/jsx-runtime'
 import type { Bus } from '@/core/bus'
 import type { DB } from '@/db'
@@ -14,3 +15,5 @@ export type AppVariables = {
 export type AppEnv = {
   Variables: AppVariables
 }
+
+export type AppHandler = Handler<AppEnv>
