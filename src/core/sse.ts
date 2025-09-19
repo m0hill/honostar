@@ -5,7 +5,7 @@ import { ServerSentEventGenerator } from '@/core/datastar/generator'
 export const sseEndpoint = (): Handler => {
   return c => {
     const clientId = c.var.clientId
-    let unsubscribe: () => void
+    const unsubscribes: (() => void)[] = []
 
     return ServerSentEventGenerator.stream(
       stream => {
@@ -17,13 +17,17 @@ export const sseEndpoint = (): Handler => {
           }
         }
 
-        unsubscribe = bus.subscribeClient(clientId, handleMessage)
+        unsubscribes.push(bus.subscribeClient(clientId, handleMessage))
+
+        const topics = c.var.sseTopics || []
+        for (const topic of topics) {
+          unsubscribes.push(bus.subscribeTopic(topic, handleMessage))
+        }
       },
       {
         keepalive: true,
-        onAbort: reason => {
-          console.log(`[SSE] Stream aborted for client ${clientId}:`, reason)
-          unsubscribe?.()
+        onAbort: () => {
+          unsubscribes.forEach(unsub => unsub?.())
         },
         onError: error => {
           console.error(`[SSE] Stream error for client ${clientId}:`, error)

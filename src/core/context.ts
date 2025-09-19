@@ -8,6 +8,7 @@ export type AppVariables = {
   clientId: string
   renderToString: (jsx: JSX.Element) => Promise<string>
   renderFragmentToString: (jsx: JSX.Element) => Promise<string>
+  sseTopics?: string[]
 }
 
 export type AppEnv = {
