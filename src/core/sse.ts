@@ -9,6 +9,8 @@ export const sseEndpoint = (): Handler => {
 
     return ServerSentEventGenerator.stream(
       stream => {
+        stream.sendComment('connection-established')
+
         const handleMessage = (msg: SSEPayload) => {
           if (msg.event === 'datastar-patch-elements') {
             stream.patchElements(msg.html, msg.options)

@@ -65,6 +65,11 @@ export class ServerSentEventGenerator extends AbstractSSEGenerator {
     })
   }
 
+  public sendComment(comment: string): void {
+    const line = `:${comment}\n\n`
+    this.controller?.enqueue(new TextEncoder().encode(line))
+  }
+
   protected override send(
     event: EventType,
     dataLines: string[],
