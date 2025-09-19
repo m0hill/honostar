@@ -1,6 +1,6 @@
 import type { JSX } from 'hono/jsx/jsx-runtime'
 import type { DB } from '@/db'
-import type { Bus } from './bus'
+import type { Bus } from '@/core/bus'
 
 export type AppVariables = {
   db: DB

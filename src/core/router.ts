@@ -1,8 +1,8 @@
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { Hono } from 'hono'
-import type { AppEnv } from './context'
-import { filePathToRoutePath } from './path-utils'
+import type { AppEnv } from '@/core/context'
+import { filePathToRoutePath } from '@/core/path-utils'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -21,7 +21,7 @@ export async function mountRoutes(app: Hono<AppEnv>, routesDir = 'src/routes') {
 
     const methods: HttpMethod[] = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
     for (const m of methods) {
-      const handler = mod[m] as any
+      const handler = mod[m]
       if (handler) {
         if (Array.isArray(handler)) {
           app.on(m, routePath, ...handler)

@@ -16,12 +16,7 @@ export function createSignalStore<T extends object>(prefix = '$'): SignalPath<T>
       },
     })
 
-  return pathOf([]) as any
-}
-
-export const API_ROUTES = {
-  todos: '/todos',
-  toggleTodo: (id: number) => `/todos/${id}`,
+  return pathOf([]) as SignalPath<T>
 }
 
 export const actions = {

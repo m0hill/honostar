@@ -1,3 +1,4 @@
+// oxlint-disable no-extraneous-class
 import { Readable, Writable } from 'node:stream'
 import zlib from 'node:zlib'
 

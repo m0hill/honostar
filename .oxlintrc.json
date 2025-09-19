@@ -1,0 +1,17 @@
+{
+  "rules": {
+    "no-alert": "error",
+    "oxc/approx-constant": "warn",
+    "no-plusplus": "off"
+  },
+  "plugins": ["unicorn", "typescript", "oxc"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn"
+  },
+  "ignorePatterns": ["datastar.js"],
+  "env": {
+    "browser": true,
+    "node": true
+  }
+}

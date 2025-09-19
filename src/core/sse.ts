@@ -1,6 +1,6 @@
 import type { Handler } from 'hono'
 import { streamSSE } from 'hono/streaming'
-import { bus } from './bus'
+import { bus } from '@/core/bus'
 
 export const sseEndpoint = (): Handler => {
   return async c => {
@@ -15,20 +15,20 @@ export const sseEndpoint = (): Handler => {
       const unsubs: Array<() => void> = []
 
       unsubs.push(
-        bus.subscribeClient(clientId, msg => {
-          stream.writeSSE(msg)
+        bus.subscribeClient(clientId, async msg => {
+          await stream.writeSSE(msg)
         })
       )
 
       for (const t of topics) {
         unsubs.push(
-          bus.subscribeTopic(t, msg => {
-            stream.writeSSE(msg)
+          bus.subscribeTopic(t, async msg => {
+            await stream.writeSSE(msg)
           })
         )
       }
 
-      stream.writeSSE({
+      await stream.writeSSE({
         event: 'connected',
         data: JSON.stringify({ clientId, topics }),
       })
