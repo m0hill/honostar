@@ -18,7 +18,7 @@ export function renderer(): MiddlewareHandler {
           />
           <title>Bonsai</title>
           <link rel="stylesheet" href="/styles.css" />
-          <script src="/datastar.js" />
+          <script type="module" src="/datastar.js" />
         </head>
         <body data-on-load="@get('/_/events')">{children}</body>
       </html>
