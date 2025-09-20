@@ -42,5 +42,7 @@ export const createSseEndpoint = (): Handler => {
         console.log(`[SSE] Abort stream for client ${clientId}`)
         unsubscribes.forEach(unsub => unsub?.())
       })
+
+      await new Promise(() => {})
     })
 }
