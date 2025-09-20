@@ -49,7 +49,7 @@ function wrapHandler(handler: Function) {
 }
 
 export async function mountRoutes(app: Hono<AppEnv>, routesDir = 'src/routes') {
-  const abs = resolve(__dirname, '../../../', routesDir)
+  const abs = resolve(__dirname, '../../', routesDir)
   const glob = new Bun.Glob('**/*.{ts,tsx}')
 
   for (const rel of glob.scanSync({ cwd: abs })) {
