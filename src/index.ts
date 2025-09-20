@@ -3,12 +3,12 @@ import { Hono } from 'hono'
 import { serveStatic } from 'hono/bun'
 import { compress } from 'hono/compress'
 import type { AppEnv } from '@/core/context'
+import { bus } from '@/core/datastar/bus'
+import { createSseEndpoint } from '@/core/datastar/endpoint'
+import { fxResponder } from '@/core/datastar/middleware'
+import { datastarResponder } from '@/core/datastar/responder'
 import { renderer } from '@/core/renderer'
 import { mountRoutes } from '@/core/router'
-import { sseEndpoint } from '@/core/sse'
-import { bus } from '@/core/sse/bus'
-import { datastarResponder } from '@/core/sse/helpers'
-import { fxResponder } from '@/core/sse/middleware'
 import { db } from '@/db'
 
 const app = new Hono<AppEnv>()
@@ -44,7 +44,7 @@ app.use('/_/events', async (c, next) => {
   await next()
 })
 
-app.get('/_/events', sseEndpoint())
+app.get('/_/events', createSseEndpoint())
 
 await mountRoutes(app)
 

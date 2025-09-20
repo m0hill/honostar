@@ -1,8 +1,8 @@
 import type { Handler } from 'hono'
+import { bus, type SSEPayload } from '@/core/datastar/bus'
 import { ServerSentEventGenerator } from '@/core/datastar/generator'
-import { bus, type SSEPayload } from '@/core/sse/bus'
 
-export const sseEndpoint = (): Handler => {
+export const createSseEndpoint = (): Handler => {
   return c => {
     const clientId = c.var.clientId
     const unsubscribes: (() => void)[] = []

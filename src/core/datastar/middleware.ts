@@ -1,7 +1,7 @@
 import type { MiddlewareHandler } from 'hono'
 import type { StatusCode } from 'hono/utils/http-status'
 import type { AppEnv } from '@/core/context'
-import type { DatastarResponder } from '@/core/sse/helpers'
+import type { DatastarResponder } from '@/core/datastar/responder'
 
 export type FxResponse = {
   fx: Parameters<DatastarResponder['fx']>[1]

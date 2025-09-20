@@ -3,12 +3,31 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import type { Context } from 'hono'
 import { Hono } from 'hono'
 import type { AppEnv } from '@/core/context'
-import { filePathToRoutePath } from '@/core/router/path-utils'
-import type { FxResponse } from '@/core/sse/middleware'
+import type { FxResponse } from '@/core/datastar/middleware'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'OPTIONS'
+
+function filePathToRoutePath(filePath: string): string {
+  let p = filePath
+    .replace(/\\/g, '/')
+    .replace(/^.*\/routes\//, '')
+    .replace(/\.(tsx|ts|mdx|md)$/, '')
+
+  p = p.replace(/\((.+?)\)/g, '')
+
+  p = p.replace(/\[\.{3}.*\]/g, '*')
+  p = p.replace(/\[(.+?)\]/g, ':$1')
+
+  p = p.replace(/\/index$/, '')
+  if (p === 'index') p = ''
+
+  p = '/' + p
+  p = p.replace(/\/\/+/g, '/')
+  return p
+}
+
 
 function isFxResponse(value: unknown): value is FxResponse {
   if (typeof value !== 'object' || value === null || value instanceof Response) {
