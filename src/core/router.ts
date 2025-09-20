@@ -28,7 +28,6 @@ function filePathToRoutePath(filePath: string): string {
   return p
 }
 
-
 function isFxResponse(value: unknown): value is FxResponse {
   if (typeof value !== 'object' || value === null || value instanceof Response) {
     return false
