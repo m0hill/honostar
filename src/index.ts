@@ -13,6 +13,7 @@ import {
   renderer,
 } from '@/core'
 import '@/core/polyfills/compression.js'
+import { auth } from '@/lib/auth'
 
 const app = new Hono<AppEnv>()
 
@@ -27,6 +28,8 @@ app.use('*', datastarResponder)
 app.use('*', fxResponder)
 
 app.use('*', initContext)
+
+app.use('*', auth)
 
 app.use('/_/events', async (c, next) => {
   c.set('sseTopics', [''])
