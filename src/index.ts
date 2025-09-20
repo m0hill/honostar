@@ -1,18 +1,23 @@
 import '@/core/polyfills/compression.js'
 import { Hono } from 'hono'
 import { serveStatic } from 'hono/bun'
-import { bus } from '@/core/bus'
+import { compress } from 'hono/compress'
 import type { AppEnv } from '@/core/context'
 import { renderer } from '@/core/renderer'
 import { mountRoutes } from '@/core/router'
 import { sseEndpoint } from '@/core/sse'
+import { bus } from '@/core/sse/bus'
+import { datastarResponder } from '@/core/sse/helpers'
 import { db } from '@/db'
 
 const app = new Hono<AppEnv>()
 
 app.use('/*', serveStatic({ root: './public' }))
 
+app.use(compress())
+
 app.use('*', renderer())
+app.use('*', datastarResponder())
 
 app.use('*', async (c, next) => {
   const cookie = c.req.header('cookie') ?? ''
@@ -23,6 +28,11 @@ app.use('*', async (c, next) => {
   c.set('db', db)
   c.set('bus', bus)
   c.set('clientId', clientId)
+  await next()
+})
+
+app.use('/_/events', async (c, next) => {
+  c.set('sseTopics', [''])
   await next()
 })
 
