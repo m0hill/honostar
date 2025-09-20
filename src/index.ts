@@ -13,7 +13,7 @@ import {
   renderer,
 } from '@/core'
 import '@/core/polyfills/compression.js'
-import { auth } from '@/lib/auth'
+import { auth } from '@/middleware/auth'
 
 const app = new Hono<AppEnv>()
 

@@ -1,39 +1,69 @@
-import { deleteCookie, getCookie } from 'hono/cookie'
-import { verify } from 'hono/jwt'
-import { factory } from '@/core/middleware'
+import type { Context } from 'hono'
+import { setCookie } from 'hono/cookie'
+import { sign } from 'hono/jwt'
+import type { StatusCode } from 'hono/utils/http-status'
+import type { AppEnv, FxResponse } from '@/core'
+import type { DB } from '@/db'
+import { users } from '@/db/schema'
+import type { User } from '@/types'
 
-export const auth = factory.createMiddleware(async (c, next) => {
-  const token = getCookie(c, 'token')
+type Credentials = { username: string; password: string }
 
-  if (!token) {
-    c.set('user', null)
-    return next()
+type AuthResult =
+  | { user: User; error?: undefined; status?: undefined }
+  | { user?: undefined; error: string; status: StatusCode }
+
+export async function handleSignup(db: DB, creds: Credentials): Promise<AuthResult> {
+  const existingUser = await db.query.users.findFirst({
+    where: (users, { eq }) => eq(users.username, creds.username),
+  })
+  if (existingUser) {
+    return { error: 'Username is already taken.', status: 409 }
   }
 
-  try {
-    const decodedPayload = await verify(token, process.env.JWT_SECRET!)
+  const passwordHash = await Bun.password.hash(creds.password)
+  const [user] = await db
+    .insert(users)
+    .values({ username: creds.username, passwordHash })
+    .returning()
 
-    if (
-      !decodedPayload ||
-      typeof decodedPayload !== 'object' ||
-      !('id' in decodedPayload) ||
-      typeof decodedPayload.id !== 'number'
-    ) {
-      throw new Error('Invalid JWT payload')
-    }
+  if (!user) {
+    return { error: 'Failed to create user.', status: 500 }
+  }
+  return { user }
+}
 
-    const userId = decodedPayload.id
-
-    const user = await c.var.db.query.users.findFirst({
-      where: (users, { eq }) => eq(users.id, userId),
-    })
-
-    c.set('user', user || null)
-  } catch (e) {
-    console.error('Auth middleware error:', e)
-    deleteCookie(c, 'token', { path: '/' })
-    c.set('user', null)
+export async function handleLogin(db: DB, creds: Credentials): Promise<AuthResult> {
+  const foundUser = await db.query.users.findFirst({
+    where: (users, { eq }) => eq(users.username, creds.username),
+  })
+  if (!foundUser) {
+    return { error: 'Invalid username or password.', status: 401 }
   }
 
-  await next()
-})
+  const isPasswordValid = await Bun.password.verify(creds.password, foundUser.passwordHash)
+  if (!isPasswordValid) {
+    return { error: 'Invalid username or password.', status: 401 }
+  }
+  return { user: foundUser }
+}
+
+export async function createAuthResponse(c: Context<AppEnv>, user: User): Promise<FxResponse> {
+  const payload = {
+    id: user.id,
+    username: user.username,
+    exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // 1 day expiration
+  }
+  const token = await sign(payload, process.env.JWT_SECRET!)
+  setCookie(c, 'token', token, {
+    path: '/',
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'Lax',
+  })
+
+  return {
+    fx: [['execute-script', 'window.location.href = "/profile"']],
+    status: 200,
+  }
+}
