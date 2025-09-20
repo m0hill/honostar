@@ -1,6 +1,6 @@
-import type { MiddlewareHandler } from 'hono'
 import type { JSX } from 'hono/jsx/jsx-runtime'
 import { jsxRenderer } from 'hono/jsx-renderer'
+import { factory } from '@/core/middleware'
 
 function stripDoctype(html: string): string {
   return html.replace(/^\s*<!DOCTYPE html>\s*/i, '')
@@ -12,7 +12,7 @@ function extractBodyInner(html: string): string {
   return html.trim()
 }
 
-export function renderer(): MiddlewareHandler {
+export const renderer = factory.createMiddleware(async (c, next) => {
   const base = jsxRenderer(({ children }) => {
     return (
       <html lang="en">
@@ -28,19 +28,17 @@ export function renderer(): MiddlewareHandler {
     )
   })
 
-  return async (c, next) => {
-    await base(c, async () => {
-      c.set('renderToString', async (node: JSX.Element) => {
-        const res = await c.render(node)
-        const html = await res.text()
-        return stripDoctype(html)
-      })
-      c.set('renderFragmentToString', async (node: JSX.Element) => {
-        const res = await c.render(node)
-        const html = await res.text()
-        return extractBodyInner(stripDoctype(html))
-      })
-      await next()
+  await base(c, async () => {
+    c.set('renderToString', async (node: JSX.Element) => {
+      const res = await c.render(node)
+      const html = await res.text()
+      return stripDoctype(html)
     })
-  }
-}
+    c.set('renderFragmentToString', async (node: JSX.Element) => {
+      const res = await c.render(node)
+      const html = await res.text()
+      return extractBodyInner(stripDoctype(html))
+    })
+    await next()
+  })
+})

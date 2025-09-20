@@ -1,7 +1,6 @@
-import type { MiddlewareHandler } from 'hono'
 import type { StatusCode } from 'hono/utils/http-status'
-import type { AppEnv } from '@/core/context'
 import type { DatastarResponder } from '@/core/datastar/responder'
+import { factory } from '@/core/middleware'
 
 export type FxResponse = {
   fx: Parameters<DatastarResponder['fx']>[1]
@@ -20,7 +19,7 @@ function isFxResponse(value: unknown): value is FxResponse {
   return 'fx' in value && Array.isArray((value as { fx: unknown }).fx)
 }
 
-export const fxResponder = (): MiddlewareHandler<AppEnv> => async (c, next) => {
+export const fxResponder = factory.createMiddleware(async (c, next) => {
   await next()
 
   const fxResponse = c.var.fxResponse
@@ -34,4 +33,4 @@ export const fxResponder = (): MiddlewareHandler<AppEnv> => async (c, next) => {
       ...(fxResponse.headers !== undefined && { headers: fxResponse.headers }),
     })
   }
-}
+})

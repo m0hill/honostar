@@ -1,4 +1,4 @@
-import type { Context, MiddlewareHandler } from 'hono'
+import type { Context } from 'hono'
 import type { JSX } from 'hono/jsx/jsx-runtime'
 import type { StatusCode } from 'hono/utils/http-status'
 import type { AppEnv } from '@/core/context'
@@ -8,6 +8,7 @@ import type {
   PatchElementsOptions,
   PatchSignalsOptions,
 } from '@/core/datastar/types'
+import { factory } from '@/core/middleware'
 
 export class DatastarResponder {
   private c: Context<AppEnv>
@@ -213,7 +214,7 @@ export class DatastarResponder {
   }
 }
 
-export const datastarResponder = (): MiddlewareHandler<AppEnv> => async (c, next) => {
+export const datastarResponder = factory.createMiddleware(async (c, next) => {
   c.set('datastar', new DatastarResponder(c))
   await next()
-}
+})
