@@ -1,3 +1,8 @@
 # deps
 node_modules/
-*.db
+
+# build artifacts
+public/styles.css
+
+# database
+sqlite.db

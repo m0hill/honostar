@@ -8,13 +8,13 @@
     "lint": "oxlint --type-aware",
     "format": "biome check --write .",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
-    "routes:gen": "bun run scripts/generate-routes.ts"
+    "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
+    "@hono/zod-validator": "^0.7.3",
     "drizzle-orm": "^0.44.5",
     "hono": "^4.9.7",
-    "nanoid": "^5.1.5"
+    "zod": "^4.1.9"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.2.4",

@@ -8,6 +8,13 @@
       "when": 1758267752401,
       "tag": "0000_real_firestar",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1758353143433,
+      "tag": "0001_bent_the_leader",
+      "breakpoints": true
     }
   ]
 }
