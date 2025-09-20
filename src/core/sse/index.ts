@@ -16,6 +16,14 @@ export const sseEndpoint = (): Handler => {
             stream.patchElements(msg.html, msg.options)
           } else if (msg.event === 'datastar-patch-signals') {
             stream.patchSignals(msg.signals, msg.options)
+          } else if (msg.event === 'execute-script') {
+            stream.executeScript(msg.script, msg.options)
+          } else if (msg.event === 'close') {
+            try {
+              unsubscribes.forEach(u => u?.())
+            } finally {
+              stream.close()
+            }
           }
         }
 

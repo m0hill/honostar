@@ -55,6 +55,11 @@ export interface PatchSignalsOptions extends DatastarEventOptions {
   [DatastarDatalineOnlyIfMissing]?: boolean
 }
 
+export interface ExecuteScriptOptions extends DatastarEventOptions {
+  autoRemove?: boolean
+  attributes?: string[] | Record<string, string>
+}
+
 export interface patchSignalsEvent {
   event: 'datastar-patch-signals'
   options: PatchSignalsOptions

@@ -1,12 +1,34 @@
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
+import type { Context } from 'hono'
 import { Hono } from 'hono'
 import type { AppEnv } from '@/core/context'
 import { filePathToRoutePath } from '@/core/router/path-utils'
+import type { FxResponse } from '@/core/sse/middleware'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'OPTIONS'
+
+function isFxResponse(value: unknown): value is FxResponse {
+  if (typeof value !== 'object' || value === null || value instanceof Response) {
+    return false
+  }
+  return 'fx' in value && Array.isArray(value.fx)
+}
+
+function wrapHandler(handler: Function) {
+  return async (c: Context<AppEnv>) => {
+    const result = await handler(c)
+
+    if (isFxResponse(result)) {
+      c.set('fxResponse', result)
+      return c.res
+    }
+
+    return result
+  }
+}
 
 export async function mountRoutes(app: Hono<AppEnv>, routesDir = 'src/routes') {
   const abs = resolve(__dirname, '../../../', routesDir)
@@ -24,9 +46,9 @@ export async function mountRoutes(app: Hono<AppEnv>, routesDir = 'src/routes') {
       const handler = mod[m]
       if (handler) {
         if (Array.isArray(handler)) {
-          app.on(m, routePath, ...handler)
+          app.on(m, routePath, ...handler.map(wrapHandler))
         } else {
-          app.on(m, routePath, handler)
+          app.on(m, routePath, wrapHandler(handler))
         }
       }
     }
@@ -34,14 +56,16 @@ export async function mountRoutes(app: Hono<AppEnv>, routesDir = 'src/routes') {
     if (mod.default) {
       const def = mod.default
       if (Array.isArray(def)) {
-        app.get(routePath, ...def)
+        app.get(routePath, ...def.map(wrapHandler))
       } else if (typeof def === 'function') {
-        app.get(routePath, async c => {
-          const out = await def(c)
-          if (out instanceof Response) return out
-          return c.render(out)
-        })
-      } else {
+        app.get(
+          routePath,
+          wrapHandler(async (c: Context<AppEnv>) => {
+            const out = await def(c)
+            if (out instanceof Response) return out
+            return c.render(out)
+          })
+        )
       }
     }
   }

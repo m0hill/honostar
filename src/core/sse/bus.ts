@@ -1,8 +1,14 @@
-import type { PatchElementsOptions, PatchSignalsOptions } from '@/core/datastar/types'
+import type {
+  ExecuteScriptOptions,
+  PatchElementsOptions,
+  PatchSignalsOptions,
+} from '@/core/datastar/types'
 
 export type SSEPayload =
   | { event: 'datastar-patch-elements'; html: string; options: PatchElementsOptions }
   | { event: 'datastar-patch-signals'; signals: string; options: PatchSignalsOptions }
+  | { event: 'execute-script'; script: string; options?: ExecuteScriptOptions }
+  | { event: 'close' }
 
 type Sink = (msg: SSEPayload) => void
 

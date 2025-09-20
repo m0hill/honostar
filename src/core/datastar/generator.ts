@@ -20,6 +20,14 @@ export class ServerSentEventGenerator extends AbstractSSEGenerator {
     this.controller = controller
   }
 
+  public close(): void {
+    try {
+      this.controller?.close()
+    } catch {
+      // ignore
+    }
+  }
+
   static stream(
     onStart: (stream: ServerSentEventGenerator) => Promise<void> | void,
     options?: StreamOptions

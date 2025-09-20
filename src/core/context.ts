@@ -1,6 +1,7 @@
 import type { Handler, MiddlewareHandler } from 'hono'
 import type { JSX } from 'hono/jsx/jsx-runtime'
 import type { Bus } from '@/core/sse/bus'
+import type { FxResponse } from '@/core/sse/middleware'
 import type { DB } from '@/db'
 
 export type AppVariables = {
@@ -11,6 +12,7 @@ export type AppVariables = {
   renderFragmentToString: (jsx: JSX.Element) => Promise<string>
   sseTopics?: string[]
   datastar: import('@/core/sse/helpers').DatastarResponder
+  fxResponse?: FxResponse
 }
 
 export type AppEnv = {
