@@ -15,18 +15,14 @@ import {
   type Jsonifiable,
   type PatchElementsOptions,
   type PatchSignalsOptions,
-  type StreamOptions,
-  sseHeaders,
 } from '@/core/datastar/types'
 
 function isRecord(obj: unknown): obj is Record<string, Jsonifiable> {
   return typeof obj === 'object' && obj !== null
 }
 
-abstract class BaseServerSentEventGenerator {
-  protected constructor() {}
-
-  private validateElementPatchMode(mode: string): asserts mode is ElementPatchMode {
+export class SseFormatter {
+  protected validateElementPatchMode(mode: string): asserts mode is ElementPatchMode {
     if (!(ElementPatchModes as readonly string[]).includes(mode)) {
       throw new Error(
         `Invalid ElementPatchMode: "${mode}". Valid modes are: ${ElementPatchModes.join(', ')}`
@@ -34,13 +30,16 @@ abstract class BaseServerSentEventGenerator {
     }
   }
 
-  private validateRequired(value: string | undefined, paramName: string): asserts value is string {
+  protected validateRequired(
+    value: string | undefined,
+    paramName: string
+  ): asserts value is string {
     if (!value || value.trim() === '') {
       throw new Error(`${paramName} is required and cannot be empty`)
     }
   }
 
-  protected send(event: EventType, dataLines: string[], options: DatastarEventOptions): string[] {
+  protected format(event: EventType, dataLines: string[], options: DatastarEventOptions): string[] {
     const { eventId, retryDuration } = options || {}
 
     const typeLine = [`event: ${event}\n`]
@@ -60,13 +59,13 @@ abstract class BaseServerSentEventGenerator {
     )
   }
 
-  private eachNewlineIsADataLine(prefix: string, data: string) {
+  protected eachNewlineIsADataLine(prefix: string, data: string) {
     return data.split('\n').map(line => {
       return `${prefix} ${line}`
     })
   }
 
-  private eachOptionIsADataLine(options: Record<string, Jsonifiable>): string[] {
+  protected eachOptionIsADataLine(options: Record<string, Jsonifiable>): string[] {
     return Object.keys(options)
       .filter(key => {
         return !this.hasDefaultValue(key, options[key])
@@ -79,7 +78,7 @@ abstract class BaseServerSentEventGenerator {
       })
   }
 
-  private hasDefaultValue(key: string, val: unknown): boolean {
+  protected hasDefaultValue(key: string, val: unknown): boolean {
     if (key in DefaultMapping) {
       return val === (DefaultMapping as Record<string, unknown>)[key]
     }
@@ -87,10 +86,7 @@ abstract class BaseServerSentEventGenerator {
     return false
   }
 
-  public patchElements(
-    elements: string,
-    options?: PatchElementsOptions
-  ): ReturnType<typeof this.send> {
+  public patchElements(elements: string, options?: PatchElementsOptions): string {
     const { eventId, retryDuration, ...renderOptions } =
       options || ({} as Partial<PatchElementsOptions>)
 
@@ -124,13 +120,10 @@ abstract class BaseServerSentEventGenerator {
     if (retryDuration) {
       sendOptions.retryDuration = retryDuration
     }
-    return this.send('datastar-patch-elements', dataLines, sendOptions)
+    return this.format('datastar-patch-elements', dataLines, sendOptions).join('')
   }
 
-  public patchSignals(
-    signals: string,
-    options?: PatchSignalsOptions
-  ): ReturnType<typeof this.send> {
+  public patchSignals(signals: string, options?: PatchSignalsOptions): string {
     this.validateRequired(signals, 'signals')
 
     const { eventId, retryDuration, ...eventOptions } =
@@ -147,7 +140,7 @@ abstract class BaseServerSentEventGenerator {
     if (retryDuration) {
       sendOptions.retryDuration = retryDuration
     }
-    return this.send('datastar-patch-signals', dataLines, sendOptions)
+    return this.format('datastar-patch-signals', dataLines, sendOptions).join('')
   }
 
   public executeScript(
@@ -158,7 +151,7 @@ abstract class BaseServerSentEventGenerator {
       eventId?: string
       retryDuration?: number
     }
-  ): ReturnType<typeof this.send> {
+  ): string {
     const { autoRemove = true, attributes = {}, eventId, retryDuration } = options || {}
 
     let attrString = ''
@@ -190,7 +183,7 @@ abstract class BaseServerSentEventGenerator {
     if (retryDuration) {
       sendOptions.retryDuration = retryDuration
     }
-    return this.send('datastar-patch-elements', dataLines, sendOptions)
+    return this.format('datastar-patch-elements', dataLines, sendOptions).join('')
   }
 
   public removeElements(
@@ -200,7 +193,7 @@ abstract class BaseServerSentEventGenerator {
       eventId?: string
       retryDuration?: number
     }
-  ): ReturnType<typeof this.send> {
+  ): string {
     if (!selector && (!elements || elements.trim() === '')) {
       throw new Error('Either selector or elements (with IDs) must be provided to remove elements.')
     }
@@ -226,7 +219,7 @@ abstract class BaseServerSentEventGenerator {
       eventId?: string
       retryDuration?: number
     }
-  ): ReturnType<typeof this.send> {
+  ): string {
     const keys = Array.isArray(signalKeys) ? signalKeys : [signalKeys]
     const patch: Record<string, null> = {}
     for (const key of keys) {
@@ -234,87 +227,8 @@ abstract class BaseServerSentEventGenerator {
     }
     return this.patchSignals(JSON.stringify(patch), options)
   }
-}
 
-export class ServerSentEventGenerator extends BaseServerSentEventGenerator {
-  protected controller: ReadableStreamDefaultController
-
-  protected constructor(controller: ReadableStreamDefaultController) {
-    super()
-    this.controller = controller
-  }
-
-  public close(): void {
-    try {
-      this.controller?.close()
-    } catch {
-      // ignore
-    }
-  }
-
-  static stream(
-    onStart: (stream: ServerSentEventGenerator) => Promise<void> | void,
-    options?: StreamOptions
-  ): Response {
-    const readableStream = new ReadableStream({
-      async start(controller) {
-        const generator = new ServerSentEventGenerator(controller)
-
-        try {
-          const stream = onStart(generator)
-          if (stream instanceof Promise) await stream
-          if (!options?.keepalive) {
-            controller.close()
-          }
-        } catch (error) {
-          const errorMsg =
-            error instanceof Error ? error.message : 'onStart callback threw an error'
-          const abortResult = options?.onAbort ? options.onAbort(errorMsg) : null
-
-          if (abortResult instanceof Promise) await abortResult
-          if (options && options.onError) {
-            const onError = options.onError(error)
-            if (onError instanceof Promise) await onError
-            controller.close()
-          } else {
-            controller.close()
-            throw error
-          }
-        }
-      },
-      async cancel(reason) {
-        const abortResult = options && options.onAbort ? options.onAbort(reason) : null
-        if (abortResult instanceof Promise) await abortResult
-      },
-    })
-
-    return new Response(readableStream, {
-      ...(options?.responseInit || {}),
-      headers: {
-        ...sseHeaders,
-        ...(options?.responseInit?.headers || {}),
-      },
-    })
-  }
-
-  public sendComment(comment: string): void {
-    const line = `:${comment}\n\n`
-    this.controller?.enqueue(new TextEncoder().encode(line))
-  }
-
-  protected override send(
-    event: EventType,
-    dataLines: string[],
-    options: DatastarEventOptions
-  ): string[] {
-    const eventLines = super.send(event, dataLines, options)
-
-    const eventText = eventLines.join('')
-    this.controller?.enqueue(new TextEncoder().encode(eventText))
-
-    return eventLines
-  }
-
+  // Move the static utility method here
   static async readSignals(
     request: Request
   ): Promise<
