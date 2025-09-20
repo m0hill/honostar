@@ -2,14 +2,14 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { Hono } from 'hono'
 import type { AppEnv } from '@/core/context'
-import { filePathToRoutePath } from '@/core/path-utils'
+import { filePathToRoutePath } from '@/core/router/path-utils'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'OPTIONS'
 
 export async function mountRoutes(app: Hono<AppEnv>, routesDir = 'src/routes') {
-  const abs = resolve(__dirname, '../../', routesDir)
+  const abs = resolve(__dirname, '../../../', routesDir)
   const glob = new Bun.Glob('**/*.{ts,tsx}')
 
   for (const rel of glob.scanSync({ cwd: abs })) {
