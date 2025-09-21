@@ -1,11 +1,14 @@
-import type { IssueWithAuthor, User } from '@/types'
+import IssueModal from '@/components/IssueModal'
+import type { IssueWithAuthor, Label, User } from '@/types'
 
 export default function IndexPage({
   user,
   issues,
+  labels,
 }: {
   user: User | null
   issues: IssueWithAuthor[]
+  labels: Label[]
 }) {
   return (
     <div class="min-h-screen bg-gray-900 text-white flex flex-col items-center pt-10">
@@ -48,12 +51,15 @@ export default function IndexPage({
         <div class="flex justify-between items-center mb-4 px-4 sm:px-0">
           <h2 class="text-3xl font-bold text-gray-100">Issues</h2>
           {user && (
-            <button class="py-2 px-4 bg-green-600 hover:bg-green-700 rounded-md font-semibold transition-colors">
+            <button
+              class="py-2 px-4 bg-green-600 hover:bg-green-700 rounded-md font-semibold transition-colors"
+              data-on-click="$showModal = true"
+            >
               Create Issue
             </button>
           )}
         </div>
-        <div class="bg-gray-800 rounded-lg shadow-lg">
+        <div id="issues-list" class="bg-gray-800 rounded-lg shadow-lg">
           <ul class="divide-y divide-gray-700">
             {issues.length > 0 ? (
               issues.map(issue => (
@@ -88,6 +94,8 @@ export default function IndexPage({
           </ul>
         </div>
       </div>
+      {/* Modal with signal-based visibility */}
+      <IssueModal labels={labels} />
     </div>
   )
 }

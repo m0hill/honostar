@@ -32,7 +32,7 @@ app.use('*', initContext)
 app.use('*', auth)
 
 app.use('/_/events', async (c, next) => {
-  c.set('sseTopics', [''])
+  c.set('sseTopics', ['', 'issues'])
   await next()
 })
 

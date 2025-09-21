@@ -8,7 +8,7 @@ export const GET: AppHandler = c => {
     if (c.req.header('Datastar-Request')) {
       return c.var.datastar.respond({
         effects: [
-          ['patch-elements', profilePage, { selector: 'body', mode: 'inner' }],
+          ['patch-elements', profilePage, { selector: '#app', mode: 'outer' }],
           ['execute-script', `history.pushState({}, '', '/profile')`],
         ],
       })
@@ -20,7 +20,7 @@ export const GET: AppHandler = c => {
   if (c.req.header('Datastar-Request')) {
     return c.var.datastar.respond({
       effects: [
-        ['patch-elements', loginPage, { selector: 'body', mode: 'inner' }],
+        ['patch-elements', loginPage, { selector: '#app', mode: 'outer' }],
         ['execute-script', `history.pushState({}, '', '/login')`],
       ],
     })

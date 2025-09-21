@@ -8,7 +8,8 @@ export const POST: AppHandler = async c => {
   const loginPage = <LoginPage />
   return c.var.datastar.respond({
     effects: [
-      ['patch-elements', loginPage, { selector: 'body', mode: 'inner' }],
+      ['patch-signals', { auth: null }],
+      ['patch-elements', loginPage, { selector: '#app', mode: 'outer' }],
       ['execute-script', `history.pushState({}, '', '/login')`],
     ],
   })

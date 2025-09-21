@@ -1,5 +1,6 @@
 import IndexPage from '@/components/pages/IndexPage'
 import type { AppHandler } from '@/core'
+import { labels } from '@/db/schema'
 
 export const GET: AppHandler = async c => {
   const issues = await c.var.db.query.issues.findMany({
@@ -9,12 +10,14 @@ export const GET: AppHandler = async c => {
     orderBy: (issues, { desc }) => [desc(issues.createdAt)],
   })
 
-  const indexPage = <IndexPage user={c.var.user} issues={issues} />
+  const allLabels = await c.var.db.select().from(labels)
+
+  const indexPage = <IndexPage user={c.var.user} issues={issues} labels={allLabels} />
 
   if (c.req.header('Datastar-Request')) {
     return c.var.datastar.respond({
       effects: [
-        ['patch-elements', indexPage, { selector: 'body', mode: 'inner' }],
+        ['patch-elements', indexPage, { selector: '#app', mode: 'outer' }],
         ['execute-script', `history.pushState({}, '', '/')`],
       ],
     })
