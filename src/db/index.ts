@@ -8,7 +8,7 @@ const sqlite = new Database(join(process.cwd(), 'sqlite.db'), { create: true })
 export const db = drizzle({
   client: sqlite,
   schema,
-  logger: true,
+  logger: false,
 })
 
 export type DB = typeof db
