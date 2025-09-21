@@ -17,6 +17,15 @@ export class DatastarResponder {
     this.c = c
   }
 
+  public async navigate(component: JSX.Element, url: string) {
+    const html = await this.c.var.renderFragmentToString(component)
+    await this.fx('', [
+      ['patch-elements', html, { selector: '#app', mode: 'outer' }],
+      ['execute-script', `history.pushState({}, '', ${JSON.stringify(url)})`],
+    ])
+    return this.c.body(null, 200)
+  }
+
   private patchElements(topic: string, html: string, options: PatchElementsOptions) {
     this.c.var.bus.toTopic(topic, {
       event: 'datastar-patch-elements',
