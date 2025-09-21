@@ -18,6 +18,7 @@ import { auth } from '@/middleware/auth'
 const app = new Hono<AppEnv>()
 
 app.use('/*', serveStatic({ root: './public' }))
+app.use('/images/*', serveStatic({ root: './' }))
 
 app.use('*', logger())
 

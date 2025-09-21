@@ -94,7 +94,6 @@ export default function IndexPage({
           </ul>
         </div>
       </div>
-      {/* Modal with signal-based visibility */}
       <IssueModal labels={labels} />
     </div>
   )

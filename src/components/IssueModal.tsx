@@ -28,7 +28,7 @@ export default function IssueModal({ labels }: { labels: Label[] }) {
 
         <form
           class="space-y-4"
-          data-on-submit__prevent="@post('/issues'); $showModal = false"
+          data-on-submit__prevent="@post('/issues')"
           data-indicator="creating"
         >
           <label class="block">
