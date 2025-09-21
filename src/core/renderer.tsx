@@ -23,7 +23,9 @@ export const renderer = factory.createMiddleware(async (c, next) => {
           <link rel="stylesheet" href="/styles.css" />
           <script type="module" src="/datastar.js" />
         </head>
-        <body data-on-load="@get('/_/events')">{children}</body>
+        <body data-on-load="@get('/_/events')" data-on-popstate__window="@get(location.pathname)">
+          {children}
+        </body>
       </html>
     )
   })

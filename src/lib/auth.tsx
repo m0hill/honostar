@@ -2,6 +2,7 @@ import type { Context } from 'hono'
 import { setCookie } from 'hono/cookie'
 import { sign } from 'hono/jwt'
 import type { StatusCode } from 'hono/utils/http-status'
+import ProfilePage from '@/components/pages/ProfilePage'
 import type { AppEnv, FxResponse } from '@/core'
 import type { DB } from '@/db'
 import { users } from '@/db/schema'
@@ -62,8 +63,12 @@ export async function createAuthResponse(c: Context<AppEnv>, user: User): Promis
     sameSite: 'Lax',
   })
 
+  const profilePage = <ProfilePage user={user} />
   return {
-    fx: [['execute-script', 'window.location.href = "/profile"']],
+    fx: [
+      ['patch-elements', profilePage, { selector: 'body', mode: 'inner' }],
+      ['execute-script', `history.pushState({}, '', '/profile')`],
+    ],
     status: 200,
   }
 }
