@@ -16,10 +16,7 @@ export const GET: AppHandler = async c => {
 
   if (c.req.header('Datastar-Request')) {
     return c.var.datastar.respond({
-      effects: [
-        ['patch-elements', indexPage, { selector: '#app', mode: 'outer' }],
-        ['execute-script', `history.pushState({}, '', '/')`],
-      ],
+      effects: [['navigate', indexPage, '/']],
     })
   }
 

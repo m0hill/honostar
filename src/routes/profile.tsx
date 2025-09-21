@@ -8,10 +8,7 @@ export const GET: AppHandler = c => {
     const loginPage = <LoginPage />
     if (c.req.header('Datastar-Request')) {
       return c.var.datastar.respond({
-        effects: [
-          ['patch-elements', loginPage, { selector: '#app', mode: 'outer' }],
-          ['execute-script', `history.pushState({}, '', '/login')`],
-        ],
+        effects: [['navigate', loginPage, '/login']],
       })
     }
     return c.redirect('/login')
@@ -20,10 +17,7 @@ export const GET: AppHandler = c => {
   const profilePage = <ProfilePage user={user} />
   if (c.req.header('Datastar-Request')) {
     return c.var.datastar.respond({
-      effects: [
-        ['patch-elements', profilePage, { selector: '#app', mode: 'outer' }],
-        ['execute-script', `history.pushState({}, '', '/profile')`],
-      ],
+      effects: [['navigate', profilePage, '/profile']],
     })
   }
 

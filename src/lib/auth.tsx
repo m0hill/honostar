@@ -68,8 +68,7 @@ export async function createAuthResponse(c: Context<AppEnv>, user: User): Promis
     fx: [
       // Make auth visible to any live page.
       ['patch-signals', { auth: { id: user.id, username: user.username } }],
-      ['patch-elements', profilePage, { selector: '#app', mode: 'outer' }],
-      ['execute-script', `history.pushState({}, '', '/profile')`],
+      ['navigate', profilePage, '/profile'],
     ],
     status: 200,
   }
