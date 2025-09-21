@@ -72,28 +72,9 @@ export const POST: AppHandler = async c => {
   })
 
   const issuesList = <IssuesList issues={allIssues} />
-  await c.var.datastar.respond({
+  return c.var.datastar.respond({
     topics: ['issues'],
     effects: [['patch-elements', issuesList, { selector: '#issues-list', mode: 'outer' }]],
-  })
-
-  return c.var.datastar.respond({
-    effects: [
-      [
-        'patch-signals',
-        {
-          issue: {
-            title: '',
-            description: '',
-            labels: [],
-            newLabel: '',
-            image: null,
-          },
-          showModal: false,
-        },
-      ],
-    ],
-    toClient: true,
     status: 201,
   })
 }

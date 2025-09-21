@@ -28,7 +28,7 @@ export default function IssueModal({ labels }: { labels: Label[] }) {
 
         <form
           class="space-y-4"
-          data-on-submit__prevent="@post('/issues')"
+          data-on-submit__prevent="@post('/issues'); $showModal = false; $issue = {title:'', description:'', labels:[], newLabel:'', image:null}; document.getElementById('image-input').value = ''"
           data-indicator="creating"
         >
           <label class="block">
@@ -59,6 +59,7 @@ export default function IssueModal({ labels }: { labels: Label[] }) {
           <label class="block">
             <span class="text-sm text-gray-300">Image (optional)</span>
             <input
+              id="image-input"
               type="file"
               accept="image/*"
               class="mt-1 block w-full text-gray-300"

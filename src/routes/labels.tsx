@@ -26,13 +26,11 @@ export const POST: AppHandler = async c => {
 
     return c.var.datastar.respond({
       effects: [
-        ['patch-signals', { 'issue.newLabel': '' }],
         [
           'patch-elements',
           <LabelsSection labels={currentLabels} />,
           { selector: '#labels-section', mode: 'inner' },
         ],
-        ['patch-signals', { issue: { newLabel: '' } }],
       ],
       toClient: true,
       status: 201,
