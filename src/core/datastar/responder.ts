@@ -17,6 +17,12 @@ export class DatastarResponder {
     this.c = c
   }
 
+  private async handleNavigation(component: JSX.Element, url: string) {
+    const html = await this.c.var.renderFragmentToString(component)
+    this.patchElements('', html, { selector: '#app', mode: 'outer' })
+    this.executeScript('', `history.pushState({}, '', ${JSON.stringify(url)})`)
+  }
+
   public async navigate(component: JSX.Element, url: string) {
     const html = await this.c.var.renderFragmentToString(component)
     await this.fx('', [
@@ -109,6 +115,7 @@ export class DatastarResponder {
       | ['patch-signals', Record<string, Jsonifiable>, PatchSignalsOptions?]
       | ['execute-script', string, ExecuteScriptOptions?]
       | ['close-sse']
+      | ['navigate', JSX.Element, string]
     >
   ): Promise<void> {
     const renderOne = async (x: JSX.Element | string): Promise<string> => {
@@ -144,6 +151,11 @@ export class DatastarResponder {
         }
         case 'close-sse': {
           this.c.var.bus.toTopic(topic, { event: 'close' })
+          break
+        }
+        case 'navigate': {
+          const [, component, url] = fx
+          await this.handleNavigation(component, url)
           break
         }
         default: {
