@@ -7,6 +7,11 @@ export const createSseEndpoint = (): Handler => {
   return c =>
     streamSSE(c, async stream => {
       const clientId = c.var.clientId
+      if (clientId === 'anonymous') {
+        console.error('[SSE] Anonymous client connection rejected.')
+        await stream.close()
+        return
+      }
       const unsubscribes: (() => void)[] = []
       const formatter = new SseFormatter()
 

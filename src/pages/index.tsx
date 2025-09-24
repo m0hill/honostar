@@ -3,7 +3,7 @@ import { createPage } from '@/core/page'
 import { labels } from '@/db/schema'
 
 export default createPage({
-  topics: ['issues:list'],
+  topics: ['issues:list', 'labels:list'],
 
   async loader(c) {
     const user = c.var.user

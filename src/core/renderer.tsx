@@ -21,6 +21,25 @@ export const renderer = factory.createMiddleware(async (c, next) => {
         <head>
           <meta charSet="utf-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+              (function() {
+                let tabId = sessionStorage.getItem('tabId');
+                if (!tabId) {
+                  tabId = crypto.randomUUID();
+                  sessionStorage.setItem('tabId', tabId);
+                }
+                const originalFetch = window.fetch;
+                window.fetch = function(input, init) {
+                  init = init || {};
+                  init.headers = { ...init.headers, 'X-Tab-ID': tabId };
+                  return originalFetch(input, init);
+                };
+              })();
+            `,
+            }}
+          />
           <title>Bonsai</title>
           <link rel="stylesheet" href="/styles.css" />
           <script type="module" src="/datastar.js" />

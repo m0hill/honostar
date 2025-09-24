@@ -27,6 +27,7 @@ export const POST = createHandler({
       const currentLabels = await c.var.db.select().from(labels)
 
       return c.var.datastar.respond({
+        topics: ['labels:list'],
         effects: [
           [
             'patch-elements',
@@ -34,7 +35,6 @@ export const POST = createHandler({
             { selector: '#labels-section', mode: 'inner' },
           ],
         ],
-        toClient: true,
         status: 201,
       })
     } catch (e: unknown) {
