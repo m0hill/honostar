@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import IssueDetailPage from '@/components/pages/IssueDetailPage'
 import { createPage } from '@/core/page'
+import { topics } from '@/lib/topics'
 import type { IssueWithDetails } from '@/types'
 
 const paramSchema = z.object({
@@ -8,7 +9,7 @@ const paramSchema = z.object({
 })
 
 export default createPage({
-  topics: c => [`issue:${c.req.param('id')}`],
+  topics: c => [topics.issue(c.req.param('id')).comments()],
 
   async loader(c) {
     const paramValidation = paramSchema.safeParse(c.req.param())
@@ -44,7 +45,7 @@ export default createPage({
       labels: issueData.issuesToLabels.map(itl => itl.label),
       comments: issueData.comments,
     }
-    return { issue }
+    return { issue, user: c.var.user }
   },
 
   component: IssueDetailPage,

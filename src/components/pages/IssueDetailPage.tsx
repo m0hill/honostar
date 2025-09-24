@@ -1,4 +1,4 @@
-import type { IssueWithDetails } from '@/types'
+import type { CommentWithAuthor, IssueWithDetails, User } from '@/types'
 
 const formatDate = (date: Date) =>
   new Intl.DateTimeFormat('en-US', {
@@ -7,7 +7,65 @@ const formatDate = (date: Date) =>
     day: 'numeric',
   }).format(date)
 
-export default function IssueDetailPage({ issue }: { issue: IssueWithDetails }) {
+function CommentForm({ issueId, user }: { issueId: number; user: User | null }) {
+  if (!user) {
+    return (
+      <div class="mt-6 p-4 bg-gray-700/50 rounded-lg text-center">
+        <a href="/login" class="text-cyan-400 hover:underline">
+          Log in
+        </a>
+        <span class="text-gray-400"> to post a comment.</span>
+      </div>
+    )
+  }
+
+  return (
+    <form
+      class="mt-6"
+      data-on-submit__prevent={`@post('/issues/${issueId}/comments'); $comment = ''`}
+      data-signals={`{ "comment": "" }`}
+    >
+      <textarea
+        data-bind="comment"
+        class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md placeholder-gray-400 focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
+        placeholder="Leave a comment..."
+        rows={4}
+        required
+      ></textarea>
+      <div class="flex justify-end mt-2">
+        <button
+          type="submit"
+          class="py-2 px-6 bg-green-600 hover:bg-green-700 rounded-md font-semibold transition-colors"
+        >
+          Comment
+        </button>
+      </div>
+    </form>
+  )
+}
+
+export function CommentsSection({ comments }: { comments: CommentWithAuthor[] }) {
+  return (
+    <div id="comments-section" class="mt-8 space-y-4">
+      {comments.map(comment => (
+        <div key={comment.id} class="bg-gray-700/50 rounded-lg p-4">
+          <p class="text-gray-300 whitespace-pre-wrap">{comment.body}</p>
+          <p class="text-xs text-gray-400 mt-2 font-semibold">
+            {comment.author.username} commented on {formatDate(comment.createdAt)}
+          </p>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+export default function IssueDetailPage({
+  issue,
+  user,
+}: {
+  issue: IssueWithDetails
+  user: User | null
+}) {
   return (
     <div class="min-h-screen bg-gray-900 text-white flex flex-col items-center pt-10">
       <div class="max-w-4xl w-full p-8">
@@ -60,6 +118,10 @@ export default function IssueDetailPage({ issue }: { issue: IssueWithDetails }) 
             </div>
           </div>
         </div>
+
+        <h2 class="mt-8 text-xl font-bold text-gray-100">Comments</h2>
+        <CommentsSection comments={issue.comments} />
+        <CommentForm issueId={issue.id} user={user} />
       </div>
     </div>
   )
