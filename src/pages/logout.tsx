@@ -7,17 +7,14 @@ export const POST = createHandler({
     deleteCookie(c, 'token', { path: '/' })
 
     const loginPage = <LoginPage />
-    return c.var.datastar.respond({
-      toClient: true,
-      effects: [
-        ['patch-signals', { auth: null }],
-        [
-          'patch-elements',
-          await c.var.renderFragmentToString(loginPage),
-          { selector: '#app', mode: 'outer' },
-        ],
-        ['execute-script', `history.pushState({}, '', '/login')`],
+    return c.var.datastar.reply([
+      ['patch-signals', { auth: null }],
+      [
+        'patch-elements',
+        await c.var.renderFragmentToString(loginPage),
+        { selector: '#app', mode: 'outer' },
       ],
-    })
+      ['execute-script', `history.pushState({}, '', '/login')`],
+    ])
   },
 })

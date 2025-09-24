@@ -16,11 +16,7 @@ export const POST = createHandler({
     const validation = authSchema.safeParse(form)
     if (!validation.success) {
       const error = validation.error.issues[0]?.message || 'Validation failed'
-      return c.var.datastar.respond({
-        effects: [['patch-signals', { error }]],
-        toClient: true,
-        status: 400,
-      })
+      return c.var.datastar.reply([['patch-signals', { error }]], { status: 400 })
     }
 
     const result =
@@ -34,9 +30,7 @@ export const POST = createHandler({
       return c.var.datastar.navigate(profilePage, '/profile')
     }
 
-    return c.var.datastar.respond({
-      effects: [['patch-signals', { error: result.error }]],
-      toClient: true,
+    return c.var.datastar.reply([['patch-signals', { error: result.error }]], {
       status: result.status,
     })
   },

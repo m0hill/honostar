@@ -19,9 +19,7 @@ export const POST = createHandler({
     const user = c.var.user!
 
     if (!title) {
-      return c.var.datastar.respond({
-        effects: [['execute-script', "alert('Title is required')"]],
-        toClient: true,
+      return c.var.datastar.reply([['execute-script', "alert('Title is required')"]], {
         status: 400,
       })
     }
@@ -73,10 +71,10 @@ export const POST = createHandler({
 
     const issuesList = <IssuesList issues={allIssues} />
 
-    return c.var.datastar.respond({
-      topics: ['issues:list'],
-      effects: [['patch-elements', issuesList, { selector: '#issues-list', mode: 'outer' }]],
-      status: 201,
-    })
+    return c.var.datastar.broadcast(
+      'issues:list',
+      [['patch-elements', issuesList, { selector: '#issues-list', mode: 'outer' }]],
+      { status: 201 }
+    )
   },
 })

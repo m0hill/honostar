@@ -62,8 +62,7 @@ export async function createAuthResponse(c: Context<AppEnv>, user: User): Promis
     sameSite: 'Lax',
   })
 
-  return c.var.datastar.respond({
-    toClient: true,
-    effects: [['patch-signals', { auth: { id: user.id, username: user.username } }]],
-  })
+  return c.var.datastar.reply([
+    ['patch-signals', { auth: { id: user.id, username: user.username } }],
+  ])
 }

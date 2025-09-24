@@ -224,6 +224,30 @@ export class DatastarResponder {
     const headers = args.headers ?? {}
     return this.c.body(null, status, headers)
   }
+
+  public async reply(
+    effects: Parameters<DatastarResponder['fx']>[1],
+    options?: { status?: StatusCode; headers?: Record<string, string> }
+  ) {
+    return this.respond({
+      effects,
+      toClient: true,
+      ...options,
+    })
+  }
+
+  public async broadcast(
+    topic: string | string[],
+    effects: Parameters<DatastarResponder['fx']>[1],
+    options?: { status?: StatusCode; headers?: Record<string, string>; close?: boolean }
+  ) {
+    const topics = Array.isArray(topic) ? topic : [topic]
+    return this.respond({
+      effects,
+      topics,
+      ...options,
+    })
+  }
 }
 
 export const datastarResponder = factory.createMiddleware(async (c, next) => {
