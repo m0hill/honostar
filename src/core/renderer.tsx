@@ -46,6 +46,7 @@ export const renderer = factory.createMiddleware(async (c, next) => {
         </head>
         <body
           data-on-load={`@get('/_/events${topicsQuery}')`}
+          data-on-visibilitychange__window="if (document.visibilityState === 'visible') @get(location.pathname, { requestCancellation: 'disabled' })"
           data-on-popstate__window="@get(location.pathname, { requestCancellation: 'disabled' })"
         >
           <div id="app">{children}</div>
