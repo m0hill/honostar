@@ -17,19 +17,15 @@ export class DatastarResponder {
     this.c = c
   }
 
-  private async handleNavigation(component: JSX.Element, url: string) {
-    const html = await this.c.var.renderFragmentToString(component)
-    this.patchElements('', html, { selector: '#app', mode: 'outer' })
-    this.executeScript('', `history.pushState({}, '', ${JSON.stringify(url)})`)
-  }
-
   public async navigate(component: JSX.Element, url: string) {
     const html = await this.c.var.renderFragmentToString(component)
-    await this.fx('', [
-      ['patch-elements', html, { selector: '#app', mode: 'outer' }],
-      ['execute-script', `history.pushState({}, '', ${JSON.stringify(url)})`],
-    ])
-    return this.c.body(null, 200)
+    return this.respond({
+      toClient: true,
+      effects: [
+        ['patch-elements', html, { selector: '#app', mode: 'outer' }],
+        ['execute-script', `history.pushState({}, '', ${JSON.stringify(url)})`],
+      ],
+    })
   }
 
   private patchElements(topic: string, html: string, options: PatchElementsOptions) {
@@ -115,7 +111,6 @@ export class DatastarResponder {
       | ['patch-signals', Record<string, Jsonifiable>, PatchSignalsOptions?]
       | ['execute-script', string, ExecuteScriptOptions?]
       | ['close-sse']
-      | ['navigate', JSX.Element, string]
     >
   ): Promise<void> {
     const renderOne = async (x: JSX.Element | string): Promise<string> => {
@@ -153,11 +148,6 @@ export class DatastarResponder {
           this.c.var.bus.toTopic(topic, { event: 'close' })
           break
         }
-        case 'navigate': {
-          const [, component, url] = fx
-          await this.handleNavigation(component, url)
-          break
-        }
         default: {
           const _unhandled: never = fx
           console.warn('[datastar.fx] Unknown effect:', _unhandled)
@@ -174,10 +164,11 @@ export class DatastarResponder {
     status?: StatusCode
     headers?: Record<string, string>
   }) {
-    const topics = args.topics ?? this.c.var.sseTopics ?? ['']
     const effects = args.effects
 
-    await Promise.all(topics.map(t => this.fx(t, effects)))
+    if (args.topics) {
+      await Promise.all(args.topics.map(t => this.fx(t, effects)))
+    }
 
     if (args.toClient) {
       const clientId = this.c.var.clientId
@@ -225,8 +216,8 @@ export class DatastarResponder {
       }
     }
 
-    if (args.close) {
-      for (const t of topics) this.c.var.bus.toTopic(t, { event: 'close' })
+    if (args.close && args.topics) {
+      for (const t of args.topics) this.c.var.bus.toTopic(t, { event: 'close' })
     }
 
     const status = args.status ?? 204

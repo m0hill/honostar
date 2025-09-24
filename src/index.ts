@@ -32,11 +32,6 @@ app.use('*', initContext)
 
 app.use('*', auth)
 
-app.use('/_/events', async (c, next) => {
-  c.set('sseTopics', ['', 'issues'])
-  await next()
-})
-
 app.get('/_/events', createSseEndpoint())
 
 await mountRoutes(app)

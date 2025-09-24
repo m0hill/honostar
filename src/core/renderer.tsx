@@ -14,6 +14,8 @@ function extractBodyInner(html: string): string {
 
 export const renderer = factory.createMiddleware(async (c, next) => {
   const base = jsxRenderer(({ children }) => {
+    const topics = c.var.sseTopics ?? []
+    const topicsQuery = topics.length > 0 ? `?topics=${topics.join(',')}` : ''
     return (
       <html lang="en">
         <head>
@@ -24,7 +26,7 @@ export const renderer = factory.createMiddleware(async (c, next) => {
           <script type="module" src="/datastar.js" />
         </head>
         <body
-          data-on-load="@get('/_/events')"
+          data-on-load={`@get('/_/events${topicsQuery}')`}
           data-on-popstate__window="@get(location.pathname, { requestCancellation: 'disabled' })"
         >
           <div id="app">{children}</div>

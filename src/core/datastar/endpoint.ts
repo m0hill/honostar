@@ -33,8 +33,9 @@ export const createSseEndpoint = (): Handler => {
 
       unsubscribes.push(bus.subscribeClient(clientId, handleMessage))
 
-      const topics = c.var.sseTopics || []
-      for (const topic of topics) {
+      const topicsParam = c.req.query('topics')
+      const requestTopics = topicsParam ? topicsParam.split(',') : []
+      for (const topic of requestTopics) {
         unsubscribes.push(bus.subscribeTopic(topic, handleMessage))
       }
 

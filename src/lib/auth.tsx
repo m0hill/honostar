@@ -2,8 +2,7 @@ import type { Context } from 'hono'
 import { setCookie } from 'hono/cookie'
 import { sign } from 'hono/jwt'
 import type { StatusCode } from 'hono/utils/http-status'
-import ProfilePage from '@/components/pages/ProfilePage'
-import type { AppEnv, FxResponse } from '@/core'
+import type { AppEnv } from '@/core'
 import type { DB } from '@/db'
 import { users } from '@/db/schema'
 import type { User } from '@/types'
@@ -49,11 +48,11 @@ export async function handleLogin(db: DB, creds: Credentials): Promise<AuthResul
   return { user: foundUser }
 }
 
-export async function createAuthResponse(c: Context<AppEnv>, user: User): Promise<FxResponse> {
+export async function createAuthResponse(c: Context<AppEnv>, user: User): Promise<Response> {
   const payload = {
     id: user.id,
     username: user.username,
-    exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // 1 day expiration
+    exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24,
   }
   const token = await sign(payload, process.env.JWT_SECRET!)
   setCookie(c, 'token', token, {
@@ -63,13 +62,8 @@ export async function createAuthResponse(c: Context<AppEnv>, user: User): Promis
     sameSite: 'Lax',
   })
 
-  const profilePage = <ProfilePage user={user} />
-  return {
-    fx: [
-      // Make auth visible to any live page.
-      ['patch-signals', { auth: { id: user.id, username: user.username } }],
-      ['navigate', profilePage, '/profile'],
-    ],
-    status: 200,
-  }
+  return c.var.datastar.respond({
+    toClient: true,
+    effects: [['patch-signals', { auth: { id: user.id, username: user.username } }]],
+  })
 }
