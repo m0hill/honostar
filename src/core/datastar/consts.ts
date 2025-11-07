@@ -1,6 +1,6 @@
 export const DefaultSseRetryDurationMs = 1000
 
-export const DefaultElementsUseViewTransitions = false
+export const DefaultElementsUseViewTransitions = true
 
 export const DefaultPatchSignalsOnlyIfMissing = false
 export const DatastarDatalineSelector = 'selector'

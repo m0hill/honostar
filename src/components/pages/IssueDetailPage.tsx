@@ -70,11 +70,7 @@ export default function IssueDetailPage({
     <div class="min-h-screen bg-gray-900 text-white flex flex-col items-center pt-10">
       <div class="max-w-4xl w-full p-8">
         <div class="mb-6">
-          <a
-            href="/"
-            data-on-click__prevent="@get('/')"
-            class="text-cyan-400 hover:text-cyan-300 transition-colors"
-          >
+          <a href="/" class="text-cyan-400 hover:text-cyan-300 transition-colors">
             &larr; Back to Issues
           </a>
         </div>

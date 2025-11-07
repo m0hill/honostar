@@ -107,15 +107,6 @@ export async function mountRoutes(app: Hono<AppEnv>, pagesDir = 'src/pages') {
         }
 
         const pageComponent = pageDef.component(loaderResult)
-
-        if (c.req.header('Datastar-Request')) {
-          const html = await c.var.renderFragmentToString(pageComponent)
-          return c.var.datastar.reply([
-            ['patch-elements', html, { selector: '#app', mode: 'outer' }],
-            ['execute-script', `history.pushState({}, '', '${c.req.path}')`],
-          ])
-        }
-
         return c.render(pageComponent)
       }
 

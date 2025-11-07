@@ -9,7 +9,6 @@ export default function IssuesList({ issues }: { issues: IssueWithAuthor[] }) {
             <li key={issue.id}>
               <a
                 href={`/issues/${issue.id}`}
-                data-on-click__prevent={`@get('/issues/${issue.id}')`}
                 class="block p-4 hover:bg-gray-700/50 transition-colors"
               >
                 <div class="flex items-center space-x-4">

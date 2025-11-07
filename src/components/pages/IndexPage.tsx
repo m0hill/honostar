@@ -26,7 +26,6 @@ export default function IndexPage({
               </p>
               <a
                 href="/profile"
-                data-on-click__prevent="@get('/profile')"
                 class="py-2 px-6 bg-blue-600 hover:bg-blue-700 rounded-md font-semibold transition-colors"
               >
                 Go to Profile
@@ -37,7 +36,6 @@ export default function IndexPage({
               <p class="text-xl">Please log in to continue.</p>
               <a
                 href="/login"
-                data-on-click__prevent="@get('/login')"
                 class="mt-4 inline-block py-2 px-6 bg-green-600 hover:bg-green-700 rounded-md font-semibold transition-colors"
               >
                 Login or Sign Up
@@ -66,7 +64,6 @@ export default function IndexPage({
                 <li key={issue.id}>
                   <a
                     href={`/issues/${issue.id}`}
-                    data-on-click__prevent={`@get('/issues/${issue.id}')`}
                     class="block p-4 hover:bg-gray-700/50 transition-colors"
                   >
                     <div class="flex items-center space-x-4">

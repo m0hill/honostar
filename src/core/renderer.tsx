@@ -24,31 +24,44 @@ export const renderer = factory.createMiddleware(async (c, next) => {
           <script
             dangerouslySetInnerHTML={{
               __html: `
-              (function() {
-                let tabId = sessionStorage.getItem('tabId');
-                if (!tabId) {
-                  tabId = crypto.randomUUID();
-                  sessionStorage.setItem('tabId', tabId);
-                }
-                const originalFetch = window.fetch;
-                window.fetch = function(input, init) {
-                  init = init || {};
-                  init.headers = { ...init.headers, 'X-Tab-ID': tabId };
-                  return originalFetch(input, init);
-                };
-              })();
-            `,
+            // Per-tab ID so server can target SSE effects to a tab
+            (function() {
+              let tabId = sessionStorage.getItem('tabId');
+              if (!tabId) {
+                tabId = crypto.randomUUID();
+                sessionStorage.setItem('tabId', tabId);
+              }
+              // Ensure Datastar fetches (incl. SSE GET) carry the tab id
+              const originalFetch = window.fetch;
+              window.fetch = function(input, init) {
+                init = init || {};
+                init.headers = { ...init.headers, 'X-Tab-ID': tabId };
+                return originalFetch(input, init);
+              };
+            })();
+            // Progressive View Transitions for same-origin link clicks
+            (function () {
+              if (!document.startViewTransition) return;
+              addEventListener('click', function (e) {
+                const t = e.target;
+                const a = t && t.closest && t.closest('a');
+                if (!a) return;
+                if (a.target || a.hasAttribute('download') || a.hasAttribute('data-no-vt')) return;
+                if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+                const url = new URL(a.getAttribute('href') || '', location.href);
+                if (url.origin !== location.origin) return;
+                e.preventDefault();
+                document.startViewTransition(function() { location.href = url.href; });
+              }, { capture: true });
+            })();
+          `,
             }}
           />
           <title>Bonsai</title>
           <link rel="stylesheet" href="/styles.css" />
           <script type="module" src="/datastar.js" />
         </head>
-        <body
-          data-on-load={`@get('/_/events${topicsQuery}')`}
-          data-on-visibilitychange__window="if (document.visibilityState === 'visible') @get(location.pathname, { requestCancellation: 'disabled' })"
-          data-on-popstate__window="@get(location.pathname, { requestCancellation: 'disabled' })"
-        >
+        <body data-on-load={`@get('/_/events${topicsQuery}')`}>
           <div id="app">{children}</div>
         </body>
       </html>
