@@ -17,13 +17,28 @@ export class DatastarResponder {
     this.c = c
   }
 
-  public async navigate(component: JSX.Element, url: string) {
+  public async navigate(
+    component: JSX.Element,
+    url: string,
+    opts?: {
+      title?: string
+      replace?: boolean
+      scroll?: 'preserve' | 'top'
+    }
+  ) {
     const html = await this.c.var.renderFragmentToString(component)
+    const navScript = [
+      opts?.title ? `document.title=${JSON.stringify(opts.title)};` : '',
+      opts?.replace
+        ? `history.replaceState({}, '', ${JSON.stringify(url)})`
+        : `history.pushState({}, '', ${JSON.stringify(url)})`,
+      opts?.scroll === 'top' ? `scrollTo({ top: 0, left: 0, behavior: 'instant' });` : '',
+    ].join('')
     return this.respond({
       toClient: true,
       effects: [
         ['patch-elements', html, { selector: '#app', mode: 'outer' }],
-        ['execute-script', `history.pushState({}, '', ${JSON.stringify(url)})`],
+        ['execute-script', navScript],
       ],
     })
   }
