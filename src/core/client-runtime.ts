@@ -1,3 +1,10 @@
+import { createPrefetchClient } from './prefetch'
+
+type BrowserFetch = typeof window.fetch
+type FetchInput = Parameters<BrowserFetch>[0]
+type FetchInit = Parameters<BrowserFetch>[1]
+type PreconnectFn = BrowserFetch['preconnect']
+
 interface RuntimeData {
   csrfToken: string | null
 }
@@ -47,60 +54,27 @@ function ensureTabId(): string {
 }
 
 function patchFetch(tabId: string, csrfToken: string | null): void {
-  const originalFetch = window.fetch
-  const patchedFetch: typeof window.fetch = (input, init) => {
-    const nextInit = init ?? {}
-    const headers = new Headers(nextInit.headers ?? {})
-    headers.set('X-Tab-ID', tabId)
-    if (csrfToken) {
-      headers.set('X-CSRF-Token', csrfToken)
+  const originalFetch: BrowserFetch = window.fetch
+  const originalPreconnect: PreconnectFn | undefined = originalFetch.preconnect?.bind(originalFetch)
+  const patchedFetch: BrowserFetch = Object.assign(
+    (input: FetchInput, init?: FetchInit) => {
+      const nextInit = init ?? {}
+      const headers = new Headers(nextInit.headers ?? {})
+      headers.set('X-Tab-ID', tabId)
+      if (csrfToken) {
+        headers.set('X-CSRF-Token', csrfToken)
+      }
+      nextInit.headers = headers
+      return originalFetch(input, nextInit)
+    },
+    {
+      preconnect: (...args: Parameters<PreconnectFn>) => {
+        originalPreconnect?.(...args)
+      },
     }
-    nextInit.headers = headers
-    return originalFetch(input, nextInit)
-  }
-
-  if (typeof originalFetch.preconnect === 'function') {
-    patchedFetch.preconnect = originalFetch.preconnect.bind(originalFetch)
-  }
+  )
 
   window.fetch = patchedFetch
-}
-
-function setupPrefetch(): void {
-  const seen = new Set<string>()
-  const conn = (
-    navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }
-  ).connection
-  const saveData = Boolean(conn && conn.saveData)
-  const slow = Boolean(conn && (conn.effectiveType === '2g' || conn.effectiveType === 'slow-2g'))
-  const enabled = !(saveData || slow)
-
-  function prefetch(href: string): void {
-    if (seen.has(href)) return
-    seen.add(href)
-    const link = document.createElement('link')
-    link.rel = 'prefetch'
-    link.href = href
-    document.head.appendChild(link)
-  }
-
-  if (!enabled) return
-
-  addEventListener(
-    'pointerover',
-    event => {
-      const target = event.target
-      if (!(target instanceof Element)) return
-      const anchor = target.closest('a')
-      if (!anchor || anchor.target || anchor.hasAttribute('download')) return
-      const href = anchor.getAttribute('href')
-      if (!href) return
-      const url = new URL(href, location.href)
-      if (url.origin !== location.origin) return
-      prefetch(url.href)
-    },
-    { capture: true }
-  )
 }
 
 function enhanceImages(root?: ParentNode): void {
@@ -140,11 +114,31 @@ function setupFocusOnReveal(): void {
   addEventListener('pagereveal', focusApp, { once: true })
 }
 
+declare global {
+  interface Window {
+    Bonsai?: {
+      prefetch?: ReturnType<typeof createPrefetchClient>
+    }
+  }
+}
+
 function bootstrap(): void {
   const { csrfToken } = readRuntimeData()
   const tabId = ensureTabId()
   patchFetch(tabId, csrfToken)
-  setupPrefetch()
+
+  const prefetch = createPrefetchClient({
+    enabled: true,
+    attachAllAnchors: true,
+    defaultStrategy: 'hover',
+    respectDataSaver: true,
+    respectSlowConnections: true,
+  })
+  prefetch.start()
+
+  window.Bonsai = window.Bonsai ?? {}
+  window.Bonsai.prefetch = prefetch
+
   setupImageEnhancements()
   setupFocusOnReveal()
 }
