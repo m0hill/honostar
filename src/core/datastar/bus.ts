@@ -52,11 +52,31 @@ export class Bus {
   }
 
   subscribeClient(clientId: string, sink: Sink) {
-    return this.getClientChannel(clientId).subscribe(sink)
+    const ch = this.getClientChannel(clientId)
+    const unsub = ch.subscribe(sink)
+    return () => {
+      try {
+        unsub()
+      } finally {
+        if (ch.subs.size === 0) {
+          this.clients.delete(clientId)
+        }
+      }
+    }
   }
 
   subscribeTopic(topic: string, sink: Sink) {
-    return this.getTopicChannel(topic).subscribe(sink)
+    const ch = this.getTopicChannel(topic)
+    const unsub = ch.subscribe(sink)
+    return () => {
+      try {
+        unsub()
+      } finally {
+        if (ch.subs.size === 0) {
+          this.topics.delete(topic)
+        }
+      }
+    }
   }
 
   toClient(clientId: string, msg: SSEPayload) {
