@@ -16,6 +16,10 @@ export const renderer = factory.createMiddleware(async (c, next) => {
   const base = jsxRenderer(({ children }) => {
     const topics = c.var.sseTopics ?? []
     const topicsQuery = topics.length > 0 ? `?topics=${topics.join(',')}` : ''
+    const runtimeData = {
+      csrfToken: c.var.csrfToken ?? null,
+    }
+    const runtimeDataJson = JSON.stringify(runtimeData).replace(/</g, '\\u003c')
     return (
       <html lang="en">
         <head>
@@ -24,91 +28,15 @@ export const renderer = factory.createMiddleware(async (c, next) => {
           <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
           <meta name="csrf-token" content={c.var.csrfToken ?? ''} />
           <script
-            dangerouslySetInnerHTML={{
-              __html: `
-            (function() {
-              let tabId = sessionStorage.getItem('tabId');
-              if (!tabId) {
-                tabId = crypto.randomUUID();
-                sessionStorage.setItem('tabId', tabId);
-              }
-              const originalFetch = window.fetch;
-              window.fetch = function(input, init) {
-                init = init || {};
-                var meta = document.querySelector('meta[name="csrf-token"]');
-                var csrf = meta && meta.getAttribute('content');
-                var h = new Headers(init.headers || {});
-                h.set('X-Tab-ID', tabId);
-                if (csrf) h.set('X-CSRF-Token', csrf);
-                init.headers = h;
-                return originalFetch(input, init);
-              };
-            })();
-
-            // Data-aware prefetch for same-origin pages on hover (no UI changes).
-            (function () {
-              var seen = new Set();
-              var conn = navigator.connection;
-              var saveData = !!(conn && conn.saveData);
-              var slow = !!(conn && (conn.effectiveType === '2g' || conn.effectiveType === 'slow-2g'));
-              var enabled = !(saveData || slow);
-              function prefetch(href) {
-                if (seen.has(href)) return;
-                seen.add(href);
-                var l = document.createElement('link');
-                l.rel = 'prefetch';
-                l.href = href;
-                document.head.appendChild(l);
-              }
-              if (enabled) {
-                addEventListener('pointerover', function (e) {
-                  var t = e.target;
-                  var a = t && t.closest && t.closest('a');
-                  if (!a || a.target || a.hasAttribute('download')) return;
-                  var href = a.getAttribute('href') || '';
-                  if (!href) return;
-                  var url = new URL(href, location.href);
-                  if (url.origin !== location.origin) return;
-                  prefetch(url.href);
-                }, { capture: true });
-              }
-            })();
-
-            // Image loading defaults: lazy + async decoding (safe, zero visual change).
-            (function () {
-              function enhanceImages(root) {
-                var imgs = (root || document).querySelectorAll('img');
-                for (var i = 0; i < imgs.length; i++) {
-                  var img = imgs[i];
-                  if (!img.hasAttribute('loading')) img.setAttribute('loading', 'lazy');
-                  if (!img.hasAttribute('decoding')) img.setAttribute('decoding', 'async');
-                }
-              }
-              if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', function(){ enhanceImages(); }, { once: true });
-              } else {
-                enhanceImages();
-              }
-              // If your framework patches DOM, you can re-run enhanceImages on fragments as needed.
-            })();
-
-            // A11y: focus main app container when the page is revealed.
-            (function () {
-              var focusApp = function () {
-                var app = document.getElementById('app');
-                if (app) {
-                  if (!app.hasAttribute('tabindex')) app.setAttribute('tabindex', '-1');
-                  try { app.focus({ preventScroll: true }); } catch (_) { /* noop */ }
-                }
-              };
-              addEventListener('pagereveal', focusApp, { once: true });
-            })();
-          `,
-            }}
+            id="runtime-data"
+            type="application/json"
+            dangerouslySetInnerHTML={{ __html: runtimeDataJson }}
           />
           <title>Bonsai</title>
           <link rel="stylesheet" href="/styles.css" />
+          <link rel="modulepreload" href="/runtime.js" />
           <link rel="modulepreload" href="/datastar.js" />
+          <script type="module" src="/runtime.js" />
 
           {/* Opt-in to native MPA view transitions and set subtle, fast defaults */}
           <style

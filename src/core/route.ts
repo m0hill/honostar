@@ -39,6 +39,8 @@ export type BuildRoutes<Defs extends RouteDefinitionGroup> = {
 }
 
 export function route<const Defs extends RouteDefinitionGroup>(defs: Defs): BuildRoutes<Defs> {
+  // TypeScript cannot perfectly correlate the runtime builder with the conditional type,
+  // so we assert at the public boundary after constructing the structure.
   return buildRoutes(defs) as BuildRoutes<Defs>
 }
 

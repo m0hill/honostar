@@ -3,6 +3,7 @@ node_modules/
 
 # build artifacts
 public/styles.css
+public/runtime.js
 
 # database
 sqlite.db
