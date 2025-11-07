@@ -16,6 +16,9 @@ export const createSseEndpoint = (): Handler => {
       const formatter = new SseFormatter()
 
       await stream.writeSSE({ data: '', event: 'connection-established', id: clientId })
+      const ping = setInterval(() => {
+        void stream.writeSSE({ event: 'ping', data: '' })
+      }, 25000)
 
       const handleMessage = (msg: SSEPayload) => {
         if (msg.event === 'datastar-patch-elements') {
@@ -30,6 +33,7 @@ export const createSseEndpoint = (): Handler => {
         } else if (msg.event === 'close') {
           try {
             unsubscribes.forEach(u => u?.())
+            clearInterval(ping)
           } finally {
             void stream.close()
           }
@@ -47,6 +51,7 @@ export const createSseEndpoint = (): Handler => {
       stream.onAbort(() => {
         console.log(`[SSE] Abort stream for client ${clientId}`)
         unsubscribes.forEach(unsub => unsub?.())
+        clearInterval(ping)
       })
 
       await new Promise(() => {})

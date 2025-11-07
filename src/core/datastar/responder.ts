@@ -99,6 +99,13 @@ export class DatastarResponder {
     this.patchElements(topic, '', { mode: 'remove', selector })
   }
 
+  removeSignals(topic: string, keys: string | string[]) {
+    const arr = Array.isArray(keys) ? keys : [keys]
+    const patch: Record<string, null> = {}
+    for (const k of arr) patch[k] = null
+    this.patchSignals(topic, patch)
+  }
+
   noContent() {
     return this.c.body(null, 204)
   }

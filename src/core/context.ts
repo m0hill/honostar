@@ -13,6 +13,7 @@ export interface AppVariables {
   sseTopics?: string[]
   datastar: import('@/core/datastar/responder').DatastarResponder
   fxResponse?: FxResponse
+  csrfToken?: string
 }
 
 export type AppEnv = {

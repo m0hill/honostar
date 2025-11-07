@@ -6,12 +6,14 @@ import { logger } from 'hono/logger'
 import {
   type AppEnv,
   createSseEndpoint,
+  csrf,
   datastarResponder,
   fxResponder,
   initContext,
   mountRoutes,
   renderer,
 } from '@/core'
+
 import '@/core/polyfills/compression.js'
 import { auth } from '@/middleware/auth'
 
@@ -23,6 +25,8 @@ app.use('/images/*', serveStatic({ root: './' }))
 app.use('*', logger())
 
 app.use('*', except('/_/events', compress()))
+
+app.use('*', csrf())
 
 app.use('*', renderer)
 app.use('*', datastarResponder)

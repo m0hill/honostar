@@ -21,24 +21,31 @@ export const renderer = factory.createMiddleware(async (c, next) => {
         <head>
           <meta charSet="utf-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+          <meta name="csrf-token" content={c.var.csrfToken ?? ''} />
           <script
             dangerouslySetInnerHTML={{
               __html: `
             // Per-tab ID so server can target SSE effects to a tab
-            (function() {
-              let tabId = sessionStorage.getItem('tabId');
-              if (!tabId) {
-                tabId = crypto.randomUUID();
-                sessionStorage.setItem('tabId', tabId);
-              }
-              // Ensure Datastar fetches (incl. SSE GET) carry the tab id
-              const originalFetch = window.fetch;
-              window.fetch = function(input, init) {
-                init = init || {};
-                init.headers = { ...init.headers, 'X-Tab-ID': tabId };
-                return originalFetch(input, init);
-              };
-            })();
+              (function() {
+                let tabId = sessionStorage.getItem('tabId');
+                if (!tabId) {
+                  tabId = crypto.randomUUID();
+                  sessionStorage.setItem('tabId', tabId);
+                }
+                // Ensure Datastar fetches (incl. SSE GET) carry the tab id and CSRF token
+                const originalFetch = window.fetch;
+                window.fetch = function(input, init) {
+                  init = init || {};
+                  var meta = document.querySelector('meta[name="csrf-token"]');
+                  var csrf = meta && meta.getAttribute('content');
+                  var h = new Headers(init.headers || {});
+                  h.set('X-Tab-ID', tabId);
+                  if (csrf) h.set('X-CSRF-Token', csrf);
+                  init.headers = h;
+                  return originalFetch(input, init);
+                };
+              })();
+
             // Progressive View Transitions for same-origin link clicks
             (function () {
               if (!document.startViewTransition) return;
