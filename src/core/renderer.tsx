@@ -26,6 +26,8 @@ export const renderer = factory.createMiddleware(async (c, next) => {
           <meta charSet="utf-8" />
           <meta name="color-scheme" content="dark light" />
           <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+          {/* Datastar evaluates expressions with Function(), so CSP must allow unsafe-eval */}
+          <meta httpEquiv="Content-Security-Policy" content="script-src 'self' 'unsafe-eval';" />
           <meta name="csrf-token" content={c.var.csrfToken ?? ''} />
           <script
             id="runtime-data"
@@ -70,6 +72,19 @@ export const renderer = factory.createMiddleware(async (c, next) => {
                   animation: none !important;
                 }
               }
+
+              /* Minimal dialog defaults so inner content can use Tailwind */
+              dialog {
+                border: none;
+                padding: 0;
+                background: transparent;
+                color: inherit;
+              }
+              dialog::backdrop {
+                background: rgba(0, 0, 0, 0.6);
+                -webkit-backdrop-filter: blur(2px);
+                backdrop-filter: blur(2px);
+              }
             `,
             }}
           />
@@ -79,6 +94,8 @@ export const renderer = factory.createMiddleware(async (c, next) => {
         </head>
         <body data-init={`@get('/_/events${topicsQuery}')`}>
           <div id="app">{children}</div>
+          {/* Global overlay host for modals/overlays, persists across in-app navigations */}
+          <div id="ds-overlays" aria-live="polite"></div>
         </body>
       </html>
     )

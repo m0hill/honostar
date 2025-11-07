@@ -1,237 +1,135 @@
 # Bonsai Engineering & Agent Guide
 
-This document is the official guide for engineers and AI agents developing on this platform. Adhering to these patterns is mandatory for maintaining a clean, scalable, and predictable codebase.
+This is the canonical playbook for any human or AI engineer working on Bonsai. The rules below reflect production constraints and Datastar best-practices—follow them exactly unless product requirements explicitly say otherwise.
 
 ---
 
-## Core Philosophy: The Hypermedia MPA with View Transitions
+## 1. Mental Model: Hypermedia MPA + Datastar
 
-This framework is a **Multi-Page Application (MPA)** enhanced with View Transitions and real-time SSE updates. It combines the simplicity and reliability of traditional server-rendered applications with smooth navigation transitions and live collaborative features.
-
-**The Server is the single source of truth.** All state and UI logic resides on the server. Each page navigation is a full server round-trip that returns complete HTML documents. The browser's native View Transitions API provides smooth, SPA-like animations between pages without client-side routing or virtual DOM diffing.
-
-Real-time updates are delivered via Server-Sent Events (SSE) for collaborative features like live comments and issue updates, but navigation itself uses standard browser behavior with progressive enhancement.
-
----
-
-## Navigation vs. Real-Time Updates
-
-Understanding the distinction between page navigation and real-time updates is critical:
-
-### Page Navigation (View Transitions)
-- **What:** Standard `<a href>` links that cause full page loads
-- **How:** The browser fetches a new HTML document from the server
-- **Enhancement:** The View Transitions API intercepts same-origin link clicks and animates the page change smoothly
-- **When to use:** Moving between different pages/views (e.g., from issues list to issue detail)
-- **Implementation:** Just use regular anchor tags - no special JavaScript needed
-
-### Real-Time Updates (SSE)
-For updates that happen without navigation, we use Server-Sent Events. These fall into two categories:
-
-## The Developer's Mental Model: Reply vs. Broadcast
-
-Every real-time update you build will fall into one of two categories. Your primary design decision is to choose the correct one.
-
-### 1. `reply()` -> For Tab-Specific State
-
-Use `c.var.datastar.reply()` when an action's result should **only be visible to the user in the tab where they performed the action**.
-
-- **What it is:** Direct feedback.
-- **Use Cases:**
-  - Form validation errors (`"Password is too short"`)
-  - Success/error notifications (`"Profile updated!"`)
-  - UI state changes like opening a modal or toggling a dropdown
-- **How it works:** Sends an SSE message targeted to the unique `X-Tab-ID` of the originating client. No one else sees it.
-
-### 2. `broadcast()` -> For Shared State
-
-Use `c.var.datastar.broadcast()` when a change made by one user **must be reflected in the UI of all other users viewing the same data**.
-
-- **What it is:** A public announcement to a specific channel (a "topic").
-- **Use Cases:**
-  - A new issue is created (updates the main issues list).
-  - A new label is created (updates the label list in all open issue modals).
-  - **A new comment is posted on an issue (updates the comment list for everyone viewing that issue).**
-- **How it works:** Sends an SSE message to a named topic (e.g., `issues:list`). Every client subscribed to that topic receives the update.
+- We ship a **server-rendered Multi-Page App**. Every navigation is a normal `<a href>` request returning a fresh HTML document. No client router, no single-page hydration.
+- **View Transitions** are progressive enhancement. Simply use real links; the runtime automatically wraps same-origin navigations in `document.startViewTransition()`.
+- **The server is the source of truth.** All state mutations happen on the server, which then re-renders canonical HTML and broadcasts as needed.
+- **Datastar** powers real-time UX via SSE patches and local signals. Treat signals as ephemeral UI state, never as a persistence layer.
 
 ---
 
-## Topics: The Real-Time Channels
+## 2. Replies vs Broadcasts
 
-Topics are the backbone of our shared-state real-time updates via SSE.
+Decide this **before** writing code:
 
-- **Single Source of Truth:** All topic strings **must** be defined in `src/lib/topics.ts`. Do not use raw strings in your pages or handlers. This provides type safety and prevents typos.
-- **Naming Convention:** Use a granular, hierarchical structure: `resource:id:sub-resource`. For example, `issue:123:comments`.
-- **Subscription:** A page subscribes to topics in its `createPage` definition. This automatically tells the client's SSE connection to listen on those channels.
-- **Page Load:** When a page loads, the SSE connection is established with `data-on-load="@get('/_/events?topics=...')"` in the `<body>` tag. The server reads this and subscribes the client to the appropriate topic channels.
+| Use | When | API |
+| --- | --- | --- |
+| `c.var.datastar.reply()` | Feedback that should only update the initiating tab (validation errors, modal close, toast) | tab-scoped SSE sent to the caller via `X-Tab-ID` |
+| `c.var.datastar.broadcast(topic, …)` | Shared state that all viewers must see (new issue/comment/label) | broadcast to a page topic (define topics in `src/lib/topics.ts`) |
 
----
-
-## Step-by-Step Guide: Building a New Feature
-
-Follow this process to build any new feature. We will use the **Real-Time Comments** feature as the canonical example.
-
-### Step 1: Analyze the State
-
-- Ask the core question: Is the state I'm changing **shared** or **tab-specific**?
-- *Example Answer:* A new comment is **shared** (everyone on the page sees it). An empty comment error is **tab-specific** (only the submitter sees it). This means we will use `broadcast()` for success and `reply()` for validation errors.
-
-### Step 2: Define Your Topic
-
-- If you are dealing with shared state, add a new entry to `src/lib/topics.ts`.
-- *Example:* We added `issue: (id) => ({ comments: () => \`issue:${id}:comments\` })`.
-
-### Step 3: Check the Database Schema
-
-- Ensure your tables and relations in `src/db/schema.ts` support the feature.
-- *Example:* The `comments` table already existed and was sufficient.
-
-### Step 4: Build UI Components
-
-- Create the necessary JSX components. Give key containers a stable `id` so `datastar` can target them for real-time updates (e.g., `<div id="comments-section">`).
-- Use regular `<a href>` links for navigation - the View Transitions API will automatically enhance them with smooth animations.
-- *Example:* We added `CommentsSection` and `CommentForm` to `IssueDetailPage.tsx`.
-
-### Step 5: Update The Page (`/pages/...`)
-
-- In the `createPage` definition:
-  - Subscribe to the new topic using the function from `src/lib/topics.ts`.
-  - Update the `loader` to fetch any initial data required by your new UI components.
-- *Example:* We updated `src/pages/issues/[id].tsx` to subscribe to `topics.issue(id).comments()` and pass the `user` and initial `comments` to the component.
-
-### Step 6: Create The Backend Handler
-
-- Create a new file-based route to handle the user action (e.g., a form `POST`).
-- In the handler:
-  - Use middleware like `requireAuth` if necessary.
-  - Validate the incoming data (e.g., with Zod).
-  - If validation fails, use `c.var.datastar.reply()` to send a tab-specific error.
-  - If successful, update the database.
-  - Fetch the complete, updated state.
-  - Re-render the relevant shared component with the new state.
-  - Use `c.var.datastar.broadcast()` to send the updated HTML to the correct topic.
-- *Example:* We created `src/pages/issues/[id]/comments.ts` which validates, saves, and broadcasts the new comment list to the `issue:id:comments` topic.
+Rules:
+1. Every shared state change must “fan out” through a **topic** defined in `src/lib/topics.ts`. Never inline topic strings.
+2. Use “fat patches”: re-render the entire region you’re updating so missed events can self-heal.
 
 ---
 
-## View Transitions: Smooth Navigation Without Client-Side Routing
+## 3. Page & Topic Wiring
 
-This application uses the native [View Transitions API](https://developer.mozilla.org/en-US/docs/Web/API/View_Transitions_API) to provide smooth, animated page transitions in an MPA architecture.
-
-### How It Works
-
-1. **Progressive Enhancement Script** (in `src/core/renderer.tsx`):
-   - A small script intercepts same-origin link clicks
-   - Calls `document.startViewTransition()` before navigation
-   - The browser captures the current page state, navigates, then animates the transition
-
-2. **Zero Configuration Required:**
-   - Just use regular `<a href="/path">` links
-   - The browser handles everything automatically
-   - If the browser doesn't support View Transitions, it gracefully degrades to instant navigation
-
-3. **Opt-Out When Needed:**
-   - Add `data-no-vt` attribute to links that should navigate instantly
-   - Add `target="_blank"` or `download` to bypass the transition (already handled automatically)
-
-4. **What Gets Transitioned:**
-   - By default, the entire page cross-fades smoothly
-   - You can customize with CSS `view-transition-name` properties for more granular control
-
-### Example
-
-```tsx
-// This link will have a smooth View Transition:
-<a href="/issues/123">View Issue</a>
-
-// This link navigates instantly (no transition):
-<a href="/external-page" data-no-vt>Skip Transition</a>
-```
+1. **Pages** (`createPage`) declare their topics. The renderer automatically subscribes via `<body data-init="@get('/_/events?topics=…')">`.
+2. Components that will be patched must expose a **stable root ID** (`id="issues-list"`).
+3. SSE responses should target those IDs and use default `outer` morphing unless you’re intentionally appending/prepending list items.
 
 ---
 
-## Datastar Quick Reference
+## 4. Datastar Attribute Rules
 
-These are the most common `data-*` attributes you will use for **real-time interactions** (not navigation).
+**General**
+- Keep expressions pure; no imperative JS outside supported helpers.
+- Attribute order matters; data-star runs top to bottom.
 
-### When to Use Datastar vs. Regular Links
+**Signals & Expressions**
+- `data-signals` overwrites values immediately. `data-signals__ifmissing` only seeds absent signals.
+- Keys defined via kebab case become camelCase in expressions (e.g., `data-signals:new-comment` ⇒ `$newComment`).
+- Never store secrets/tokens/passwords in signals. They’re user-editable.
+- `data-persist` is banned unless you add `include`/`exclude` filters to avoid persisting sensitive keys.
 
-- **Use `<a href>` for navigation** between pages (issues list → issue detail)
-- **Use Datastar actions** for mutations and real-time updates (posting a comment, creating an issue)
+**`data-computed`**
+- Pure only (math/formatting). Move side-effects to `data-effect`.
 
-### Common Datastar Attributes
+**`data-show`**
+- Always add `style="display:none"` to avoid FOUC.
 
-**Attribute Format:** `data-pluginName:key__modifier1__modifier2`
-- Plugin names use colons (`:`) to separate from keys
-- Modifiers use double underscores (`__`)
-- Example: `data-on:submit__prevent` means "on" plugin, "submit" key, "prevent" modifier
+**Forms**
+- `data-on:submit` prevents default; wire your action explicitly with `@post('/path', {contentType})`.
+- File uploads: choose **one** strategy:
+  - Signals (`data-bind` on `<input type="file">`) + JSON payload.
+  - Native form submit (`enctype="multipart/form-data"`, `contentType: 'form'`). Never both.
 
-- **Actions (Clicks & Buttons) - For mutations, not navigation:**
-  - `data-on:click="@post('/path/to/action')"` - Triggers a POST request that returns SSE updates
-  - Example: `<button data-on:click="@post('/issues/123/comments')">Submit Comment</button>`
-  
-- **Forms - For data submission:**
-  - `data-on:submit__prevent="@post('/path/to/form/handler')"` - Submits form data via AJAX
-  - The `__prevent` modifier stops the default browser page reload
-  - Example: Creating a new issue, posting a comment
-  
-- **Data Binding (Inputs):**
-  - `data-bind:form.username` or `data-bind="form.username"` - Two-way links an input's value to a client-side signal
-  - For checkboxes bound to arrays: Each checkbox gets an indexed path (e.g., `labels.0`, `labels.1`)
-  - Server-side: Convert the object to array using `Object.values()` if needed
-  
-- **Conditional Rendering:**
-  - `data-show="$mySignal"` - Shows the element if `$mySignal` is truthy, hides it otherwise
-  - Example: Modal visibility toggle
-  
-- **Displaying Data:**
-  - `data-text="$mySignal"` - Sets the element's text content to the value of the signal
-
-- **Signals:**
-  - `data-signals:ifmissing="{...}"` - Initialize signals only if they don't already exist
-  - `data-signals="{...}"` - Initialize or update signals
-
-- **Initialization:**
-  - `data-init="@get('/endpoint')"` - Runs code when the element is initialized (e.g., on page load)
-  - Common use: Establishing SSE connections on page load
-
-### Navigation vs. Actions: A Practical Example
-
-```tsx
-// ✅ Navigation: Use regular <a> tags
-<a href="/issues/123">View Issue Details</a>
-
-// ✅ Action/Mutation: Use Datastar
-<button data-on:click="@post('/issues/123/close')">Close Issue</button>
-
-// ✅ Form Submission: Use Datastar
-<form data-on:submit__prevent="@post('/issues/create')">
-  <input name="title" />
-  <button type="submit">Create</button>
-</form>
-```
+**Indicators & Requests**
+- If an element has `data-indicator:*` and `data-init`, order must be `data-indicator` first so the signal exists before the request starts.
+- Keep `openWhenHidden: true` for dashboards only—background tabs otherwise pause SSE to preserve battery.
 
 ---
 
-## Architecture Summary
+## 5. Modals & Overlays
 
-This is a **Multi-Page Application (MPA)**, not a Single-Page Application (SPA). Here's what that means in practice:
+Two supported patterns:
+1. **Dialog-based** (legacy): `<dialog data-modal>` handled by `client-runtime`.
+2. **Overlay container** (current default): `<div data-modal>` inserted into `#ds-overlays`.
 
-### What This App IS:
-- ✅ **Server-rendered HTML pages** - Each route returns a complete HTML document
-- ✅ **Standard browser navigation** - Each page load is a real HTTP request for a new document
-- ✅ **Progressive enhancement** - View Transitions API enhances navigation with smooth animations
-- ✅ **Real-time SSE updates** - For collaborative features (live comments, issue updates)
-- ✅ **Datastar for mutations** - Form submissions and actions happen via AJAX with SSE responses
+Requirements for any modal:
+- Lives under `#ds-overlays` so navigation resets it.
+- Uses a dedicated signals namespace (e.g., `$createIssueModal.open`) to avoid cross-modal bleed.
+- Backdrop and dialog each use `data-show` with `style="display:none"` to prevent flicker.
+- Escape and outside-click close the modal: `data-on:keydown__window="evt.key==='Escape' && ($modal.open=false)"` and `data-on:click__outside`.
+- Modal content gets focus via `data-ref="modalEl"` + `data-init`.
+- When closing, also remove the DOM node via SSE or `window.Bonsai.modals.close(id)` so inert state clears.
 
-### What This App is NOT:
-- ❌ **NOT client-side routing** - No virtual DOM, no JavaScript router, no history.pushState for navigation
-- ❌ **NOT a SPA** - Each navigation loads a new document from the server
-- ❌ **NOT persistent client state** - State resets on navigation (except for topics in session storage)
+---
 
-### The Mental Model:
-Think of this as a **traditional web app** (like PHP, Rails, or Django) but with two modern enhancements:
-1. **View Transitions** make full page loads feel smooth (like a SPA)
-2. **SSE with Datastar** enables real-time collaborative features without polling
+## 6. SSE Patch Discipline
 
-This architecture provides the **simplicity and SEO benefits of MPAs** with the **UX polish of SPAs** where it matters.
+- Use `['patch-elements', component, { selector: '#target-id' }]` unless you truly need `append`/`prepend`.
+- Each patch root must have an `id`. If you rely on `selector: '#foo'`, make sure the rendered HTML includes `id="foo"`.
+- Avoid `mode: 'inner'/'replace'` unless there’s a documented reason (e.g., infinite scroll append). Removing `mode` defaults to `outer`.
+- When updating lists, send the entire list markup so clients can recover after disconnects.
+
+---
+
+## 7. CSP & Security
+
+- `src/core/renderer.tsx` already emits `<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-eval';">`. Never remove `unsafe-eval`; Datastar expressions rely on `Function()`.
+- Sanitize/escape any untrusted HTML strings you interpolate into JSX attributes.
+- Never leak credentials or CSRF tokens to the client beyond what `renderer` already exposes via the runtime meta/script.
+
+---
+
+## 8. Workflow Checklist
+
+Before opening a PR, confirm:
+
+1. **CSP** still allows `'unsafe-eval'`.
+2. **Signals** contain no secrets; `data-persist` (if used) filters sensitive data.
+3. **`data-computed` purity**; moved side-effects to `data-effect`.
+4. **Indicators before init**; no request starts without its indicator.
+5. **`data-show`** elements include `style="display:none"`.
+6. **Forms/file inputs** follow the single-handling rule.
+7. **Topics & SSE**: shared updates broadcast via defined topics; patch targets have IDs and default `outer` morph.
+8. **Modals** conform to the pattern (Escape/outside close, focus trap, teardown).
+9. **`openWhenHidden`** only where truly needed.
+10. **Lint + typecheck** (`bun run lint`, `bun run typecheck`) succeed locally; include results in your summary if requested.
+
+---
+
+## 9. Quick Start for New Features
+
+1. **Model shared vs tab-specific** state to determine reply/broadcast.
+2. **Add/extend topic** in `src/lib/topics.ts`.
+3. **Update loader** to fetch initial data and subscribe to the relevant topics.
+4. **Build UI component** with stable IDs and Datastar-friendly attributes.
+5. **Write handler**:
+   - Validate input (Zod).
+   - On failure, `reply()` with targeted feedback.
+   - On success, mutate DB, re-fetch canonical state, and `broadcast()` the new markup.
+6. **Test** by running through the real workflow: navigation (anchors), SSE updates, opening/closing modals, relaunching actions after backgrounding the tab.
+
+If in doubt, search the repo for an existing pattern (`LabelsSection`, `IssueModal`, comments handler) and follow it exactly.
+
+---
+
+By adhering to these conventions we keep Bonsai predictable: every page load is deterministic, real-time updates heal themselves, and agents can ship features quickly without regressing the MPA contract. When you find a scenario not covered here, document it in this file before landing your change.***

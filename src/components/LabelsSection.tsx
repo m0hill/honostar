@@ -2,7 +2,7 @@ import type { Label } from '@/types'
 
 export default function LabelsSection({ labels }: { labels: Label[] }) {
   return (
-    <>
+    <div id="labels-section">
       <div class="flex flex-wrap gap-2">
         {labels.map(l => (
           <label class="inline-flex items-center gap-2" key={l.id}>
@@ -20,11 +20,11 @@ export default function LabelsSection({ labels }: { labels: Label[] }) {
         <button
           type="button"
           class="px-3 py-2 bg-gray-700 border border-gray-600 rounded-md"
-          data-on:click="$issue.newLabel && @post('/labels'); $issue.newLabel=''"
+          data-on:click="$issue.newLabel && @post('/labels'); $issue.newLabel = ''"
         >
           Add
         </button>
       </div>
-    </>
+    </div>
   )
 }

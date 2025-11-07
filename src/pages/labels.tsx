@@ -30,7 +30,7 @@ export const POST = createHandler({
           [
             'patch-elements',
             <LabelsSection labels={currentLabels} />,
-            { selector: '#labels-section', mode: 'inner' },
+            { selector: '#labels-section' },
           ],
         ],
         { status: 201 }

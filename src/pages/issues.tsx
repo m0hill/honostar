@@ -85,9 +85,35 @@ export const POST = createHandler({
 
     const issuesList = <IssuesList issues={allIssues} />
 
-    return c.var.datastar.broadcast(
-      'issues:list',
-      [['patch-elements', issuesList, { selector: '#issues-list', mode: 'outer' }]],
+    // 1) Broadcast updated list to everyone on the issues:list topic
+    await c.var.datastar.fx('issues:list', [
+      ['patch-elements', issuesList, { selector: '#issues-list' }],
+    ])
+
+    // 2) Close the modal and reset the issue signal for the requesting client only
+    return c.var.datastar.reply(
+      [
+        [
+          'patch-elements',
+          '',
+          {
+            selector: '#ds-overlays [data-modal-id="create-issue"]',
+            mode: 'remove',
+          },
+        ],
+        [
+          'patch-signals',
+          {
+            issue: {
+              title: '',
+              description: '',
+              labels: [],
+              newLabel: '',
+              image: null,
+            },
+          },
+        ],
+      ],
       { status: 201 }
     )
   },

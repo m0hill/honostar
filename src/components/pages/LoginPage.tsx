@@ -19,6 +19,7 @@ export default function LoginPage() {
 
         <div
           data-show="$error"
+          style="display:none"
           class="p-3 text-center bg-red-900/50 border border-red-700 text-red-300 rounded-md"
           data-text="$error"
         ></div>

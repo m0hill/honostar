@@ -1,11 +1,9 @@
-import IssueModal from '@/components/IssueModal'
 import { routes } from '@/routes'
 import type { IssueWithAuthor, Label, User } from '@/types'
 
 export default function IndexPage({
   user,
   issues,
-  labels,
 }: {
   user: User | null
   issues: IssueWithAuthor[]
@@ -52,7 +50,7 @@ export default function IndexPage({
           {user && (
             <button
               class="py-2 px-4 bg-green-600 hover:bg-green-700 rounded-md font-semibold transition-colors"
-              data-on:click="$showModal = true"
+              data-on:click="@get('/issues/new')"
             >
               Create Issue
             </button>
@@ -100,7 +98,6 @@ export default function IndexPage({
           </ul>
         </div>
       </div>
-      <IssueModal labels={labels} />
     </div>
   )
 }
