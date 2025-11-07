@@ -25,7 +25,7 @@ export default function LoginPage() {
 
         <form
           class="space-y-6"
-          data-on-submit__prevent="@post($mode === 'login' ? '/auth/login' : '/auth/signup')"
+          data-on:submit__prevent="@post($mode === 'login' ? '/auth/login' : '/auth/signup')"
         >
           <div>
             <label for="username" class="block text-sm font-medium text-gray-300">
@@ -68,7 +68,7 @@ export default function LoginPage() {
           <span data-text="$mode === 'login' ? 'Don\'t have an account?' : 'Already have an account?'"></span>
           <button
             class="font-medium text-cyan-400 hover:text-cyan-300"
-            data-on-click="$mode = ($mode === 'login' ? 'signup' : 'login'); $error = ''"
+            data-on:click="$mode = ($mode === 'login' ? 'signup' : 'login'); $error = ''"
           >
             <span data-text="$mode === 'login' ? ' Sign Up' : ' Login'"></span>
           </button>

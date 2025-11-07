@@ -61,7 +61,7 @@ export const renderer = factory.createMiddleware(async (c, next) => {
           <link rel="stylesheet" href="/styles.css" />
           <script type="module" src="/datastar.js" />
         </head>
-        <body data-on-load={`@get('/_/events${topicsQuery}')`}>
+        <body data-init={`@get('/_/events${topicsQuery}')`}>
           <div id="app">{children}</div>
         </body>
       </html>

@@ -51,7 +51,7 @@ export default function IndexPage({
           {user && (
             <button
               class="py-2 px-4 bg-green-600 hover:bg-green-700 rounded-md font-semibold transition-colors"
-              data-on-click="$showModal = true"
+              data-on:click="$showModal = true"
             >
               Create Issue
             </button>

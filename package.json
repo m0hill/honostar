@@ -8,9 +8,11 @@
     "dev:css": "tailwindcss -i ./styles.css -o ./public/styles.css --watch",
     "lint": "oxlint --type-aware",
     "format": "biome check --write .",
+    "typecheck": "tsc -noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "start:prod": "bun dist/index.js"
+    "start:prod": "bun dist/index.js",
+    "check": "bun run format && bun run lint && bun run typecheck"
   },
   "dependencies": {
     "@hono/zod-validator": "^0.7.3",

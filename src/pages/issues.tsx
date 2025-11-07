@@ -12,7 +12,21 @@ export const POST = createHandler({
     const issueSig = body?.issue ?? {}
     const title: string = issueSig.title?.trim() ?? ''
     const description: string = issueSig.description ?? ''
-    const labelIds: number[] = (issueSig.labels ?? []).map((v: string) => Number(v)).filter(Boolean)
+    const labelsValue = issueSig.labels ?? []
+    console.log(
+      '[DEBUG] Raw labels value:',
+      JSON.stringify(labelsValue),
+      'Type:',
+      typeof labelsValue,
+      'IsArray:',
+      Array.isArray(labelsValue)
+    )
+    const labelIds: number[] = (
+      Array.isArray(labelsValue) ? labelsValue : Object.values(labelsValue)
+    )
+      .map((v: string) => Number(v))
+      .filter(Boolean)
+    console.log('[DEBUG] Processed labelIds:', labelIds)
     const newLabel: string = (issueSig.newLabel ?? '').trim()
     const imageBase64 = issueSig.image ?? null
 

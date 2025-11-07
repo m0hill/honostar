@@ -20,7 +20,7 @@ export default function LabelsSection({ labels }: { labels: Label[] }) {
         <button
           type="button"
           class="px-3 py-2 bg-gray-700 border border-gray-600 rounded-md"
-          data-on-click="$issue.newLabel && @post('/labels'); $issue.newLabel=''"
+          data-on:click="$issue.newLabel && @post('/labels'); $issue.newLabel=''"
         >
           Add
         </button>

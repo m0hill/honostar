@@ -5,10 +5,10 @@ export default function IssueModal({ labels }: { labels: Label[] }) {
   return (
     <div
       id="modal"
-      data-signals-show-modal="false"
       data-show="$showModal"
       class="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
       data-signals__ifmissing={`{
+        "showModal": false,
         "issue": {
           "title": "",
           "description": "",
@@ -21,14 +21,14 @@ export default function IssueModal({ labels }: { labels: Label[] }) {
       <div class="w-full max-w-lg bg-gray-800 text-white rounded-lg shadow-lg p-6">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-xl font-semibold">Create Issue</h2>
-          <button class="text-gray-400 hover:text-gray-200" data-on-click="$showModal = false">
+          <button class="text-gray-400 hover:text-gray-200" data-on:click="$showModal = false">
             ✕
           </button>
         </div>
 
         <form
           class="space-y-4"
-          data-on-submit__prevent="@post('/issues'); $showModal = false; $issue = {title:'', description:'', labels:[], newLabel:'', image:null}; $imageInput.value = ''"
+          data-on:submit__prevent="@post('/issues'); $showModal = false; $issue = {title:'', description:'', labels:[], newLabel:'', image:null}; $imageInput.value = ''"
           data-indicator="creating"
         >
           <label class="block">
@@ -72,7 +72,7 @@ export default function IssueModal({ labels }: { labels: Label[] }) {
             <button
               type="button"
               class="px-4 py-2 bg-gray-700 rounded-md"
-              data-on-click="$showModal = false"
+              data-on:click="$showModal = false"
             >
               Cancel
             </button>

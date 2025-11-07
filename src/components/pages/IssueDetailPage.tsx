@@ -22,7 +22,7 @@ function CommentForm({ issueId, user }: { issueId: number; user: User | null }) 
   return (
     <form
       class="mt-6"
-      data-on-submit__prevent={`@post('/issues/${issueId}/comments'); $comment = ''`}
+      data-on:submit__prevent={`@post('/issues/${issueId}/comments'); $comment = ''`}
       data-signals={`{ "comment": "" }`}
     >
       <textarea
