@@ -1,3 +1,4 @@
+import { routes } from '@/routes'
 import type { CommentWithAuthor, IssueWithDetails, User } from '@/types'
 
 const formatDate = (date: Date) =>
@@ -11,7 +12,7 @@ function CommentForm({ issueId, user }: { issueId: number; user: User | null }) 
   if (!user) {
     return (
       <div class="mt-6 p-4 bg-gray-700/50 rounded-lg text-center">
-        <a href="/login" class="text-cyan-400 hover:underline">
+        <a href={routes.auth.login.href()} class="text-cyan-400 hover:underline">
           Log in
         </a>
         <span class="text-gray-400"> to post a comment.</span>
@@ -22,7 +23,8 @@ function CommentForm({ issueId, user }: { issueId: number; user: User | null }) 
   return (
     <form
       class="mt-6"
-      data-on:submit__prevent={`@post('/issues/${issueId}/comments'); $comment = ''`}
+      data-on:submit__prevent={`@post('${routes.issues.comments.href({ id: String(issueId) })}');
+         $comment = ''`}
       data-signals={`{ "comment": "" }`}
     >
       <textarea
@@ -70,7 +72,7 @@ export default function IssueDetailPage({
     <div class="min-h-screen bg-gray-900 text-white flex flex-col items-center pt-10">
       <div class="max-w-4xl w-full p-8">
         <div class="mb-6">
-          <a href="/" class="text-cyan-400 hover:text-cyan-300 transition-colors">
+          <a href={routes.home.href()} class="text-cyan-400 hover:text-cyan-300 transition-colors">
             &larr; Back to Issues
           </a>
         </div>

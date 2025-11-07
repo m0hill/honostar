@@ -1,4 +1,5 @@
 import IssueModal from '@/components/IssueModal'
+import { routes } from '@/routes'
 import type { IssueWithAuthor, Label, User } from '@/types'
 
 export default function IndexPage({
@@ -25,7 +26,7 @@ export default function IndexPage({
                 Welcome back, <span class="font-bold">{user.username}</span>!
               </p>
               <a
-                href="/profile"
+                href={routes.auth.profile.href()}
                 class="py-2 px-6 bg-blue-600 hover:bg-blue-700 rounded-md font-semibold transition-colors"
               >
                 Go to Profile
@@ -35,7 +36,7 @@ export default function IndexPage({
             <div>
               <p class="text-xl">Please log in to continue.</p>
               <a
-                href="/login"
+                href={routes.auth.login.href()}
                 class="mt-4 inline-block py-2 px-6 bg-green-600 hover:bg-green-700 rounded-md font-semibold transition-colors"
               >
                 Login or Sign Up
@@ -63,7 +64,7 @@ export default function IndexPage({
               issues.map(issue => (
                 <li key={issue.id}>
                   <a
-                    href={`/issues/${issue.id}`}
+                    href={routes.issues.show.href({ id: String(issue.id) })}
                     class="block p-4 hover:bg-gray-700/50 transition-colors"
                   >
                     <div class="flex items-center space-x-4">

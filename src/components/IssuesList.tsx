@@ -1,3 +1,4 @@
+import { routes } from '@/routes'
 import type { IssueWithAuthor } from '@/types'
 
 export default function IssuesList({ issues }: { issues: IssueWithAuthor[] }) {
@@ -8,7 +9,7 @@ export default function IssuesList({ issues }: { issues: IssueWithAuthor[] }) {
           issues.map(issue => (
             <li key={issue.id}>
               <a
-                href={`/issues/${issue.id}`}
+                href={routes.issues.show.href({ id: String(issue.id) })}
                 class="block p-4 hover:bg-gray-700/50 transition-colors"
               >
                 <div class="flex items-center space-x-4">

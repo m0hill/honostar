@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { createHandler } from '@/core/page'
 import { createAuthResponse, handleLogin, handleSignup } from '@/lib/auth'
+import { routes } from '@/routes'
 
 const authSchema = z.object({
   username: z.string().min(3, 'Username must be at least 3 characters'),
@@ -25,7 +26,7 @@ export const POST = createHandler({
 
     if (result.user) {
       await createAuthResponse(c, result.user) // sets the cookie
-      return c.redirect('/profile', 303) // let the browser navigate
+      return c.redirect(routes.auth.profile.href(), 303) // let the browser navigate
     }
 
     return c.var.datastar.reply([['patch-signals', { error: result.error }]], {
