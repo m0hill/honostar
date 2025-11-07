@@ -20,52 +20,133 @@ export const renderer = factory.createMiddleware(async (c, next) => {
       <html lang="en">
         <head>
           <meta charSet="utf-8" />
+          <meta name="color-scheme" content="dark light" />
           <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
           <meta name="csrf-token" content={c.var.csrfToken ?? ''} />
           <script
             dangerouslySetInnerHTML={{
               __html: `
-            // Per-tab ID so server can target SSE effects to a tab
-              (function() {
-                let tabId = sessionStorage.getItem('tabId');
-                if (!tabId) {
-                  tabId = crypto.randomUUID();
-                  sessionStorage.setItem('tabId', tabId);
-                }
-                // Ensure Datastar fetches (incl. SSE GET) carry the tab id and CSRF token
-                const originalFetch = window.fetch;
-                window.fetch = function(input, init) {
-                  init = init || {};
-                  var meta = document.querySelector('meta[name="csrf-token"]');
-                  var csrf = meta && meta.getAttribute('content');
-                  var h = new Headers(init.headers || {});
-                  h.set('X-Tab-ID', tabId);
-                  if (csrf) h.set('X-CSRF-Token', csrf);
-                  init.headers = h;
-                  return originalFetch(input, init);
-                };
-              })();
+            (function() {
+              let tabId = sessionStorage.getItem('tabId');
+              if (!tabId) {
+                tabId = crypto.randomUUID();
+                sessionStorage.setItem('tabId', tabId);
+              }
+              const originalFetch = window.fetch;
+              window.fetch = function(input, init) {
+                init = init || {};
+                var meta = document.querySelector('meta[name="csrf-token"]');
+                var csrf = meta && meta.getAttribute('content');
+                var h = new Headers(init.headers || {});
+                h.set('X-Tab-ID', tabId);
+                if (csrf) h.set('X-CSRF-Token', csrf);
+                init.headers = h;
+                return originalFetch(input, init);
+              };
+            })();
 
-            // Progressive View Transitions for same-origin link clicks
+            // Data-aware prefetch for same-origin pages on hover (no UI changes).
             (function () {
-              if (!document.startViewTransition) return;
-              addEventListener('click', function (e) {
-                const t = e.target;
-                const a = t && t.closest && t.closest('a');
-                if (!a) return;
-                if (a.target || a.hasAttribute('download') || a.hasAttribute('data-no-vt')) return;
-                if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
-                const url = new URL(a.getAttribute('href') || '', location.href);
-                if (url.origin !== location.origin) return;
-                e.preventDefault();
-                document.startViewTransition(function() { location.href = url.href; });
-              }, { capture: true });
+              var seen = new Set();
+              var conn = navigator.connection;
+              var saveData = !!(conn && conn.saveData);
+              var slow = !!(conn && (conn.effectiveType === '2g' || conn.effectiveType === 'slow-2g'));
+              var enabled = !(saveData || slow);
+              function prefetch(href) {
+                if (seen.has(href)) return;
+                seen.add(href);
+                var l = document.createElement('link');
+                l.rel = 'prefetch';
+                l.href = href;
+                document.head.appendChild(l);
+              }
+              if (enabled) {
+                addEventListener('pointerover', function (e) {
+                  var t = e.target;
+                  var a = t && t.closest && t.closest('a');
+                  if (!a || a.target || a.hasAttribute('download')) return;
+                  var href = a.getAttribute('href') || '';
+                  if (!href) return;
+                  var url = new URL(href, location.href);
+                  if (url.origin !== location.origin) return;
+                  prefetch(url.href);
+                }, { capture: true });
+              }
+            })();
+
+            // Image loading defaults: lazy + async decoding (safe, zero visual change).
+            (function () {
+              function enhanceImages(root) {
+                var imgs = (root || document).querySelectorAll('img');
+                for (var i = 0; i < imgs.length; i++) {
+                  var img = imgs[i];
+                  if (!img.hasAttribute('loading')) img.setAttribute('loading', 'lazy');
+                  if (!img.hasAttribute('decoding')) img.setAttribute('decoding', 'async');
+                }
+              }
+              if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', function(){ enhanceImages(); }, { once: true });
+              } else {
+                enhanceImages();
+              }
+              // If your framework patches DOM, you can re-run enhanceImages on fragments as needed.
+            })();
+
+            // A11y: focus main app container when the page is revealed.
+            (function () {
+              var focusApp = function () {
+                var app = document.getElementById('app');
+                if (app) {
+                  if (!app.hasAttribute('tabindex')) app.setAttribute('tabindex', '-1');
+                  try { app.focus({ preventScroll: true }); } catch (_) { /* noop */ }
+                }
+              };
+              addEventListener('pagereveal', focusApp, { once: true });
             })();
           `,
             }}
           />
           <title>Bonsai</title>
           <link rel="stylesheet" href="/styles.css" />
+          <link rel="modulepreload" href="/datastar.js" />
+
+          {/* Opt-in to native MPA view transitions and set subtle, fast defaults */}
+          <style
+            dangerouslySetInnerHTML={{
+              __html: `
+              @view-transition { navigation: auto; }
+              /* Prevent white flash before CSS; explicitly participate in VT */
+              html {
+                background: #0b0f1a;
+                color-scheme: dark;
+                view-transition-name: root;
+              }
+              body { background: transparent; }
+              /* Keep MPA transition short and smooth without fancy motion */
+              ::view-transition-group(root) {
+                animation-duration: 220ms;
+                animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+              }
+              /* Avoid scrollbars flickering during VT composition */
+              ::view-transition-old(root),
+              ::view-transition-new(root) {
+                overflow: clip;
+              }
+              /* Suppress outline on programmatic focus to #app */
+              #app:focus { outline: none; }
+              /* Respect reduced motion */
+              @media (prefers-reduced-motion: reduce) {
+                ::view-transition-group(*),
+                ::view-transition-old(*),
+                ::view-transition-new(*) {
+                  animation: none !important;
+                }
+              }
+            `,
+            }}
+          />
+
+          <link rel="expect" href="#app" blocking="render" />
           <script type="module" src="/datastar.js" />
         </head>
         <body data-init={`@get('/_/events${topicsQuery}')`}>
