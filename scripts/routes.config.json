@@ -1,0 +1,16 @@
+{
+  "/": [["home"]],
+  "/auth/:action": [["auth", "action"]],
+  "/issues": [
+    ["issues", "list"],
+    ["issues", "create"]
+  ],
+  "/issues/:id": [["issues", "show"]],
+  "/issues/:id/comments": [["issues", "comments"]],
+  "/issues/new": [["issues", "new"]],
+  "/labels": [["labels"]],
+  "/login": [["auth", "login"]],
+  "/logout": [["auth", "logout"]],
+  "/profile": [["auth", "profile"]],
+  "/_/events": [["sse"]]
+}

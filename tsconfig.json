@@ -17,7 +17,8 @@
     "noImplicitAny": true,
     "noEmit": true,
     "allowJs": true,
-    "types": ["bun-types"],
+    "types": ["bun-types", "node"],
+    "resolveJsonModule": true,
     "paths": {
       "@/*": ["./src/*"]
     }

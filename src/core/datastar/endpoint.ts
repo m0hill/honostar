@@ -1,12 +1,13 @@
 import type { Handler } from 'hono'
 import { streamSSE } from 'hono/streaming'
-import { bus, type SSEPayload } from '@/core/datastar/bus'
+import type { SSEPayload } from '@/core/datastar/bus'
 import { SseFormatter } from '@/core/datastar/generator'
 
 export const createSseEndpoint = (): Handler => {
   return c =>
     streamSSE(c, async stream => {
       const clientId = c.var.clientId
+      const bus = c.var.bus
       if (clientId === 'anonymous') {
         console.error('[SSE] Anonymous client connection rejected.')
         await stream.close()

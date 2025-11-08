@@ -10,7 +10,15 @@ export type SSEPayload =
   | { event: 'execute-script'; script: string; options?: ExecuteScriptOptions }
   | { event: 'close' }
 
-type Sink = (msg: SSEPayload) => void
+export type Sink = (msg: SSEPayload) => void
+
+export interface PubSubBus {
+  subscribeClient(clientId: string, sink: Sink): () => void
+  subscribeTopic(topic: string, sink: Sink): () => void
+  toClient(clientId: string, msg: SSEPayload): void
+  toTopic(topic: string, msg: SSEPayload): void
+  toAll(msg: SSEPayload): void
+}
 
 class Channel {
   public subs = new Set<Sink>()
@@ -29,7 +37,7 @@ class Channel {
   }
 }
 
-export class Bus {
+export class MemoryBus implements PubSubBus {
   private clients = new Map<string, Channel>()
   private topics = new Map<string, Channel>()
 
@@ -93,4 +101,4 @@ export class Bus {
   }
 }
 
-export const bus = new Bus()
+export const memoryBus = new MemoryBus()

@@ -1,3 +1,5 @@
+/* oxlint-disable typescript-eslint/no-unsafe-type-assertion */
+
 type Primitive = string | number
 
 /**
@@ -30,6 +32,10 @@ interface RouteDefinitionGroup {
   [key: string]: RouteDefinition
 }
 
+type RuntimeRoutes = {
+  [key: string]: Route<string> | RuntimeRoutes
+}
+
 export type BuildRoutes<Defs extends RouteDefinitionGroup> = {
   [Key in keyof Defs]: Defs[Key] extends string
     ? Route<Extract<Defs[Key], string>>
@@ -44,8 +50,8 @@ export function route<const Defs extends RouteDefinitionGroup>(defs: Defs): Buil
   return buildRoutes(defs) as BuildRoutes<Defs>
 }
 
-function buildRoutes(defs: RouteDefinitionGroup): Record<string, any> {
-  const entries: Record<string, any> = {}
+function buildRoutes(defs: RouteDefinitionGroup): RuntimeRoutes {
+  const entries: RuntimeRoutes = {}
 
   for (const key of Object.keys(defs)) {
     const value = defs[key]

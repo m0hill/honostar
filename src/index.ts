@@ -15,7 +15,11 @@ import {
 } from '@/core'
 
 import '@/core/polyfills/compression.js'
+import { createManifestRouteLoader } from '@/core/router/manifest-route-loader'
 import { auth } from '@/middleware/auth'
+import { attachBus } from '@/middleware/bus'
+import { attachDb } from '@/middleware/db'
+import { routesManifest } from '@/routes.manifest'
 
 const app = new Hono<AppEnv>()
 
@@ -29,15 +33,15 @@ app.use('*', except('/_/events', compress()))
 app.use('*', csrf())
 
 app.use('*', renderer)
+app.use('*', initContext)
+app.use('*', attachBus)
 app.use('*', datastarResponder)
 app.use('*', fxResponder)
-
-app.use('*', initContext)
-
+app.use('*', attachDb)
 app.use('*', auth)
 
 app.get('/_/events', createSseEndpoint())
 
-await mountRoutes(app)
+await mountRoutes(app, createManifestRouteLoader(routesManifest))
 
 export default app

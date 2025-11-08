@@ -9,7 +9,7 @@
     "correctness": "error",
     "suspicious": "warn"
   },
-  "ignorePatterns": ["datastar.js"],
+  "ignorePatterns": ["datastar.js", "src/core/route.ts"],
   "env": {
     "browser": true,
     "node": true
