@@ -17,32 +17,6 @@ export class DatastarResponder {
     this.c = c
   }
 
-  public async navigate(
-    component: JSX.Element,
-    url: string,
-    opts?: {
-      title?: string
-      replace?: boolean
-      scroll?: 'preserve' | 'top'
-    }
-  ) {
-    const html = await this.c.var.renderFragmentToString(component)
-    const navScript = [
-      opts?.title ? `document.title=${JSON.stringify(opts.title)};` : '',
-      opts?.replace
-        ? `history.replaceState({}, '', ${JSON.stringify(url)})`
-        : `history.pushState({}, '', ${JSON.stringify(url)})`,
-      opts?.scroll === 'top' ? `scrollTo({ top: 0, left: 0, behavior: 'instant' });` : '',
-    ].join('')
-    return this.respond({
-      toClient: true,
-      effects: [
-        ['patch-elements', html, { selector: '#app', mode: 'outer' }],
-        ['execute-script', navScript],
-      ],
-    })
-  }
-
   private patchElements(topic: string, html: string, options: PatchElementsOptions) {
     this.c.var.bus.toTopic(topic, {
       event: 'datastar-patch-elements',
@@ -104,7 +78,8 @@ export class DatastarResponder {
   }
 
   update(topic: string, component: JSX.Element, signals?: Record<string, Jsonifiable>) {
-    return this.renderAndPatch(topic, component, { mode: 'outer' }, signals)
+    // Using default mode (outer morph) - no need to specify explicitly
+    return this.renderAndPatch(topic, component, {}, signals)
   }
 
   remove(topic: string, selector: string, signals?: Record<string, Jsonifiable>) {
@@ -147,18 +122,31 @@ export class DatastarResponder {
           const htmls: string[] = Array.isArray(payload)
             ? await Promise.all(payload.map(v => renderOne(v)))
             : [await renderOne(payload)]
-          this.patchElements(topic, htmls.join('\n'), opts ?? {})
+          // Only pass options if they were provided
+          if (opts) {
+            this.patchElements(topic, htmls.join('\n'), opts)
+          } else {
+            this.patchElements(topic, htmls.join('\n'), {})
+          }
           break
         }
         case 'patch-elements-seq': {
           const [, payload, opts] = fx
           const htmls = await Promise.all(payload.map(v => renderOne(v)))
-          this.patchElements(topic, htmls.join('\n'), opts ?? {})
+          if (opts) {
+            this.patchElements(topic, htmls.join('\n'), opts)
+          } else {
+            this.patchElements(topic, htmls.join('\n'), {})
+          }
           break
         }
         case 'patch-signals': {
           const [, payload, opts] = fx
-          this.patchSignals(topic, payload, opts ?? {})
+          if (opts) {
+            this.patchSignals(topic, payload, opts)
+          } else {
+            this.patchSignals(topic, payload)
+          }
           break
         }
         case 'execute-script': {
@@ -209,7 +197,7 @@ export class DatastarResponder {
             this.c.var.bus.toClient(clientId, {
               event: 'datastar-patch-elements',
               html: htmls.join('\n'),
-              options: opts ?? {},
+              options: opts || {},
             })
             break
           }
@@ -218,7 +206,7 @@ export class DatastarResponder {
             this.c.var.bus.toClient(clientId, {
               event: 'datastar-patch-signals',
               signals: JSON.stringify(payload),
-              options: opts ?? {},
+              options: opts || {},
             })
             break
           }

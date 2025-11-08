@@ -84,10 +84,34 @@ Requirements for any modal:
 
 ## 6. SSE Patch Discipline
 
-- Use `['patch-elements', component, { selector: '#target-id' }]` unless you truly need `append`/`prepend`.
-- Each patch root must have an `id`. If you rely on `selector: '#foo'`, make sure the rendered HTML includes `id="foo"`.
-- Avoid `mode: 'inner'/'replace'` unless there’s a documented reason (e.g., infinite scroll append). Removing `mode` defaults to `outer`.
-- When updating lists, send the entire list markup so clients can recover after disconnects.
+**Default Behavior (Recommended)**
+- `mode: 'outer'` is the **default** for `patch-elements`. Never specify it explicitly—just omit the `mode` option.
+- Use fat patches: `['patch-elements', component]` with no options when possible. Datastar will morph by matching top-level element IDs.
+
+**When to Use Options**
+- `{ selector: '#target-id' }` - Required for `append`/`prepend`/`before`/`after`/`remove` modes. Not needed for default `outer` morph.
+- `mode: 'append'/'prepend'` - Only for true incremental updates (infinite scroll, chat messages). **Warning**: These are fragile to SSE interruptions. Prefer full region re-renders.
+- `mode: 'inner'/'replace'` - Rarely needed. Document why if used.
+
+**Fat Patches Principle**
+- When updating lists, send the **entire list markup** so clients can self-heal after missed events or reconnects.
+- Each patch root must have an `id`. If you use `selector: '#foo'`, ensure the rendered HTML includes `id="foo"`.
+
+**Example (Correct)**
+```typescript
+// Good: Default outer morph, no explicit mode
+c.var.datastar.broadcast(topic, [
+  ['patch-elements', <IssuesList issues={allIssues} />]
+])
+
+// Good: Selector required for append mode
+c.var.datastar.reply([
+  ['patch-elements', <Modal />, { selector: '#ds-overlays', mode: 'append' }]
+])
+
+// Bad: Redundant explicit outer mode
+['patch-elements', component, { mode: 'outer' }] // ❌ Remove mode
+```
 
 ---
 
@@ -99,7 +123,24 @@ Requirements for any modal:
 
 ---
 
-## 8. Workflow Checklist
+## 8. SSE Events & SDK Methods
+
+**Core Datastar SSE Events** (sent over the wire):
+- `datastar-patch-elements` - Morph/patch HTML into the DOM
+- `datastar-patch-signals` - Update reactive signals
+
+**SDK Helper Methods** (official Datastar SDK convenience wrappers):
+- `patchElements()` - Sends `datastar-patch-elements` event
+- `patchSignals()` - Sends `datastar-patch-signals` event
+- `executeScript()` - Convenience wrapper that uses `patch-elements` with `mode: append, selector: body` to inject a `<script>` tag that auto-removes after execution. Use sparingly; prefer declarative HTML.
+- `removeElements()` - Convenience wrapper for `patchElements` with `mode: remove`
+- `removeSignals()` - Convenience wrapper for `patchSignals` with null values
+
+**Note:** Bonsai uses a custom `SseFormatter` class that implements the same API as the official Datastar SDK, but adapted for Hono's streaming infrastructure.
+
+---
+
+## 10. Workflow Checklist
 
 Before opening a PR, confirm:
 
@@ -109,14 +150,16 @@ Before opening a PR, confirm:
 4. **Indicators before init**; no request starts without its indicator.
 5. **`data-show`** elements include `style="display:none"`.
 6. **Forms/file inputs** follow the single-handling rule.
-7. **Topics & SSE**: shared updates broadcast via defined topics; patch targets have IDs and default `outer` morph.
-8. **Modals** conform to the pattern (Escape/outside close, focus trap, teardown).
-9. **`openWhenHidden`** only where truly needed.
-10. **Lint + typecheck** (`bun run lint`, `bun run typecheck`) succeed locally; include results in your summary if requested.
+7. **Topics & SSE**: shared updates broadcast via defined topics; patch targets have IDs.
+8. **No explicit `mode: 'outer'`** - it's the default, omit it.
+9. **Fat patches** - prefer full region re-renders over incremental append/prepend.
+10. **Modals** conform to the pattern (Escape/outside close, focus trap, teardown).
+11. **`openWhenHidden`** only where truly needed.
+12. **Lint + typecheck** (`bun run lint`, `bun run typecheck`) succeed locally; include results in your summary if requested.
 
 ---
 
-## 9. Quick Start for New Features
+## 11. Quick Start for New Features
 
 1. **Model shared vs tab-specific** state to determine reply/broadcast.
 2. **Add/extend topic** in `src/lib/topics.ts`.

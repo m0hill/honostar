@@ -8,7 +8,7 @@ export default function IssueModal({ labels }: { labels: Label[] }) {
       data-modal
       data-modal-id="create-issue"
       data-signals={`{
-        "createIssueModal": { "open": true }
+        "createIssueModal": { "open": true, "error": "" }
       }`}
       data-signals__ifmissing={`{
         "issue": {
@@ -57,9 +57,19 @@ export default function IssueModal({ labels }: { labels: Label[] }) {
 
           <form
             class="space-y-4"
-            data-on:submit__prevent="@post('/issues')"
+            data-on:submit__prevent="$createIssueModal.error = ''; @post('/issues')"
             data-indicator="creating"
           >
+            {/* Error message display */}
+            <div
+              data-show="$createIssueModal.error"
+              style="display:none"
+              class="p-3 bg-red-900/50 border border-red-700 rounded-md text-red-200 text-sm"
+              role="alert"
+            >
+              <span data-text="$createIssueModal.error"></span>
+            </div>
+
             <label class="block">
               <span class="text-sm text-gray-300">Title</span>
               <input

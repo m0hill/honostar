@@ -23,10 +23,20 @@ function CommentForm({ issueId, user }: { issueId: number; user: User | null }) 
   return (
     <form
       class="mt-6"
-      data-on:submit__prevent={`@post('${routes.issues.comments.href({ id: String(issueId) })}');
+      data-on:submit__prevent={`$commentError = ''; @post('${routes.issues.comments.href({ id: String(issueId) })}');
          $comment = ''`}
-      data-signals={`{ "comment": "" }`}
+      data-signals={`{ "comment": "", "commentError": "" }`}
     >
+      {/* Error message display */}
+      <div
+        data-show="$commentError"
+        style="display:none"
+        class="mb-3 p-3 bg-red-900/50 border border-red-700 rounded-md text-red-200 text-sm"
+        role="alert"
+      >
+        <span data-text="$commentError"></span>
+      </div>
+
       <textarea
         data-bind="comment"
         class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md placeholder-gray-400 focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"

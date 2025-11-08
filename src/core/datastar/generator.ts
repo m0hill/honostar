@@ -143,6 +143,16 @@ export class SseFormatter {
     return this.format('datastar-patch-signals', dataLines, sendOptions).join('')
   }
 
+  /**
+   * Execute a script in the client browser by patching a script element.
+   *
+   * NOTE: This is a helper method from the official Datastar SDK. It uses
+   * patch-elements to inject a script tag with mode=append, selector=body.
+   * The script auto-removes itself after execution by default.
+   *
+   * While the core Datastar SSE events are only patch-elements and patch-signals,
+   * executeScript is a convenience method provided by all official SDKs.
+   */
   public executeScript(
     script: string,
     options?: {

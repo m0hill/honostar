@@ -21,7 +21,7 @@ export const POST = createHandler({
 
     if (!validation.success) {
       const error = validation.error.issues[0]?.message || 'Invalid comment'
-      return c.var.datastar.reply([['execute-script', `alert('${error}')`]], {
+      return c.var.datastar.reply([['patch-signals', { commentError: error }]], {
         status: 400,
       })
     }
@@ -46,6 +46,8 @@ export const POST = createHandler({
           <CommentsSection comments={updatedComments} />,
           { selector: '#comments-section' },
         ],
+        // Clear any error on success
+        ['patch-signals', { commentError: '' }],
       ],
       { status: 201 }
     )

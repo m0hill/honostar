@@ -55,6 +55,10 @@ export interface PatchSignalsOptions extends DatastarEventOptions {
   [DatastarDatalineOnlyIfMissing]?: boolean
 }
 
+/**
+ * Options for executeScript - from official Datastar SDK.
+ * Implemented using patch-elements with a script tag injection.
+ */
 export interface ExecuteScriptOptions extends DatastarEventOptions {
   autoRemove?: boolean
   attributes?: string[] | Record<string, string>

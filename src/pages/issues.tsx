@@ -33,9 +33,10 @@ export const POST = createHandler({
     const user = c.var.user!
 
     if (!title) {
-      return c.var.datastar.reply([['execute-script', "alert('Title is required')"]], {
-        status: 400,
-      })
+      return c.var.datastar.reply(
+        [['patch-signals', { createIssueModal: { error: 'Title is required' } }]],
+        { status: 400 }
+      )
     }
 
     if (newLabel.length > 0) {
