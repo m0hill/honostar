@@ -100,5 +100,3 @@ export class MemoryBus implements PubSubBus {
     for (const ch of this.topics.values()) ch.publish(msg)
   }
 }
-
-export const memoryBus = new MemoryBus()

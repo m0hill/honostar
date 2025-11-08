@@ -86,7 +86,7 @@ async function buildEntries(pagesDir: string, manifestPath: string): Promise<Man
     entries.push({ routePath, importPath })
   }
 
-  return entries.sort((a, b) => {
+  return entries.toSorted((a, b) => {
     const aDynamic = countDynamicSegments(a.routePath)
     const bDynamic = countDynamicSegments(b.routePath)
     if (aDynamic !== bDynamic) return aDynamic - bDynamic
@@ -163,7 +163,7 @@ function buildRoutesFile(entries: ManifestEntry[], routesConfig: RoutesConfig): 
     paths.add(extraPath)
   }
 
-  for (const routePath of Array.from(paths).sort()) {
+  for (const routePath of Array.from(paths).toSorted()) {
     const configured = routesConfig[routePath]
     const propertyPaths =
       configured && configured.length > 0 ? configured : [fallbackPropertyPath(routePath)]
@@ -190,7 +190,7 @@ function serializeTree(node: RouteValue, indentLevel: number): string {
   if (typeof node === 'string') {
     return `'${node}'`
   }
-  const entries = Object.entries(node).sort(([a], [b]) => a.localeCompare(b))
+  const entries = Object.entries(node).toSorted(([a], [b]) => a.localeCompare(b))
   const inner = entries
     .map(([key, value]) => `${indent}  ${key}: ${serializeTree(value, indentLevel + 1)},`)
     .join('\n')

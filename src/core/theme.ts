@@ -1,6 +1,3 @@
-import type { MiddlewareHandler } from 'hono'
-import type { AppEnv } from '@/core/context'
-
 export type ThemeValue = 'light' | 'dark'
 export type ThemePreference = ThemeValue | 'system'
 
@@ -119,15 +116,5 @@ export function resolveThemeProvider(
     config,
     initialClass,
     bootstrapScript: createThemeBootstrapScript(config),
-  }
-}
-
-export function themeProvider(options?: ThemeOptions): MiddlewareHandler<AppEnv> {
-  const normalized = options ? { ...options } : undefined
-  return async (c, next) => {
-    if (normalized) {
-      c.set('theme', normalized)
-    }
-    await next()
   }
 }
