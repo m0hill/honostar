@@ -1,80 +1,81 @@
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+
 export default function LoginPage() {
   return (
-    <div class="flex items-center justify-center min-h-screen bg-gray-900 text-white">
-      <div
-        class="w-full max-w-md p-8 space-y-6 bg-gray-800 rounded-lg shadow-lg"
+    <div class="flex items-center justify-center min-h-screen bg-background text-foreground px-4">
+      <Card
+        class="w-full max-w-md"
         data-signals={`{
           "mode": "login",
           "error": "",
           "form": { "username": "", "password": "" }
         }`}
       >
-        <div class="text-center">
-          <h1
-            class="text-3xl font-bold text-cyan-400"
+        <CardHeader class="text-center">
+          <CardTitle
+            class="text-3xl"
             data-text="$mode === 'login' ? 'Welcome Back' : 'Create Account'"
-          ></h1>
-          <p class="text-gray-400">Enter your credentials to continue</p>
-        </div>
+          ></CardTitle>
+          <CardDescription>Enter your credentials to continue</CardDescription>
+        </CardHeader>
 
-        <div
-          data-show="$error"
-          style="display:none"
-          class="p-3 text-center bg-red-900/50 border border-red-700 text-red-300 rounded-md"
-          data-text="$error"
-        ></div>
+        <CardContent class="space-y-6">
+          <div
+            data-show="$error"
+            style="display:none"
+            class="p-3 text-center bg-destructive/10 border border-destructive text-destructive rounded-md text-sm"
+            role="alert"
+            data-text="$error"
+          ></div>
 
-        <form
-          class="space-y-6"
-          data-on:submit__prevent="@post($mode === 'login' ? '/auth/login' : '/auth/signup')"
-        >
-          <div>
-            <label for="username" class="block text-sm font-medium text-gray-300">
-              Username
-            </label>
-            <input
-              id="username"
-              type="text"
-              class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
-              placeholder="your_username"
-              data-bind="form.username"
-              required
-            />
-          </div>
-
-          <div>
-            <label for="password" class="block text-sm font-medium text-gray-300">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              class="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
-              placeholder="••••••••"
-              data-bind="form.password"
-              required
-            />
-          </div>
-
-          <div>
-            <button
-              type="submit"
-              class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              data-text="$mode === 'login' ? 'Login' : 'Sign Up'"
-            ></button>
-          </div>
-        </form>
-
-        <div class="text-center text-sm text-gray-400">
-          <span data-text="$mode === 'login' ? 'Don\'t have an account?' : 'Already have an account?'"></span>
-          <button
-            class="font-medium text-cyan-400 hover:text-cyan-300"
-            data-on:click="$mode = ($mode === 'login' ? 'signup' : 'login'); $error = ''"
+          <form
+            class="space-y-4"
+            data-on:submit__prevent="@post($mode === 'login' ? '/auth/login' : '/auth/signup')"
           >
-            <span data-text="$mode === 'login' ? ' Sign Up' : ' Login'"></span>
-          </button>
-        </div>
-      </div>
+            <div class="space-y-2">
+              <Label for="username">Username</Label>
+              <Input
+                id="username"
+                type="text"
+                placeholder="your_username"
+                data-bind="form.username"
+                required
+              />
+            </div>
+
+            <div class="space-y-2">
+              <Label for="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                data-bind="form.password"
+                required
+              />
+            </div>
+
+            <Button
+              type="submit"
+              class="w-full"
+              data-text="$mode === 'login' ? 'Login' : 'Sign Up'"
+            ></Button>
+          </form>
+
+          <div class="text-center text-sm text-muted-foreground">
+            <span data-text="$mode === 'login' ? 'Don\'t have an account?' : 'Already have an account?'"></span>
+            <Button
+              variant="link"
+              class="p-0 h-auto font-medium"
+              data-on:click="$mode = ($mode === 'login' ? 'signup' : 'login'); $error = ''"
+            >
+              <span data-text="$mode === 'login' ? ' Sign Up' : ' Login'"></span>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

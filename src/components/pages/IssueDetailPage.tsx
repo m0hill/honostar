@@ -1,3 +1,7 @@
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Textarea } from '@/components/ui/textarea'
 import { routes } from '@/routes'
 import type { CommentWithAuthor, IssueWithDetails, User } from '@/types'
 
@@ -11,12 +15,14 @@ const formatDate = (date: Date) =>
 function CommentForm({ issueId, user }: { issueId: number; user: User | null }) {
   if (!user) {
     return (
-      <div class="mt-6 p-4 bg-gray-700/50 rounded-lg text-center">
-        <a href={routes.auth.login.href()} class="text-cyan-400 hover:underline">
-          Log in
-        </a>
-        <span class="text-gray-400"> to post a comment.</span>
-      </div>
+      <Card class="mt-6">
+        <CardContent class="text-center py-6">
+          <Button asChild variant="link" class="p-0 h-auto">
+            <a href={routes.auth.login.href()}>Log in</a>
+          </Button>
+          <span class="text-muted-foreground"> to post a comment.</span>
+        </CardContent>
+      </Card>
     )
   }
 
@@ -31,26 +37,15 @@ function CommentForm({ issueId, user }: { issueId: number; user: User | null }) 
       <div
         data-show="$commentError"
         style="display:none"
-        class="mb-3 p-3 bg-red-900/50 border border-red-700 rounded-md text-red-200 text-sm"
+        class="mb-3 p-3 bg-destructive/10 border border-destructive rounded-md text-destructive text-sm"
         role="alert"
       >
         <span data-text="$commentError"></span>
       </div>
 
-      <textarea
-        data-bind="comment"
-        class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md placeholder-gray-400 focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
-        placeholder="Leave a comment..."
-        rows={4}
-        required
-      ></textarea>
+      <Textarea data-bind="comment" placeholder="Leave a comment..." rows={4} required />
       <div class="flex justify-end mt-2">
-        <button
-          type="submit"
-          class="py-2 px-6 bg-green-600 hover:bg-green-700 rounded-md font-semibold transition-colors"
-        >
-          Comment
-        </button>
+        <Button type="submit">Comment</Button>
       </div>
     </form>
   )
@@ -60,12 +55,14 @@ export function CommentsSection({ comments }: { comments: CommentWithAuthor[] })
   return (
     <div id="comments-section" class="mt-8 space-y-4">
       {comments.map(comment => (
-        <div key={comment.id} class="bg-gray-700/50 rounded-lg p-4">
-          <p class="text-gray-300 whitespace-pre-wrap">{comment.body}</p>
-          <p class="text-xs text-gray-400 mt-2 font-semibold">
-            {comment.author.username} commented on {formatDate(comment.createdAt)}
-          </p>
-        </div>
+        <Card key={comment.id} class="gap-0">
+          <CardContent class="pt-6">
+            <p class="whitespace-pre-wrap">{comment.body}</p>
+            <p class="text-xs text-muted-foreground mt-2 font-semibold">
+              {comment.author.username} commented on {formatDate(comment.createdAt)}
+            </p>
+          </CardContent>
+        </Card>
       ))}
     </div>
   )
@@ -79,27 +76,25 @@ export default function IssueDetailPage({
   user: User | null
 }) {
   return (
-    <div class="min-h-screen bg-gray-900 text-white flex flex-col items-center pt-10">
-      <div class="max-w-4xl w-full p-8">
+    <div class="min-h-screen bg-background text-foreground flex flex-col items-center pt-10 px-4">
+      <div class="max-w-4xl w-full">
         <div class="mb-6">
-          <a href={routes.home.href()} class="text-cyan-400 hover:text-cyan-300 transition-colors">
-            &larr; Back to Issues
-          </a>
+          <Button asChild variant="link" class="p-0 h-auto">
+            <a href={routes.home.href()}>&larr; Back to Issues</a>
+          </Button>
         </div>
 
-        <div class="bg-gray-800 rounded-lg shadow-lg">
-          <div class="p-6 border-b border-gray-700">
-            <h1 class="text-3xl font-bold text-white">{issue.title}</h1>
-            <p class="mt-2 text-sm text-gray-400">
+        <Card>
+          <CardHeader class="border-b">
+            <CardTitle class="text-3xl">{issue.title}</CardTitle>
+            <CardDescription>
               Opened by <span class="font-semibold">{issue.author.username}</span> on{' '}
               {formatDate(issue.createdAt)}
-            </p>
-          </div>
+            </CardDescription>
+          </CardHeader>
 
-          <div class="p-6">
-            {issue.description && (
-              <p class="text-gray-300 whitespace-pre-wrap">{issue.description}</p>
-            )}
+          <CardContent>
+            {issue.description && <p class="whitespace-pre-wrap">{issue.description}</p>}
 
             {issue.imageUrl && (
               <div class="mt-6">
@@ -108,26 +103,23 @@ export default function IssueDetailPage({
             )}
 
             <div class="mt-6">
-              <h3 class="text-lg font-semibold text-gray-200 mb-2">Labels</h3>
+              <h3 class="text-lg font-semibold mb-2">Labels</h3>
               <div class="flex flex-wrap gap-2">
                 {issue.labels.length > 0 ? (
                   issue.labels.map(label => (
-                    <span
-                      key={label.id}
-                      class="px-2 py-1 text-sm font-medium bg-gray-700 text-gray-300 rounded-full"
-                    >
+                    <Badge key={label.id} variant="secondary">
                       {label.name}
-                    </span>
+                    </Badge>
                   ))
                 ) : (
-                  <p class="text-sm text-gray-400">No labels attached.</p>
+                  <p class="text-sm text-muted-foreground">No labels attached.</p>
                 )}
               </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
-        <h2 class="mt-8 text-xl font-bold text-gray-100">Comments</h2>
+        <h2 class="mt-8 text-xl font-bold">Comments</h2>
         <CommentsSection comments={issue.comments} />
         <CommentForm issueId={issue.id} user={user} />
       </div>
