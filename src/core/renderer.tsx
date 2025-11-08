@@ -3,6 +3,7 @@ import { jsxRenderer } from 'hono/jsx-renderer'
 import type { BonsaiConfig } from '@/core/config'
 import { createConfig } from '@/core/config'
 import { factory } from '@/core/middleware'
+import { signTopics } from '@/core/security/topics'
 import { resolveThemeProvider } from '@/core/theme'
 
 function stripDoctype(html: string): string {
@@ -43,6 +44,10 @@ export const renderer = (userConfig?: Partial<BonsaiConfig>) => {
 
     const theme = resolveThemeProvider(c.var.theme, cookiePreference)
     const scriptNonce = generateNonce()
+
+    // Sign and set topic allowlist cookie before rendering
+    const topics = c.var.sseTopics ?? []
+    await signTopics(c, topics, config)
     const base = jsxRenderer(({ children }) => {
       const topics = c.var.sseTopics ?? []
       const topicsQuery = topics.length > 0 ? `?topics=${topics.join(',')}` : ''

@@ -1,5 +1,4 @@
-import assert from 'node:assert/strict'
-import { describe, test } from 'node:test'
+import { describe, expect, test } from 'bun:test'
 import { SseFormatter } from './generator'
 
 describe('SseFormatter', () => {
@@ -9,9 +8,9 @@ describe('SseFormatter', () => {
 
     const result = formatter.patchElements(html, {})
 
-    assert.ok(result.includes('event: datastar-patch-elements'))
-    assert.ok(result.includes('data:'))
-    assert.ok(result.includes(html))
+    expect(result).toContain('event: datastar-patch-elements')
+    expect(result).toContain('data:')
+    expect(result).toContain(html)
   })
 
   test('formats patch-elements with selector', () => {
@@ -21,9 +20,9 @@ describe('SseFormatter', () => {
 
     const result = formatter.patchElements(html, options)
 
-    assert.ok(result.includes('event: datastar-patch-elements'))
-    assert.ok(result.includes(html))
-    assert.ok(result.includes('selector'))
+    expect(result).toContain('event: datastar-patch-elements')
+    expect(result).toContain(html)
+    expect(result).toContain('selector')
   })
 
   test('formats patch-elements with mode', () => {
@@ -33,8 +32,8 @@ describe('SseFormatter', () => {
 
     const result = formatter.patchElements(html, options)
 
-    assert.ok(result.includes('event: datastar-patch-elements'))
-    assert.ok(result.includes('append'))
+    expect(result).toContain('event: datastar-patch-elements')
+    expect(result).toContain('append')
   })
 
   test('formats patch-signals event', () => {
@@ -43,12 +42,12 @@ describe('SseFormatter', () => {
 
     const result = formatter.patchSignals(signals, {})
 
-    assert.ok(result.includes('event: datastar-patch-signals'))
-    assert.ok(result.includes('data:'))
-    assert.ok(result.includes('count'))
-    assert.ok(result.includes('42'))
-    assert.ok(result.includes('message'))
-    assert.ok(result.includes('hello'))
+    expect(result).toContain('event: datastar-patch-signals')
+    expect(result).toContain('data:')
+    expect(result).toContain('count')
+    expect(result).toContain('42')
+    expect(result).toContain('message')
+    expect(result).toContain('hello')
   })
 
   test('formats execute-script event', () => {
@@ -57,9 +56,9 @@ describe('SseFormatter', () => {
 
     const result = formatter.executeScript(script)
 
-    assert.ok(result.includes('event: datastar-patch-elements'))
-    assert.ok(result.includes('data:'))
-    assert.ok(result.includes(script))
+    expect(result).toContain('event: datastar-patch-elements')
+    expect(result).toContain('data:')
+    expect(result).toContain(script)
   })
 
   test('formats execute-script with autoRemove option', () => {
@@ -69,8 +68,8 @@ describe('SseFormatter', () => {
 
     const result = formatter.executeScript(script, options)
 
-    assert.ok(result.includes('event: datastar-patch-elements'))
-    assert.ok(result.includes('data-effect'))
+    expect(result).toContain('event: datastar-patch-elements')
+    expect(result).toContain('data-effect')
   })
 
   test('formats remove-elements event', () => {
@@ -79,9 +78,9 @@ describe('SseFormatter', () => {
 
     const result = formatter.removeElements(selector)
 
-    assert.ok(result.includes('event: datastar-patch-elements'))
-    assert.ok(result.includes('remove'))
-    assert.ok(result.includes(selector))
+    expect(result).toContain('event: datastar-patch-elements')
+    expect(result).toContain('remove')
+    expect(result).toContain(selector)
   })
 
   test('formats remove-signals event', () => {
@@ -90,9 +89,9 @@ describe('SseFormatter', () => {
 
     const result = formatter.removeSignals(keys)
 
-    assert.ok(result.includes('event: datastar-patch-signals'))
-    assert.ok(result.includes('key1'))
-    assert.ok(result.includes('key2'))
+    expect(result).toContain('event: datastar-patch-signals')
+    expect(result).toContain('key1')
+    expect(result).toContain('key2')
   })
 
   test('properly escapes newlines in data', () => {
@@ -105,13 +104,13 @@ describe('SseFormatter', () => {
     const lines = result.split('\n')
     const dataLines = lines.filter(line => line.startsWith('data: '))
 
-    assert.ok(dataLines.length > 0, 'Should have multiple data lines for multi-line content')
+    expect(dataLines.length).toBeGreaterThan(0)
   })
 
   test('rejects empty HTML without remove mode', () => {
     const formatter = new SseFormatter()
 
-    assert.throws(() => formatter.patchElements('', {}), /elements is required/)
+    expect(() => formatter.patchElements('', {})).toThrow(/elements is required/)
   })
 
   test('handles complex nested signals', () => {
@@ -129,10 +128,10 @@ describe('SseFormatter', () => {
 
     const result = formatter.patchSignals(signals, {})
 
-    assert.ok(result.includes('event: datastar-patch-signals'))
-    assert.ok(result.includes('Alice'))
-    assert.ok(result.includes('dark'))
-    assert.ok(result.includes('123'))
+    expect(result).toContain('event: datastar-patch-signals')
+    expect(result).toContain('Alice')
+    expect(result).toContain('dark')
+    expect(result).toContain('123')
   })
 
   test('handles special characters in HTML', () => {
@@ -141,15 +140,14 @@ describe('SseFormatter', () => {
 
     const result = formatter.patchElements(html, {})
 
-    assert.ok(result.includes('event: datastar-patch-elements'))
-    assert.ok(result.includes(html))
+    expect(result).toContain('event: datastar-patch-elements')
+    expect(result).toContain(html)
   })
 
   test('validates element patch mode', () => {
     const formatter = new SseFormatter()
 
-    assert.throws(
-      () => formatter.patchElements('<div></div>', { mode: 'invalid' as any }),
+    expect(() => formatter.patchElements('<div></div>', { mode: 'invalid' as any })).toThrow(
       /Invalid ElementPatchMode/
     )
   })
@@ -157,13 +155,13 @@ describe('SseFormatter', () => {
   test('requires elements parameter for patch', () => {
     const formatter = new SseFormatter()
 
-    assert.throws(() => formatter.patchElements('', {}), /elements is required/)
+    expect(() => formatter.patchElements('', {})).toThrow(/elements is required/)
   })
 
   test('requires signals parameter', () => {
     const formatter = new SseFormatter()
 
-    assert.throws(() => formatter.patchSignals('', {}), /signals is required/)
+    expect(() => formatter.patchSignals('', {})).toThrow(/signals is required/)
   })
 
   test('remove mode with selector allows empty elements', () => {
@@ -171,8 +169,8 @@ describe('SseFormatter', () => {
 
     const result = formatter.removeElements('#target')
 
-    assert.ok(result.includes('event: datastar-patch-elements'))
-    assert.ok(result.includes('remove'))
-    assert.ok(result.includes('#target'))
+    expect(result).toContain('event: datastar-patch-elements')
+    expect(result).toContain('remove')
+    expect(result).toContain('#target')
   })
 })

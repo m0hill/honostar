@@ -1,7 +1,6 @@
-import assert from 'node:assert/strict'
+import { describe, expect, test } from 'bun:test'
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { describe, test } from 'node:test'
 import { generateRouteManifest } from './generator'
 
 describe('generateRouteManifest', () => {
@@ -34,13 +33,13 @@ describe('generateRouteManifest', () => {
     await generateRouteManifest({ pagesDir, manifestPath, routesPath })
 
     const manifest = await readFile(manifestPath, 'utf-8')
-    assert.ok(manifest.includes('routePath: "/"'))
-    assert.ok(manifest.includes('routePath: "/about"'))
-    assert.ok(manifest.includes('load: () => import'))
+    expect(manifest).toContain('routePath: "/"')
+    expect(manifest).toContain('routePath: "/about"')
+    expect(manifest).toContain('load: () => import')
 
     const routes = await readFile(routesPath, 'utf-8')
-    assert.ok(routes.includes("import { route } from '@/core/route'"))
-    assert.ok(routes.includes('export const routes = route('))
+    expect(routes).toContain("import { route } from '@/core/route'")
+    expect(routes).toContain('export const routes = route(')
 
     await teardown()
   })
@@ -55,7 +54,7 @@ describe('generateRouteManifest', () => {
     await generateRouteManifest({ pagesDir, manifestPath, routesPath })
 
     const manifest = await readFile(manifestPath, 'utf-8')
-    assert.ok(manifest.includes('routePath: "/posts/:id"'))
+    expect(manifest).toContain('routePath: "/posts/:id"')
 
     await teardown()
   })
@@ -71,8 +70,8 @@ describe('generateRouteManifest', () => {
     await generateRouteManifest({ pagesDir, manifestPath, routesPath })
 
     const manifest = await readFile(manifestPath, 'utf-8')
-    assert.ok(manifest.includes('routePath: "/blog/posts"'))
-    assert.ok(manifest.includes('routePath: "/blog/posts/:slug"'))
+    expect(manifest).toContain('routePath: "/blog/posts"')
+    expect(manifest).toContain('routePath: "/blog/posts/:slug"')
 
     await teardown()
   })
@@ -87,8 +86,8 @@ describe('generateRouteManifest', () => {
     await generateRouteManifest({ pagesDir, manifestPath, routesPath })
 
     const manifest = await readFile(manifestPath, 'utf-8')
-    assert.ok(!manifest.includes('_component'))
-    assert.ok(manifest.includes('routePath: "/page"'))
+    expect(manifest).not.toContain('_component')
+    expect(manifest).toContain('routePath: "/page"')
 
     await teardown()
   })
@@ -106,7 +105,7 @@ describe('generateRouteManifest', () => {
     const manifest = await readFile(manifestPath, 'utf-8')
     const newIndex = manifest.indexOf('routePath: "/posts/new"')
     const idIndex = manifest.indexOf('routePath: "/posts/:id"')
-    assert.ok(newIndex < idIndex, 'Static route /posts/new should come before dynamic /posts/:id')
+    expect(newIndex).toBeLessThan(idIndex)
 
     await teardown()
   })
@@ -125,8 +124,8 @@ describe('generateRouteManifest', () => {
     await generateRouteManifest({ pagesDir, manifestPath, routesPath, routesConfig })
 
     const routes = await readFile(routesPath, 'utf-8')
-    assert.ok(routes.includes('issues:'))
-    assert.ok(routes.includes('detail:'))
+    expect(routes).toContain('issues:')
+    expect(routes).toContain('detail:')
 
     await teardown()
   })
@@ -141,7 +140,7 @@ describe('generateRouteManifest', () => {
     await generateRouteManifest({ pagesDir, manifestPath, routesPath })
 
     const manifest = await readFile(manifestPath, 'utf-8')
-    assert.ok(manifest.includes('routePath: "/docs/*"'))
+    expect(manifest).toContain('routePath: "/docs/*"')
 
     await teardown()
   })
@@ -163,7 +162,7 @@ describe('generateRouteManifest', () => {
     })
 
     const manifest = await readFile(deepManifestPath, 'utf-8')
-    assert.ok(manifest.includes('routePath: "/"'))
+    expect(manifest).toContain('routePath: "/"')
 
     await teardown()
   })

@@ -1,15 +1,18 @@
 import type { Handler } from 'hono'
 import { streamSSE } from 'hono/streaming'
 import type { BonsaiConfig } from '@/core/config'
+import { createConfig } from '@/core/config'
 import type { SSEPayload } from '@/core/datastar/bus'
 import { SseFormatter } from '@/core/datastar/generator'
+import { verifyTopics } from '@/core/security/topics'
 
 /**
  * Creates an SSE endpoint handler with optional configuration
- * @param cfg - Optional SSE configuration (defaults to 25s ping interval)
+ * @param userConfig - Optional partial BonsaiConfig (merged with defaults)
  */
-export const createSseEndpoint = (cfg?: Pick<BonsaiConfig, 'sse'>): Handler => {
-  const pingMs = cfg?.sse?.pingIntervalMs ?? 25000
+export const createSseEndpoint = (userConfig?: Partial<BonsaiConfig>): Handler => {
+  const config = createConfig(userConfig)
+  const pingMs = config.sse?.pingIntervalMs ?? 25000
   return c =>
     streamSSE(c, async stream => {
       const clientId = c.var.clientId
@@ -47,12 +50,29 @@ export const createSseEndpoint = (cfg?: Pick<BonsaiConfig, 'sse'>): Handler => {
         }
       }
 
+      // Always subscribe to client-specific messages
       unsubscribes.push(bus.subscribeClient(clientId, handleMessage))
 
+      // Verify and enforce topic allowlist
       const topicsParam = c.req.query('topics')
-      const requestTopics = topicsParam ? topicsParam.split(',') : []
-      for (const topic of requestTopics) {
-        unsubscribes.push(bus.subscribeTopic(topic, handleMessage))
+      const requestedTopics = topicsParam ? topicsParam.split(',').filter(t => t.trim()) : []
+
+      if (requestedTopics.length > 0) {
+        const allowedTopics = await verifyTopics(c, requestedTopics, config)
+
+        if (allowedTopics) {
+          // Subscribe only to allowed topics
+          for (const topic of allowedTopics) {
+            unsubscribes.push(bus.subscribeTopic(topic, handleMessage))
+          }
+        } else {
+          // Verification failed - log warning and skip topic subscriptions
+          console.warn(
+            `[SSE] Topic verification failed for client ${clientId}. ` +
+              'Only client-specific messages will be delivered. ' +
+              'Requested topics were not authorized.'
+          )
+        }
       }
 
       stream.onAbort(() => {

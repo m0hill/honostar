@@ -60,6 +60,34 @@ export type BonsaiConfig = {
        */
       exceptPaths?: (string | RegExp)[]
     }
+    /**
+     * SSE topic allowlist enforcement
+     * Prevents clients from subscribing to arbitrary topics by signing allowed topics
+     */
+    topics?: {
+      /**
+       * Cookie name for signed topic allowlist
+       * (default: 'bonsai_topics')
+       */
+      cookieName?: string
+      /**
+       * Token validity period in seconds
+       * (default: 300 - 5 minutes)
+       */
+      maxAgeSec?: number
+      /**
+       * Environment variable name for signing secret
+       * Required for production deployments
+       * (default: 'BONSAI_SIGNING_SECRET')
+       */
+      secretEnv?: string
+      /**
+       * Bind topic tokens to client/tab ID
+       * Prevents token reuse across tabs
+       * (default: true)
+       */
+      bindToClientId?: boolean
+    }
   }
   /**
    * Server-Sent Events configuration
@@ -93,6 +121,12 @@ export const DEFAULT_CONFIG: BonsaiConfig = {
       headerName: 'X-CSRF-Token',
       exceptPaths: ['/_/events'], // Will be overridden by createConfig to match endpoints.sse
     },
+    topics: {
+      cookieName: 'bonsai_topics',
+      maxAgeSec: 300,
+      secretEnv: 'BONSAI_SIGNING_SECRET',
+      bindToClientId: true,
+    },
   },
   sse: {
     pingIntervalMs: 25000,
@@ -116,6 +150,10 @@ export function createConfig(user?: Partial<BonsaiConfig>): BonsaiConfig {
       csrf: {
         ...DEFAULT_CONFIG.security.csrf,
         ...user?.security?.csrf,
+      },
+      topics: {
+        ...DEFAULT_CONFIG.security.topics,
+        ...user?.security?.topics,
       },
     },
     sse: { ...DEFAULT_CONFIG.sse, ...user?.sse },

@@ -1,6 +1,5 @@
-import * as assert from 'node:assert/strict'
+import { describe, expect, test } from 'bun:test'
 import { EventEmitter } from 'node:events'
-import { describe, it } from 'node:test'
 import type { SSEPayload } from '@/core/datastar/bus'
 import { RedisBus, type RedisClient } from '@/core/datastar/redis-bus'
 import type { PatchElementsOptions } from '@/core/datastar/types'
@@ -80,8 +79,8 @@ function createRedisBus() {
   return { bus, publisher, subscriber }
 }
 
-void describe('RedisBus', () => {
-  void it('delivers client messages via Redis publish/subscribe', async () => {
+describe('RedisBus', () => {
+  test('delivers client messages via Redis publish/subscribe', async () => {
     const { bus } = createRedisBus()
     const received: SSEPayload[] = []
     bus.subscribeClient('a', payload => {
@@ -91,13 +90,16 @@ void describe('RedisBus', () => {
     bus.toClient('a', patch('<div>a</div>'))
     await tick()
 
-    assert.equal(received.length, 1)
+    expect(received.length).toBe(1)
     const first = received[0]
-    assert.ok(first && isPatchElements(first))
-    assert.equal(first.html, '<div>a</div>')
+    expect(first).toBeTruthy()
+    expect(isPatchElements(first!)).toBe(true)
+    if (isPatchElements(first!)) {
+      expect(first.html).toBe('<div>a</div>')
+    }
   })
 
-  void it('broadcasts topics and ignores invalid payloads', async () => {
+  test('broadcasts topics and ignores invalid payloads', async () => {
     const { bus, subscriber } = createRedisBus()
     let topicCount = 0
     bus.subscribeTopic('updates', () => {
@@ -106,7 +108,7 @@ void describe('RedisBus', () => {
 
     bus.toTopic('updates', patch('<p>1</p>'))
     await tick()
-    assert.equal(topicCount, 1)
+    expect(topicCount).toBe(1)
 
     const originalError = console.error
     console.error = () => {}
@@ -114,10 +116,10 @@ void describe('RedisBus', () => {
     await tick()
     console.error = originalError
 
-    assert.equal(topicCount, 1, 'invalid payload should be ignored')
+    expect(topicCount).toBe(1) // invalid payload should be ignored
   })
 
-  void it('fans out to all sinks via toAll()', async () => {
+  test('fans out to all sinks via toAll()', async () => {
     const { bus } = createRedisBus()
     let clientHits = 0
     let topicHits = 0
@@ -132,7 +134,7 @@ void describe('RedisBus', () => {
     bus.toAll(patch('<span>ping</span>'))
     await tick()
 
-    assert.equal(clientHits, 1)
-    assert.equal(topicHits, 1)
+    expect(clientHits).toBe(1)
+    expect(topicHits).toBe(1)
   })
 })

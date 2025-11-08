@@ -189,6 +189,28 @@ app.get('/events', createSseEndpoint(config))
 - Never leak credentials or CSRF tokens to the client beyond what `renderer` already exposes via the runtime meta/script.
 - Always validate CSRF tokens for state-changing requests (POST/PUT/PATCH/DELETE).
 
+**SSE Topic Security**
+- **Threat Model**: Without protection, clients can guess topic names and subscribe to unauthorized data streams (e.g., `user:123`, `org:456`), causing cross-tenant data leakage.
+- **Protection**: Bonsai signs the allowed topic list on page render and validates it on SSE connection.
+- **How it works**:
+  1. `renderer()` calls `signTopics(c, c.var.sseTopics, config)` before rendering the page
+  2. Sets an HttpOnly cookie with HMAC-SHA256 signed token containing allowed topics
+  3. `createSseEndpoint()` verifies the token and only subscribes to the intersection of requested and allowed topics
+  4. Tokens are bound to client/tab ID by default to prevent reuse across tabs
+- **Configuration** (`config.security.topics`):
+  - `cookieName`: Cookie name for signed token (default: `bonsai_topics`)
+  - `maxAgeSec`: Token TTL in seconds (default: 300 / 5 minutes)
+  - `secretEnv`: Environment variable for signing secret (default: `BONSAI_SIGNING_SECRET`)
+  - `bindToClientId`: Bind token to tab ID (default: true)
+- **Deployment Requirements**:
+  - **Production**: Set `BONSAI_SIGNING_SECRET` to a strong random secret (32+ bytes)
+  - **Development**: Without secret, topic enforcement is disabled with a warning
+  - **Multi-instance**: Purely stateless HMAC—no shared state required
+- **When to Customize**:
+  - Adjust `maxAgeSec` if users navigate rapidly or need longer sessions
+  - Use a longer `secretEnv` name if you need multiple secrets for rotation
+  - Set `bindToClientId: false` only if you explicitly want tokens shared across tabs
+
 ---
 
 ## 8. CSP & Security (Legacy)
@@ -447,20 +469,21 @@ Before opening a PR, confirm:
 
 1. **Config**: If customizing assets/endpoints/CSP, use `renderer(config)` and `createSseEndpoint(config)` factories.
 2. **CSP** still allows `'unsafe-eval'` (required for Datastar).
-3. **Signals** contain no secrets; `data-persist` (if used) filters sensitive data.
-4. **`data-computed` purity**; moved side-effects to `data-effect`.
-5. **Indicators before init**; no request starts without its indicator.
-6. **`data-show`** elements include `style="display:none"`.
-7. **Forms/file inputs** follow the single-handling rule.
-8. **Topics & SSE**: shared updates broadcast via defined topics; patch targets have IDs.
-9. **No explicit `mode: 'outer'`** - it's the default, omit it.
-10. **Fat patches** - prefer full region re-renders over incremental append/prepend.
-11. **Modals** conform to the pattern (Escape/outside close, focus trap, teardown).
-12. **`openWhenHidden`** only where truly needed.
-13. **Routes manifest** is regenerated (`bun run routes:generate` runs automatically in dev/build).
-14. **Type-safe routes** - use `routes` object instead of hardcoded strings.
-15. **Bus usage** - use `c.var.datastar.reply()`/`broadcast()` instead of calling bus directly.
-16. **Lint + typecheck** (`bun run lint`, `bun run typecheck`) succeed locally; include results in your summary if requested.
+3. **Topic Security**: `BONSAI_SIGNING_SECRET` is set in production environment.
+4. **Signals** contain no secrets; `data-persist` (if used) filters sensitive data.
+5. **`data-computed` purity**; moved side-effects to `data-effect`.
+6. **Indicators before init**; no request starts without its indicator.
+7. **`data-show`** elements include `style="display:none"`.
+8. **Forms/file inputs** follow the single-handling rule.
+9. **Topics & SSE**: shared updates broadcast via defined topics; patch targets have IDs.
+10. **No explicit `mode: 'outer'`** - it's the default, omit it.
+11. **Fat patches** - prefer full region re-renders over incremental append/prepend.
+12. **Modals** conform to the pattern (Escape/outside close, focus trap, teardown).
+13. **`openWhenHidden`** only where truly needed.
+14. **Routes manifest** is regenerated (`bun run routes:generate` runs automatically in dev/build).
+15. **Type-safe routes** - use `routes` object instead of hardcoded strings.
+16. **Bus usage** - use `c.var.datastar.reply()`/`broadcast()` instead of calling bus directly.
+17. **Lint + typecheck** (`bun run lint`, `bun run typecheck`) succeed locally; include results in your summary if requested.
 
 ---
 

@@ -1,12 +1,11 @@
-import * as assert from 'node:assert/strict'
-import { describe, it } from 'node:test'
+import { describe, expect, test } from 'bun:test'
 import {
   createManifestRouteLoader,
   type RouteManifestEntry,
 } from '@/core/router/manifest-route-loader'
 
-void describe('createManifestRouteLoader', () => {
-  void it('yields manifest entries in order and loads modules lazily', async () => {
+describe('createManifestRouteLoader', () => {
+  test('yields manifest entries in order and loads modules lazily', async () => {
     const calls: string[] = []
     const entries: RouteManifestEntry[] = [
       {
@@ -32,11 +31,11 @@ void describe('createManifestRouteLoader', () => {
       seen.push(entry)
     }
 
-    assert.equal(calls.length, 2)
-    assert.deepEqual(calls, ['alpha', 'beta'])
-    assert.equal(seen[0]?.routePath, '/alpha')
-    assert.ok('GET' in (seen[0]?.module ?? {}))
-    assert.equal(seen[1]?.routePath, '/beta')
-    assert.ok('default' in (seen[1]?.module ?? {}))
+    expect(calls.length).toBe(2)
+    expect(calls).toEqual(['alpha', 'beta'])
+    expect(seen[0]?.routePath).toBe('/alpha')
+    expect('GET' in (seen[0]?.module ?? {})).toBe(true)
+    expect(seen[1]?.routePath).toBe('/beta')
+    expect('default' in (seen[1]?.module ?? {})).toBe(true)
   })
 })

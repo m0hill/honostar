@@ -1,5 +1,4 @@
-import assert from 'node:assert/strict'
-import { describe, test } from 'node:test'
+import { describe, expect, test } from 'bun:test'
 import { route } from './route'
 
 describe('route', () => {
@@ -10,14 +9,14 @@ describe('route', () => {
       contact: '/contact',
     })
 
-    assert.equal(routes.home.pattern, '/')
-    assert.equal(routes.home.href(), '/')
+    expect(routes.home.pattern).toBe('/')
+    expect(routes.home.href()).toBe('/')
 
-    assert.equal(routes.about.pattern, '/about')
-    assert.equal(routes.about.href(), '/about')
+    expect(routes.about.pattern).toBe('/about')
+    expect(routes.about.href()).toBe('/about')
 
-    assert.equal(routes.contact.pattern, '/contact')
-    assert.equal(routes.contact.href(), '/contact')
+    expect(routes.contact.pattern).toBe('/contact')
+    expect(routes.contact.href()).toBe('/contact')
   })
 
   test('creates routes with single parameter', () => {
@@ -26,12 +25,12 @@ describe('route', () => {
       post: '/posts/:slug',
     })
 
-    assert.equal(routes.user.pattern, '/users/:id')
-    assert.equal(routes.user.href({ id: 123 }), '/users/123')
-    assert.equal(routes.user.href({ id: 'abc' }), '/users/abc')
+    expect(routes.user.pattern).toBe('/users/:id')
+    expect(routes.user.href({ id: 123 })).toBe('/users/123')
+    expect(routes.user.href({ id: 'abc' })).toBe('/users/abc')
 
-    assert.equal(routes.post.pattern, '/posts/:slug')
-    assert.equal(routes.post.href({ slug: 'hello-world' }), '/posts/hello-world')
+    expect(routes.post.pattern).toBe('/posts/:slug')
+    expect(routes.post.href({ slug: 'hello-world' })).toBe('/posts/hello-world')
   })
 
   test('creates routes with multiple parameters', () => {
@@ -39,8 +38,8 @@ describe('route', () => {
       comment: '/posts/:postId/comments/:commentId',
     })
 
-    assert.equal(routes.comment.pattern, '/posts/:postId/comments/:commentId')
-    assert.equal(routes.comment.href({ postId: 1, commentId: 42 }), '/posts/1/comments/42')
+    expect(routes.comment.pattern).toBe('/posts/:postId/comments/:commentId')
+    expect(routes.comment.href({ postId: 1, commentId: 42 })).toBe('/posts/1/comments/42')
   })
 
   test('encodes parameter values', () => {
@@ -48,9 +47,9 @@ describe('route', () => {
       search: '/search/:query',
     })
 
-    assert.equal(routes.search.href({ query: 'hello world' }), '/search/hello%20world')
-    assert.equal(routes.search.href({ query: 'foo/bar' }), '/search/foo%2Fbar')
-    assert.equal(routes.search.href({ query: 'a&b=c' }), '/search/a%26b%3Dc')
+    expect(routes.search.href({ query: 'hello world' })).toBe('/search/hello%20world')
+    expect(routes.search.href({ query: 'foo/bar' })).toBe('/search/foo%2Fbar')
+    expect(routes.search.href({ query: 'a&b=c' })).toBe('/search/a%26b%3Dc')
   })
 
   test('creates nested route structures', () => {
@@ -64,14 +63,14 @@ describe('route', () => {
       },
     })
 
-    assert.equal(routes.blog.index.pattern, '/blog')
-    assert.equal(routes.blog.index.href(), '/blog')
+    expect(routes.blog.index.pattern).toBe('/blog')
+    expect(routes.blog.index.href()).toBe('/blog')
 
-    assert.equal(routes.blog.post.detail.pattern, '/blog/:slug')
-    assert.equal(routes.blog.post.detail.href({ slug: 'my-post' }), '/blog/my-post')
+    expect(routes.blog.post.detail.pattern).toBe('/blog/:slug')
+    expect(routes.blog.post.detail.href({ slug: 'my-post' })).toBe('/blog/my-post')
 
-    assert.equal(routes.blog.post.comments.pattern, '/blog/:slug/comments')
-    assert.equal(routes.blog.post.comments.href({ slug: 'my-post' }), '/blog/my-post/comments')
+    expect(routes.blog.post.comments.pattern).toBe('/blog/:slug/comments')
+    expect(routes.blog.post.comments.href({ slug: 'my-post' })).toBe('/blog/my-post/comments')
   })
 
   test('throws error when parameter is missing', () => {
@@ -79,17 +78,15 @@ describe('route', () => {
       user: '/users/:id',
     })
 
-    assert.throws(
+    expect(() =>
       // @ts-expect-error - Testing runtime error for missing param
-      () => routes.user.href({}),
-      /Missing param "id"/
-    )
+      routes.user.href({})
+    ).toThrow(/Missing param "id"/)
 
-    assert.throws(
+    expect(() =>
       // @ts-expect-error - Testing runtime error for undefined params
-      () => routes.user.href(),
-      /requires params but none were provided/
-    )
+      routes.user.href()
+    ).toThrow(/requires params but none were provided/)
   })
 
   test('throws error when calling parameterized route without params', () => {
@@ -97,11 +94,10 @@ describe('route', () => {
       post: '/posts/:id',
     })
 
-    assert.throws(
+    expect(() =>
       // @ts-expect-error - Testing runtime error
-      () => routes.post.href(),
-      /requires params but none were provided/
-    )
+      routes.post.href()
+    ).toThrow(/requires params but none were provided/)
   })
 
   test('handles deeply nested structures', () => {
@@ -117,9 +113,9 @@ describe('route', () => {
       },
     })
 
-    assert.equal(routes.admin.dashboard.users.list.href(), '/admin/users')
-    assert.equal(routes.admin.dashboard.users.detail.href({ id: 5 }), '/admin/users/5')
-    assert.equal(routes.admin.dashboard.users.edit.href({ id: 5 }), '/admin/users/5/edit')
+    expect(routes.admin.dashboard.users.list.href()).toBe('/admin/users')
+    expect(routes.admin.dashboard.users.detail.href({ id: 5 })).toBe('/admin/users/5')
+    expect(routes.admin.dashboard.users.edit.href({ id: 5 })).toBe('/admin/users/5/edit')
   })
 
   test('handles numeric parameter values', () => {
@@ -127,8 +123,8 @@ describe('route', () => {
       user: '/users/:id',
     })
 
-    assert.equal(routes.user.href({ id: 123 }), '/users/123')
-    assert.equal(routes.user.href({ id: 0 }), '/users/0')
+    expect(routes.user.href({ id: 123 })).toBe('/users/123')
+    expect(routes.user.href({ id: 0 })).toBe('/users/0')
   })
 
   test('preserves pattern property for route inspection', () => {
@@ -138,7 +134,7 @@ describe('route', () => {
     })
 
     // Pattern is accessible for inspection (useful for middleware, route matching, etc.)
-    assert.equal(routes.user.pattern, '/users/:id')
-    assert.equal(routes.post.pattern, '/posts/:slug')
+    expect(routes.user.pattern).toBe('/users/:id')
+    expect(routes.post.pattern).toBe('/posts/:slug')
   })
 })

@@ -13,7 +13,7 @@
     "lint": "oxlint --type-aware",
     "format": "biome check --write .",
     "typecheck": "tsc -noEmit",
-    "test": "bun run routes:generate && TEST_FILES=\"$(find src -name '*.test.ts' -print)\" && if [ -z \"$TEST_FILES\" ]; then echo 'No tests found'; exit 0; fi; bunx tsx --tsconfig tsconfig.json --test $TEST_FILES",
+    "test": "bun run routes:generate && bun test",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "start:prod": "bun run routes:generate && bun dist/index.js",

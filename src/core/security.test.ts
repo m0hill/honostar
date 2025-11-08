@@ -1,5 +1,4 @@
-import assert from 'node:assert/strict'
-import { describe, test } from 'node:test'
+import { describe, expect, test } from 'bun:test'
 import { Hono } from 'hono'
 import type { AppEnv } from './context'
 import { csrf } from './security'
@@ -15,9 +14,9 @@ describe('csrf', () => {
     const res = await app.request('/test')
     const body = (await res.json()) as { token: string }
 
-    assert.ok(body.token, 'CSRF token should be present')
-    assert.ok(typeof body.token === 'string', 'Token should be a string')
-    assert.ok(body.token.length > 0, 'Token should not be empty')
+    expect(body.token).toBeTruthy()
+    expect(typeof body.token).toBe('string')
+    expect(body.token.length).toBeGreaterThan(0)
   })
 
   test('sets CSRF token cookie', async () => {
@@ -28,8 +27,8 @@ describe('csrf', () => {
     const res = await app.request('/test')
     const cookies = res.headers.get('set-cookie')
 
-    assert.ok(cookies, 'Should set cookies')
-    assert.ok(cookies.includes('ds_csrf='), 'Should set ds_csrf cookie')
+    expect(cookies).toBeTruthy()
+    expect(cookies).toContain('ds_csrf=')
   })
 
   test('allows safe methods without CSRF check', async () => {
@@ -39,10 +38,10 @@ describe('csrf', () => {
     app.options('/options', c => c.text('OPTIONS ok'))
 
     const getRes = await app.request('/get')
-    assert.equal(getRes.status, 200)
+    expect(getRes.status).toBe(200)
 
     const optionsRes = await app.request('/options', { method: 'OPTIONS' })
-    assert.equal(optionsRes.status, 200)
+    expect(optionsRes.status).toBe(200)
   })
 
   test('validates CSRF token for POST requests', async () => {
@@ -66,7 +65,7 @@ describe('csrf', () => {
       },
     })
 
-    assert.equal(validRes.status, 200, 'Valid CSRF token should pass')
+    expect(validRes.status).toBe(200)
   })
 
   test('rejects POST without CSRF token', async () => {
@@ -78,7 +77,7 @@ describe('csrf', () => {
       method: 'POST',
     })
 
-    assert.equal(res.status, 403, 'Should reject POST without CSRF token')
+    expect(res.status).toBe(403)
   })
 
   test('rejects POST with invalid CSRF token', async () => {
@@ -93,7 +92,7 @@ describe('csrf', () => {
       },
     })
 
-    assert.equal(res.status, 403, 'Should reject POST with invalid CSRF token')
+    expect(res.status).toBe(403)
   })
 
   test('validates CSRF token for PUT requests', async () => {
@@ -105,7 +104,7 @@ describe('csrf', () => {
       method: 'PUT',
     })
 
-    assert.equal(res.status, 403, 'Should validate CSRF for PUT')
+    expect(res.status).toBe(403)
   })
 
   test('validates CSRF token for DELETE requests', async () => {
@@ -117,7 +116,7 @@ describe('csrf', () => {
       method: 'DELETE',
     })
 
-    assert.equal(res.status, 403, 'Should validate CSRF for DELETE')
+    expect(res.status).toBe(403)
   })
 
   test('validates CSRF token for PATCH requests', async () => {
@@ -129,7 +128,7 @@ describe('csrf', () => {
       method: 'PATCH',
     })
 
-    assert.equal(res.status, 403, 'Should validate CSRF for PATCH')
+    expect(res.status).toBe(403)
   })
 
   test('generates unique tokens per request', async () => {
@@ -143,6 +142,6 @@ describe('csrf', () => {
     const body1 = (await res1.json()) as { token: string }
     const body2 = (await res2.json()) as { token: string }
 
-    assert.notEqual(body1.token, body2.token, 'Each request should get a unique token')
+    expect(body1.token).not.toBe(body2.token)
   })
 })
