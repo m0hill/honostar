@@ -30,6 +30,8 @@ app.use('*', logger())
 
 app.use('*', except('/_/events', compress()))
 
+// Zero-config usage with framework defaults
+// Optional: Pass BonsaiConfig for custom asset paths, CSP, SSE config, etc.
 app.use('*', csrf())
 
 app.use('*', renderer())

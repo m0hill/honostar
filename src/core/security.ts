@@ -1,4 +1,5 @@
 import { getCookie, setCookie } from 'hono/cookie'
+import type { BonsaiConfig } from '@/core/config'
 import { factory } from '@/core/middleware'
 
 type CsrfOpts = {
@@ -11,8 +12,26 @@ function matches(pathname: string, patterns: (string | RegExp)[] = []) {
   return patterns.some(p => (typeof p === 'string' ? pathname.startsWith(p) : p.test(pathname)))
 }
 
-export const csrf = (opts: CsrfOpts = {}) =>
-  factory.createMiddleware(async (c, next) => {
+/**
+ * CSRF protection middleware factory
+ * Accepts either a BonsaiConfig or legacy CsrfOpts for backwards compatibility
+ */
+export const csrf = (cfg?: Pick<BonsaiConfig, 'security' | 'endpoints'> | CsrfOpts) => {
+  // Normalize config: handle both new BonsaiConfig and legacy CsrfOpts
+  let opts: CsrfOpts
+  if (cfg && 'security' in cfg) {
+    // New BonsaiConfig format
+    opts = {
+      cookieName: cfg.security.csrf?.cookieName ?? 'ds_csrf',
+      headerName: cfg.security.csrf?.headerName ?? 'X-CSRF-Token',
+      exceptPaths: cfg.security.csrf?.exceptPaths ?? [cfg.endpoints?.sse ?? '/_/events'],
+    }
+  } else {
+    // Legacy CsrfOpts format
+    opts = cfg ?? {}
+  }
+
+  return factory.createMiddleware(async (c, next) => {
     const cookieName = opts.cookieName ?? 'ds_csrf'
     const headerName = opts.headerName ?? 'X-CSRF-Token'
     const exceptPaths = opts.exceptPaths ?? ['/_/events']
@@ -42,3 +61,4 @@ export const csrf = (opts: CsrfOpts = {}) =>
     }
     return await next()
   })
+}

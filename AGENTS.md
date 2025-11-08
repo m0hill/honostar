@@ -135,6 +135,11 @@ type BonsaiConfig = {
   }
   security: {
     csp: string          // Template with ${nonce} placeholder
+    csrf?: {
+      cookieName?: string        // Default: 'ds_csrf'
+      headerName?: string        // Default: 'X-CSRF-Token'
+      exceptPaths?: (string | RegExp)[]  // Defaults to [config.endpoints.sse]
+    }
   }
   sse?: {
     pingIntervalMs?: number  // Default: 25000
@@ -145,6 +150,7 @@ type BonsaiConfig = {
 **Usage Patterns**
 ```typescript
 // Zero-config (recommended for most apps)
+app.use('*', csrf())
 app.use('*', renderer())
 app.get('/_/events', createSseEndpoint())
 
@@ -152,9 +158,17 @@ app.get('/_/events', createSseEndpoint())
 const config = {
   assets: { css: '/assets/styles.css' },
   endpoints: { sse: '/events' },
-  security: { csp: "script-src 'self' 'unsafe-eval' 'nonce-${nonce}' cdn.example.com;" },
+  security: {
+    csp: "script-src 'self' 'unsafe-eval' 'nonce-${nonce}' cdn.example.com;",
+    csrf: {
+      cookieName: 'my_csrf',
+      headerName: 'X-My-CSRF-Token',
+      exceptPaths: ['/events', /^\/api\/webhooks/]
+    }
+  },
   sse: { pingIntervalMs: 30000 }
 }
+app.use('*', csrf(config))
 app.use('*', renderer(config))
 app.get('/events', createSseEndpoint(config))
 ```
@@ -164,9 +178,16 @@ app.get('/events', createSseEndpoint(config))
 - The renderer automatically injects the per-request nonce via `${nonce}` template replacement.
 - Extend the CSP string to allow additional script sources if needed, but never remove `'unsafe-eval'`.
 
+**CSRF Configuration**
+- The `csrf()` middleware accepts either `BonsaiConfig` or legacy `CsrfOpts` for backwards compatibility.
+- `exceptPaths` defaults to the configured SSE endpoint (`config.endpoints.sse`) to allow SSE connections without CSRF validation.
+- When using custom SSE endpoints, the framework automatically syncs `csrf.exceptPaths` unless explicitly overridden.
+- Cookie is not HTTP-only to allow client-side JavaScript to read the token for XHR/fetch requests.
+
 **Security Rules**
 - Sanitize/escape any untrusted HTML strings you interpolate into JSX attributes.
 - Never leak credentials or CSRF tokens to the client beyond what `renderer` already exposes via the runtime meta/script.
+- Always validate CSRF tokens for state-changing requests (POST/PUT/PATCH/DELETE).
 
 ---
 
