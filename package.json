@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "routes:generate": "bun scripts/generate-route-manifest.ts",
+    "routes:generate": "tsx scripts/generate-routes.ts",
     "build:assets": "bun run build:css && bun run build:runtime",
     "start": "bun run routes:generate && bun run build:assets && bun src/index.ts",
     "dev": "bun run routes:generate && bunx concurrently \"bun run dev:css\" \"bun run dev:runtime\" \"bun --hot src/index.ts\"",

@@ -207,12 +207,13 @@ data-on:bonsai-theme-change__window="renderChart(evt.detail.resolved)"
 ## 11. Architecture & Meta-Framework
 
 **What is Bonsai?**
-- Bonsai is a meta-framework built on Hono (web server) and Datastar (hypermedia reactivity).
+- Bonsai is a **runtime-agnostic** meta-framework built on Hono (web server) and Datastar (hypermedia reactivity).
 - It provides a batteries-included foundation for building hypermedia-driven MPAs with real-time SSE updates.
 - Core philosophy: server-rendered HTML is the source of truth, enhanced with reactive signals and live patches.
+- **Works with**: Node.js, Bun, Deno, Cloudflare Workers, and any runtime supported by Hono.
 
 **Core Framework Structure** (`src/core/`)
-- `router/` - File-based routing with compile-time manifest generation
+- `router/` - File-based routing with compile-time manifest generation (runtime-agnostic)
 - `datastar/` - SSE event bus, responders, formatters, and middleware
 - `page.ts` - Type-safe page and handler definitions
 - `route.ts` - Type-safe route helpers with parameter extraction
@@ -228,10 +229,12 @@ data-on:bonsai-theme-change__window="renderChart(evt.detail.resolved)"
   - `issues/[id].tsx` → `/issues/:id`
   - `issues/[id]/comments.tsx` → `/issues/:id/comments`
   - Files starting with `_` are ignored (e.g., `_components/`)
-- **Build-time manifest generation** (`scripts/generate-route-manifest.ts`):
+- **Build-time manifest generation** (`src/core/router/generator.ts`):
+  - Runtime-agnostic implementation using standard Node.js APIs
   - Scans `src/pages/` and generates `src/routes.manifest.ts` with lazy imports
   - Generates `src/routes.ts` with type-safe route helpers
-  - Run via `bun run routes:generate` (included in dev/build scripts)
+  - Run via `npm run routes:generate` or `bun run routes:generate` (included in dev/build scripts)
+  - Can be imported programmatically: `import { generateRouteManifest } from '@/core'`
 - **Route configuration** (`scripts/routes.config.json`):
   - Maps routes to custom property paths for the `routes` object
   - Supports multiple aliases per route
