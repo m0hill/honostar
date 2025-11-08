@@ -39,7 +39,7 @@ type TopicTokenPayload = {
  * Ensures consistent ordering for signature verification
  */
 export function canonicalizeTopics(topics: string[]): string[] {
-  return [...new Set(topics)].sort()
+  return [...new Set(topics)].toSorted()
 }
 
 /**
