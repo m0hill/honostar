@@ -2,6 +2,7 @@ import type { Handler, MiddlewareHandler } from 'hono'
 import type { JSX } from 'hono/jsx/jsx-runtime'
 import type { Bus } from '@/core/datastar/bus'
 import type { FxResponse } from '@/core/datastar/middleware'
+import type { ThemeOptions } from '@/core/theme'
 import type { DB } from '@/db'
 
 export interface AppVariables {
@@ -14,6 +15,7 @@ export interface AppVariables {
   datastar: import('@/core/datastar/responder').DatastarResponder
   fxResponse?: FxResponse
   csrfToken?: string
+  theme?: ThemeOptions
 }
 
 export type AppEnv = {

@@ -1,3 +1,5 @@
+import type { ThemePreference, ThemeRuntimeConfig, ThemeValue } from '@/core/theme'
+import { resolveThemeProvider } from '@/core/theme'
 import { createPrefetchClient } from './prefetch'
 
 type BrowserFetch = typeof window.fetch
@@ -7,29 +9,82 @@ type PreconnectFn = BrowserFetch['preconnect']
 
 interface RuntimeData {
   csrfToken: string | null
+  theme: ThemeRuntimeConfig
+}
+
+const FALLBACK_THEME_CONFIG = resolveThemeProvider().config
+const FALLBACK_RUNTIME_DATA: RuntimeData = {
+  csrfToken: null,
+  theme: FALLBACK_THEME_CONFIG,
+}
+
+function isThemeValue(candidate: unknown): candidate is ThemeValue {
+  return candidate === 'light' || candidate === 'dark'
+}
+
+function isThemePreference(candidate: unknown): candidate is ThemePreference {
+  return candidate === 'system' || isThemeValue(candidate)
+}
+
+function normalizeThemeConfig(candidate: unknown): ThemeRuntimeConfig {
+  if (!candidate || typeof candidate !== 'object') {
+    return FALLBACK_THEME_CONFIG
+  }
+  const raw = candidate as Partial<ThemeRuntimeConfig>
+  return {
+    attribute:
+      typeof raw.attribute === 'string' && raw.attribute.length > 0
+        ? raw.attribute
+        : FALLBACK_THEME_CONFIG.attribute,
+    defaultTheme: isThemePreference(raw.defaultTheme)
+      ? raw.defaultTheme
+      : FALLBACK_THEME_CONFIG.defaultTheme,
+    storageKey:
+      typeof raw.storageKey === 'string' && raw.storageKey.length > 0
+        ? raw.storageKey
+        : FALLBACK_THEME_CONFIG.storageKey,
+    respectSystemPreference:
+      typeof raw.respectSystemPreference === 'boolean'
+        ? raw.respectSystemPreference
+        : FALLBACK_THEME_CONFIG.respectSystemPreference,
+    disableTransitionClass:
+      typeof raw.disableTransitionClass === 'string' || raw.disableTransitionClass === null
+        ? raw.disableTransitionClass
+        : FALLBACK_THEME_CONFIG.disableTransitionClass,
+    rootSelector:
+      typeof raw.rootSelector === 'string' && raw.rootSelector.length > 0
+        ? raw.rootSelector
+        : FALLBACK_THEME_CONFIG.rootSelector,
+    systemFallback: isThemeValue(raw.systemFallback)
+      ? raw.systemFallback
+      : FALLBACK_THEME_CONFIG.systemFallback,
+  }
 }
 
 function parseRuntimeData(raw: string): RuntimeData {
   try {
     const parsed: unknown = JSON.parse(raw)
-    if (parsed && typeof parsed === 'object' && 'csrfToken' in parsed) {
+    if (parsed && typeof parsed === 'object') {
       const token = (parsed as { csrfToken?: unknown }).csrfToken
-      return { csrfToken: typeof token === 'string' ? token : null }
+      return {
+        csrfToken: typeof token === 'string' ? token : null,
+        theme: normalizeThemeConfig((parsed as { theme?: unknown }).theme),
+      }
     }
-    return { csrfToken: null }
+    return FALLBACK_RUNTIME_DATA
   } catch {
-    return { csrfToken: null }
+    return FALLBACK_RUNTIME_DATA
   }
 }
 
 function readRuntimeData(): RuntimeData {
   const el = document.getElementById('runtime-data')
   if (!el || !(el instanceof HTMLScriptElement)) {
-    return { csrfToken: null }
+    return FALLBACK_RUNTIME_DATA
   }
 
   const json = el.textContent?.trim()
-  if (!json) return { csrfToken: null }
+  if (!json) return FALLBACK_RUNTIME_DATA
   return parseRuntimeData(json)
 }
 
@@ -112,6 +167,184 @@ function focusApp(): void {
 
 function setupFocusOnReveal(): void {
   addEventListener('pagereveal', focusApp, { once: true })
+}
+
+type ThemeControllerState = {
+  preference: ThemePreference
+  resolved: ThemeValue
+}
+
+interface ThemeController {
+  getPreference: () => ThemePreference
+  getResolvedTheme: () => ThemeValue
+  setTheme: (value: ThemePreference) => void
+  setLight: () => void
+  setDark: () => void
+  setSystem: () => void
+  toggle: () => void
+  subscribe: (listener: (state: ThemeControllerState) => void) => () => void
+}
+
+function disableThemeTransitions(
+  root: HTMLElement,
+  className: string | null,
+  cb: () => void
+): void {
+  if (!className) {
+    cb()
+    return
+  }
+  root.classList.add(className)
+  try {
+    cb()
+  } finally {
+    requestAnimationFrame(() => {
+      root.classList.remove(className)
+    })
+  }
+}
+
+function applyResolvedTheme(root: HTMLElement, attribute: string, resolved: ThemeValue): void {
+  if (attribute === 'class') {
+    root.classList.remove('light', 'dark')
+    root.classList.add(resolved)
+  } else {
+    root.setAttribute(attribute, resolved)
+  }
+  root.dataset.themeResolved = resolved
+}
+
+function setupThemeController(config: ThemeRuntimeConfig): ThemeController | null {
+  const doc = document
+  const root =
+    (config.rootSelector ? doc.querySelector<HTMLElement>(config.rootSelector) : null) ??
+    doc.documentElement
+  if (!root) return null
+
+  const listeners = new Set<(state: ThemeControllerState) => void>()
+  const systemMatcher =
+    config.respectSystemPreference && typeof window.matchMedia === 'function'
+      ? window.matchMedia('(prefers-color-scheme: dark)')
+      : null
+
+  const readStoredPreference = (): ThemePreference | null => {
+    try {
+      const stored = localStorage.getItem(config.storageKey)
+      return isThemePreference(stored) ? stored : null
+    } catch {
+      return null
+    }
+  }
+
+  const writeStoredPreference = (value: ThemePreference): void => {
+    try {
+      localStorage.setItem(config.storageKey, value)
+    } catch {
+      // no-op
+    }
+
+    // Also write to a cookie so the server can read it on subsequent requests
+    // This allows the server to set the correct initial theme class and avoid FOUC
+    try {
+      // Set cookie with 1 year expiry, path=/, SameSite=Lax
+      const maxAge = 60 * 60 * 24 * 365 // 1 year in seconds
+      document.cookie = `${config.storageKey}=${value}; path=/; max-age=${maxAge}; SameSite=Lax`
+    } catch {
+      // no-op
+    }
+  }
+
+  const resolveSystemTheme = (): ThemeValue => {
+    if (!systemMatcher) return config.systemFallback
+    return systemMatcher.matches ? 'dark' : 'light'
+  }
+
+  const resolvePreference = (pref: ThemePreference): ThemeValue =>
+    pref === 'system' ? resolveSystemTheme() : pref
+
+  const applyPreference = (pref: ThemePreference): ThemeValue => {
+    const resolved = resolvePreference(pref)
+    disableThemeTransitions(root, config.disableTransitionClass, () => {
+      applyResolvedTheme(root, config.attribute, resolved)
+      root.dataset.themePreference = pref
+    })
+    return resolved
+  }
+
+  let preference: ThemePreference = readStoredPreference() ?? config.defaultTheme
+  let resolved: ThemeValue = applyPreference(preference)
+
+  const emit = (): void => {
+    const state: ThemeControllerState = { preference, resolved }
+    listeners.forEach(listener => {
+      try {
+        listener(state)
+      } catch {
+        // swallow listener errors
+      }
+    })
+    try {
+      window.dispatchEvent(new CustomEvent('bonsai-theme-change', { detail: state }))
+    } catch {
+      // ignore
+    }
+  }
+
+  const setPreference = (next: ThemePreference): void => {
+    if (preference === next) {
+      // Still ensure DOM reflects current system preference when applicable
+      if (next === 'system') {
+        const nextResolved = applyPreference(next)
+        if (nextResolved !== resolved) {
+          resolved = nextResolved
+          emit()
+        }
+      }
+      return
+    }
+    preference = next
+    writeStoredPreference(next)
+    resolved = applyPreference(next)
+    emit()
+  }
+
+  const controller: ThemeController = Object.freeze({
+    getPreference: () => preference,
+    getResolvedTheme: () => resolved,
+    setTheme: setPreference,
+    setLight: () => setPreference('light'),
+    setDark: () => setPreference('dark'),
+    setSystem: () => setPreference('system'),
+    toggle: () => setPreference(resolved === 'dark' ? 'light' : 'dark'),
+    subscribe: (listener: (state: ThemeControllerState) => void) => {
+      listeners.add(listener)
+      listener({ preference, resolved })
+      return () => {
+        listeners.delete(listener)
+      }
+    },
+  })
+
+  if (systemMatcher) {
+    const legacyMatcher = systemMatcher as MediaQueryList & {
+      addListener?: (listener: (this: MediaQueryList, ev: MediaQueryListEvent) => void) => void
+    }
+    const systemListener = () => {
+      if (preference !== 'system') return
+      const nextResolved = applyPreference('system')
+      if (nextResolved !== resolved) {
+        resolved = nextResolved
+        emit()
+      }
+    }
+    if (typeof systemMatcher.addEventListener === 'function') {
+      systemMatcher.addEventListener('change', systemListener)
+    } else if (typeof legacyMatcher.addListener === 'function') {
+      legacyMatcher.addListener(systemListener)
+    }
+  }
+
+  return controller
 }
 
 function focusModalContent(root: ParentNode): void {
@@ -259,20 +492,31 @@ function setupModalHost(): void {
 declare global {
   interface Window {
     Bonsai?: {
+      theme?: ThemeController
       prefetch?: ReturnType<typeof createPrefetchClient>
       modals?: {
         closeAll: () => void
         close: (id: string) => void
         count: () => number
       }
+      actions?: {
+        theme: {
+          set: (pref: ThemePreference) => void
+          setLight: () => void
+          setDark: () => void
+          setSystem: () => void
+          toggle: () => void
+        }
+      }
     }
   }
 }
 
 function bootstrap(): void {
-  const { csrfToken } = readRuntimeData()
+  const runtimeData = readRuntimeData()
   const tabId = ensureTabId()
-  patchFetch(tabId, csrfToken)
+  patchFetch(tabId, runtimeData.csrfToken)
+  const themeController = setupThemeController(runtimeData.theme)
 
   const prefetch = createPrefetchClient({
     enabled: true,
@@ -284,7 +528,26 @@ function bootstrap(): void {
   prefetch.start()
 
   window.Bonsai = window.Bonsai ?? {}
+  if (themeController) {
+    window.Bonsai.theme = themeController
+  }
   window.Bonsai.prefetch = prefetch
+
+  // Namespaced actions API (official framework API)
+  const themeActions = {
+    set: (pref: ThemePreference) => themeController?.setTheme(pref),
+    setLight: () => themeController?.setLight(),
+    setDark: () => themeController?.setDark(),
+    setSystem: () => themeController?.setSystem(),
+    toggle: () => themeController?.toggle(),
+  }
+
+  // Harden the API to discourage mutation
+  Object.freeze(themeActions)
+
+  window.Bonsai.actions = {
+    theme: themeActions,
+  }
 
   setupImageEnhancements()
   setupFocusOnReveal()

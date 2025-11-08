@@ -1,6 +1,7 @@
 import type { JSX } from 'hono/jsx/jsx-runtime'
 import { jsxRenderer } from 'hono/jsx-renderer'
 import { factory } from '@/core/middleware'
+import { resolveThemeProvider } from '@/core/theme'
 
 function stripDoctype(html: string): string {
   return html.replace(/^\s*<!DOCTYPE html>\s*/i, '')
@@ -12,27 +13,59 @@ function extractBodyInner(html: string): string {
   return html.trim()
 }
 
+function generateNonce(): string {
+  const bytes = new Uint8Array(16)
+  crypto.getRandomValues(bytes)
+  return btoa(String.fromCharCode(...bytes))
+}
+
 export const renderer = factory.createMiddleware(async (c, next) => {
+  // Read theme preference from cookie if available
+  const cookieHeader = c.req.header('cookie')
+  const storageKey = c.var.theme?.storageKey ?? 'bonsai-ui-theme'
+  let cookiePreference: string | null = null
+
+  if (cookieHeader) {
+    const cookieMatch = cookieHeader.match(new RegExp(`${storageKey}=([^;]+)`))
+    if (cookieMatch?.[1]) {
+      cookiePreference = cookieMatch[1]
+    }
+  }
+
+  const theme = resolveThemeProvider(c.var.theme, cookiePreference)
+  const scriptNonce = generateNonce()
   const base = jsxRenderer(({ children }) => {
     const topics = c.var.sseTopics ?? []
     const topicsQuery = topics.length > 0 ? `?topics=${topics.join(',')}` : ''
     const runtimeData = {
       csrfToken: c.var.csrfToken ?? null,
+      theme: theme.config,
     }
     const runtimeDataJson = JSON.stringify(runtimeData).replace(/</g, '\\u003c')
+    const csp = `script-src 'self' 'unsafe-eval' 'nonce-${scriptNonce}';`
     return (
-      <html lang="en" class="dark">
+      <html
+        lang="en"
+        class={theme.initialClass}
+        data-theme-default={theme.config.defaultTheme}
+        data-theme-provider="bonsai"
+      >
         <head>
           <meta charSet="utf-8" />
           <meta name="color-scheme" content="dark light" />
           <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
           {/* Datastar evaluates expressions with Function(), so CSP must allow unsafe-eval */}
-          <meta httpEquiv="Content-Security-Policy" content="script-src 'self' 'unsafe-eval';" />
+          <meta httpEquiv="Content-Security-Policy" content={csp} />
           <meta name="csrf-token" content={c.var.csrfToken ?? ''} />
           <script
             id="runtime-data"
             type="application/json"
             dangerouslySetInnerHTML={{ __html: runtimeDataJson }}
+          />
+          <script
+            id="theme-bootstrap"
+            nonce={scriptNonce}
+            dangerouslySetInnerHTML={{ __html: theme.bootstrapScript }}
           />
           <title>Bonsai</title>
           <link rel="stylesheet" href="/styles.css" />

@@ -1,3 +1,4 @@
+import { ModeToggle } from '@/components/ModeToggle'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { routes } from '@/routes'
@@ -13,6 +14,9 @@ export default function IndexPage({
 }) {
   return (
     <div class="min-h-screen bg-background text-foreground flex flex-col items-center pt-10 px-4">
+      <div class="w-full max-w-4xl flex justify-end mb-4">
+        <ModeToggle />
+      </div>
       <Card class="text-center max-w-4xl w-full">
         <CardHeader>
           <CardTitle class="text-5xl">GitHub Issues Clone</CardTitle>

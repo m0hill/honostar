@@ -140,6 +140,58 @@ c.var.datastar.reply([
 
 ---
 
+## 9. Theme System & Global APIs
+
+**Architecture**
+- Bonsai uses a server-rendered theme provider with a client-side controller to prevent FOUC and enable seamless theme switching.
+- A nonce'd bootstrap script in `<head>` applies the theme class before CSS loads.
+- The `ThemeController` manages preference storage, system preference detection, and DOM updates.
+
+**Persistence Strategy**
+- Theme preference is persisted in **both** localStorage and a cookie (`bonsai-ui-theme` by default).
+- **localStorage**: Client-side preference storage (primary).
+- **Cookie**: Allows the server to read the user's preference before rendering, eliminating FOUC even on slow devices.
+- The server reads the cookie in `renderer` and passes it to `resolveThemeProvider` to set the correct initial class.
+- Cookie attributes: `path=/`, `max-age=1year`, `SameSite=Lax` (not HTTP-only, so client can read/write).
+
+**Global API (Official)**
+- All theme actions are exposed under `window.Bonsai.actions.theme`:
+  - `window.Bonsai.actions.theme.setLight()` - Set light mode
+  - `window.Bonsai.actions.theme.setDark()` - Set dark mode
+  - `window.Bonsai.actions.theme.setSystem()` - Follow system preference
+  - `window.Bonsai.actions.theme.toggle()` - Toggle between light/dark
+  - `window.Bonsai.actions.theme.set(pref)` - Set any preference
+
+**Usage in Datastar Attributes**
+```tsx
+// Recommended: Use the namespaced API
+<button data-on:click="window.Bonsai.actions.theme.setLight()">Light</button>
+
+// Or import expression constants for consistency
+import { themeExpressions } from '@/core/theme-client'
+<button data-on:click={themeExpressions.setLight}>Light</button>
+```
+
+**Theme Change Event**
+- The runtime emits a `bonsai-theme-change` custom event whenever the theme changes.
+- **Always use this event** for components that need to react to theme changes (charts, maps, visualizations).
+- Do not poll or manually check theme state—subscribe to the event instead.
+```tsx
+// Recommended: Listen to the theme change event
+data-on:bonsai-theme-change__window="/* handle theme change */"
+
+// Example: Re-render a chart when theme changes
+data-on:bonsai-theme-change__window="renderChart(evt.detail.resolved)"
+```
+- Event detail: `{ preference: ThemePreference, resolved: 'light' | 'dark' }`
+- The event fires on every theme change, including system preference changes when preference is "system".
+
+**Advanced Usage**
+- Access the full controller via `window.Bonsai.theme` for subscription, preference queries, etc.
+- Both `window.Bonsai.theme` and `window.Bonsai.actions.theme` are frozen with `Object.freeze()` to prevent mutation and ensure API stability.
+
+---
+
 ## 10. Workflow Checklist
 
 Before opening a PR, confirm:
