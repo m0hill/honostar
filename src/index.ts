@@ -32,7 +32,7 @@ app.use('*', except('/_/events', compress()))
 
 app.use('*', csrf())
 
-app.use('*', renderer)
+app.use('*', renderer())
 app.use('*', initContext)
 app.use('*', attachBus)
 app.use('*', datastarResponder)

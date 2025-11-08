@@ -1,9 +1,15 @@
 import type { Handler } from 'hono'
 import { streamSSE } from 'hono/streaming'
+import type { BonsaiConfig } from '@/core/config'
 import type { SSEPayload } from '@/core/datastar/bus'
 import { SseFormatter } from '@/core/datastar/generator'
 
-export const createSseEndpoint = (): Handler => {
+/**
+ * Creates an SSE endpoint handler with optional configuration
+ * @param cfg - Optional SSE configuration (defaults to 25s ping interval)
+ */
+export const createSseEndpoint = (cfg?: Pick<BonsaiConfig, 'sse'>): Handler => {
+  const pingMs = cfg?.sse?.pingIntervalMs ?? 25000
   return c =>
     streamSSE(c, async stream => {
       const clientId = c.var.clientId
@@ -19,7 +25,7 @@ export const createSseEndpoint = (): Handler => {
       await stream.writeSSE({ data: '', event: 'connection-established', id: clientId })
       const ping = setInterval(() => {
         void stream.writeSSE({ event: 'ping', data: '' })
-      }, 25000)
+      }, pingMs)
 
       const handleMessage = (msg: SSEPayload) => {
         if (msg.event === 'datastar-patch-elements') {

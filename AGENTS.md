@@ -30,7 +30,7 @@ Rules:
 
 ## 3. Page & Topic Wiring
 
-1. **Pages** (`createPage`) declare their topics. The renderer automatically subscribes via `<body data-init="@get('/_/events?topics=…')">`.
+1. **Pages** (`createPage`) declare their topics. The renderer automatically subscribes via `<body data-init="@get('<sse-endpoint>?topics=…')">` (endpoint defaults to `/_/events`, configurable via `BonsaiConfig`).
 2. Components that will be patched must expose a **stable root ID** (`id="issues-list"`).
 3. SSE responses should target those IDs and use default `outer` morphing unless you’re intentionally appending/prepending list items.
 
@@ -115,15 +115,68 @@ c.var.datastar.reply([
 
 ---
 
-## 7. CSP & Security
+## 7. Framework Configuration
 
-- `src/core/renderer.tsx` already emits `<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-eval';">`. Never remove `unsafe-eval`; Datastar expressions rely on `Function()`.
+**BonsaiConfig System**
+- Bonsai is configurable via a typed `BonsaiConfig` object with safe defaults.
+- The `renderer()` and `createSseEndpoint()` factories accept optional config overrides.
+- Zero-config usage works out of the box—defaults match previous hardcoded behavior.
+
+**Configuration Structure** (`src/core/config.ts`)
+```typescript
+type BonsaiConfig = {
+  assets: {
+    css: string          // Default: '/styles.css'
+    runtime: string      // Default: '/runtime.js'
+    datastar: string     // Default: '/datastar.js'
+  }
+  endpoints: {
+    sse: string          // Default: '/_/events'
+  }
+  security: {
+    csp: string          // Template with ${nonce} placeholder
+  }
+  sse?: {
+    pingIntervalMs?: number  // Default: 25000
+  }
+}
+```
+
+**Usage Patterns**
+```typescript
+// Zero-config (recommended for most apps)
+app.use('*', renderer())
+app.get('/_/events', createSseEndpoint())
+
+// Custom configuration
+const config = {
+  assets: { css: '/assets/styles.css' },
+  endpoints: { sse: '/events' },
+  security: { csp: "script-src 'self' 'unsafe-eval' 'nonce-${nonce}' cdn.example.com;" },
+  sse: { pingIntervalMs: 30000 }
+}
+app.use('*', renderer(config))
+app.get('/events', createSseEndpoint(config))
+```
+
+**CSP Requirements**
+- CSP MUST include `'unsafe-eval'` (Datastar expressions rely on `Function()`).
+- The renderer automatically injects the per-request nonce via `${nonce}` template replacement.
+- Extend the CSP string to allow additional script sources if needed, but never remove `'unsafe-eval'`.
+
+**Security Rules**
 - Sanitize/escape any untrusted HTML strings you interpolate into JSX attributes.
 - Never leak credentials or CSRF tokens to the client beyond what `renderer` already exposes via the runtime meta/script.
 
 ---
 
-## 8. SSE Events & SDK Methods
+## 8. CSP & Security (Legacy)
+
+This section is now covered by Framework Configuration (section 7).
+
+---
+
+## 9. SSE Events & SDK Methods
 
 **Core Datastar SSE Events** (sent over the wire):
 - `datastar-patch-elements` - Morph/patch HTML into the DOM
@@ -140,7 +193,7 @@ c.var.datastar.reply([
 
 ---
 
-## 9. Theme System & Global APIs
+## 10. Theme System & Global APIs
 
 **Architecture**
 - Bonsai uses a server-rendered theme provider with a client-side controller to prevent FOUC and enable seamless theme switching.
@@ -192,7 +245,7 @@ data-on:bonsai-theme-change__window="renderChart(evt.detail.resolved)"
 
 ---
 
-## 10. shadcn/ui + Hono JSX
+## 11. shadcn/ui + Hono JSX
 
 - **Design System**: shadcn/ui components live under `src/components/ui`. Styling depends on `class-variance-authority`, `clsx`, `tailwind-merge`, and `lucide-react`, with tokens defined in `styles.css` and the `cn()` helper in `src/lib/utils.ts`.
 - **Adding Components**: run `bunx --bun shadcn@latest add <component>` to scaffold, then convert from React to Hono JSX—drop React/Radix imports, replace `className` with `class`, remove `Slot`/`asChild`, and keep markup in native HTML elements.
@@ -204,7 +257,7 @@ data-on:bonsai-theme-change__window="renderChart(evt.detail.resolved)"
 
 ---
 
-## 11. Architecture & Meta-Framework
+## 12. Architecture & Meta-Framework
 
 **What is Bonsai?**
 - Bonsai is a **runtime-agnostic** meta-framework built on Hono (web server) and Datastar (hypermedia reactivity).
@@ -272,7 +325,7 @@ data-on:bonsai-theme-change__window="renderChart(evt.detail.resolved)"
 
 ---
 
-## 12. Pub/Sub Bus & Multi-Instance Scaling
+## 13. Pub/Sub Bus & Multi-Instance Scaling
 
 **Bus Abstraction**
 - Bonsai uses a `PubSubBus` interface to decouple SSE distribution from implementation.
@@ -321,7 +374,7 @@ bus.toAll(msg) // Broadcast to all connected clients
 
 ---
 
-## 13. Type-Safe Routes
+## 14. Type-Safe Routes
 
 **Route Definition**
 - Routes are auto-generated from `src/pages/` file structure.
@@ -367,29 +420,30 @@ return c.redirect(routes.issues.id.href({ id: created.id }))
 
 ---
 
-## 14. Workflow Checklist
+## 15. Workflow Checklist
 
 Before opening a PR, confirm:
 
-1. **CSP** still allows `'unsafe-eval'`.
-2. **Signals** contain no secrets; `data-persist` (if used) filters sensitive data.
-3. **`data-computed` purity**; moved side-effects to `data-effect`.
-4. **Indicators before init**; no request starts without its indicator.
-5. **`data-show`** elements include `style="display:none"`.
-6. **Forms/file inputs** follow the single-handling rule.
-7. **Topics & SSE**: shared updates broadcast via defined topics; patch targets have IDs.
-8. **No explicit `mode: 'outer'`** - it's the default, omit it.
-9. **Fat patches** - prefer full region re-renders over incremental append/prepend.
-10. **Modals** conform to the pattern (Escape/outside close, focus trap, teardown).
-11. **`openWhenHidden`** only where truly needed.
-12. **Routes manifest** is regenerated (`bun run routes:generate` runs automatically in dev/build).
-13. **Type-safe routes** - use `routes` object instead of hardcoded strings.
-14. **Bus usage** - use `c.var.datastar.reply()`/`broadcast()` instead of calling bus directly.
-15. **Lint + typecheck** (`bun run lint`, `bun run typecheck`) succeed locally; include results in your summary if requested.
+1. **Config**: If customizing assets/endpoints/CSP, use `renderer(config)` and `createSseEndpoint(config)` factories.
+2. **CSP** still allows `'unsafe-eval'` (required for Datastar).
+3. **Signals** contain no secrets; `data-persist` (if used) filters sensitive data.
+4. **`data-computed` purity**; moved side-effects to `data-effect`.
+5. **Indicators before init**; no request starts without its indicator.
+6. **`data-show`** elements include `style="display:none"`.
+7. **Forms/file inputs** follow the single-handling rule.
+8. **Topics & SSE**: shared updates broadcast via defined topics; patch targets have IDs.
+9. **No explicit `mode: 'outer'`** - it's the default, omit it.
+10. **Fat patches** - prefer full region re-renders over incremental append/prepend.
+11. **Modals** conform to the pattern (Escape/outside close, focus trap, teardown).
+12. **`openWhenHidden`** only where truly needed.
+13. **Routes manifest** is regenerated (`bun run routes:generate` runs automatically in dev/build).
+14. **Type-safe routes** - use `routes` object instead of hardcoded strings.
+15. **Bus usage** - use `c.var.datastar.reply()`/`broadcast()` instead of calling bus directly.
+16. **Lint + typecheck** (`bun run lint`, `bun run typecheck`) succeed locally; include results in your summary if requested.
 
 ---
 
-## 15. Quick Start for New Features
+## 16. Quick Start for New Features
 
 1. **Model shared vs tab-specific** state to determine reply/broadcast.
 2. **Add/extend topic** in `src/lib/topics.ts`.
