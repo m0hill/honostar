@@ -1,19 +1,20 @@
 import { routes } from '@/routes'
 import type { IssueWithAuthor } from '@/types'
+import { Card } from './ui/card'
 
 export default function IssuesList({ issues }: { issues: IssueWithAuthor[] }) {
   return (
-    <div id="issues-list" class="bg-gray-800 rounded-lg shadow-lg">
-      <ul class="divide-y divide-gray-700">
+    <Card id="issues-list" class="gap-0 py-0">
+      <ul class="divide-y divide-border">
         {issues.length > 0 ? (
           issues.map(issue => (
             <li key={issue.id}>
               <a
                 href={routes.issues.show.href({ id: String(issue.id) })}
-                class="block p-4 hover:bg-gray-700/50 transition-colors"
+                class="block p-4 hover:bg-accent/50 transition-colors"
               >
                 <div class="flex items-center space-x-4">
-                  <div class="text-green-400">
+                  <div class="text-primary">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       class="h-6 w-6"
@@ -30,8 +31,8 @@ export default function IssuesList({ issues }: { issues: IssueWithAuthor[] }) {
                     </svg>
                   </div>
                   <div>
-                    <p class="font-semibold text-lg text-white">{issue.title}</p>
-                    <p class="text-sm text-gray-400">
+                    <p class="font-semibold text-lg">{issue.title}</p>
+                    <p class="text-sm text-muted-foreground">
                       #{issue.id} opened by {issue.author.username}
                     </p>
                   </div>
@@ -40,9 +41,9 @@ export default function IssuesList({ issues }: { issues: IssueWithAuthor[] }) {
             </li>
           ))
         ) : (
-          <li class="p-4 text-center text-gray-400">No issues found.</li>
+          <li class="p-4 text-center text-muted-foreground">No issues found.</li>
         )}
       </ul>
-    </div>
+    </Card>
   )
 }

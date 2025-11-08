@@ -1,5 +1,9 @@
 import type { Label } from '@/types'
 import LabelsSection from './LabelsSection'
+import { Button } from './ui/button'
+import { Input } from './ui/input'
+import { Label as UILabel } from './ui/label'
+import { Textarea } from './ui/textarea'
 
 export default function IssueModal({ labels }: { labels: Label[] }) {
   return (
@@ -40,19 +44,20 @@ export default function IssueModal({ labels }: { labels: Label[] }) {
         data-init="$createIssueModal.open && $modalEl.focus()"
         data-on:click__outside="$createIssueModal.open = false"
       >
-        <div class="w-[min(100vw,40rem)] mx-4 sm:mx-0 bg-gray-800 text-white rounded-lg shadow-lg p-6">
-          <div class="flex items-center justify-between mb-4">
+        <div class="w-[min(100vw,40rem)] mx-4 sm:mx-0 bg-card text-card-foreground rounded-xl border shadow-lg p-6">
+          <div class="flex items-center justify-between mb-6">
             <h2 id="create-issue-title" class="text-xl font-semibold">
               Create Issue
             </h2>
-            <button
+            <Button
               type="button"
-              class="text-gray-400 hover:text-gray-200"
+              variant="ghost"
+              size="icon-sm"
               aria-label="Close"
               data-on:click="$createIssueModal.open = false"
             >
               ✕
-            </button>
+            </Button>
           </div>
 
           <form
@@ -64,65 +69,46 @@ export default function IssueModal({ labels }: { labels: Label[] }) {
             <div
               data-show="$createIssueModal.error"
               style="display:none"
-              class="p-3 bg-red-900/50 border border-red-700 rounded-md text-red-200 text-sm"
+              class="p-3 bg-destructive/10 border border-destructive rounded-md text-destructive text-sm"
               role="alert"
             >
               <span data-text="$createIssueModal.error"></span>
             </div>
 
-            <label class="block">
-              <span class="text-sm text-gray-300">Title</span>
-              <input
-                class="mt-1 w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md"
-                data-bind="issue.title"
-                required
-              />
-            </label>
+            <div class="space-y-2">
+              <UILabel for="issue-title">Title</UILabel>
+              <Input id="issue-title" data-bind="issue.title" required />
+            </div>
 
-            <label class="block">
-              <span class="text-sm text-gray-300">Description</span>
-              <textarea
-                class="mt-1 w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md"
-                rows={5}
-                data-bind="issue.description"
-              ></textarea>
-            </label>
+            <div class="space-y-2">
+              <UILabel for="issue-description">Description</UILabel>
+              <Textarea id="issue-description" data-bind="issue.description" />
+            </div>
 
-            <div>
-              <span class="block text-sm text-gray-300 mb-1">Labels</span>
+            <div class="space-y-2">
+              <UILabel>Labels</UILabel>
               <LabelsSection labels={labels} />
             </div>
 
-            <label class="block">
-              <span class="text-sm text-gray-300">Image (optional)</span>
-              <input
-                id="image-input"
-                type="file"
-                accept="image/*"
-                class="mt-1 block w-full text-gray-300"
-                data-bind="issue.image"
-              />
-            </label>
+            <div class="space-y-2">
+              <UILabel for="issue-image">Image (optional)</UILabel>
+              <Input id="issue-image" type="file" accept="image/*" data-bind="issue.image" />
+            </div>
 
-            <div class="pt-2 flex justify-end gap-3">
-              <button
+            <div class="pt-4 flex justify-end gap-3">
+              <Button
                 type="button"
-                class="px-4 py-2 bg-gray-700 rounded-md"
+                variant="outline"
                 data-on:click="$createIssueModal.open = false"
               >
                 Cancel
-              </button>
-              <button
-                type="submit"
-                class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-md font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-                data-attr:disabled="$creating"
-                data-auto-focus
-              >
-                <span data-show="!$creating">Save</span>
+              </Button>
+              <Button type="submit" data-attr:disabled="$creating" data-auto-focus>
+                <span data-show="!$creating">Create Issue</span>
                 <span data-show="$creating" style="display:none">
-                  Saving...
+                  Creating...
                 </span>
-              </button>
+              </Button>
             </div>
           </form>
         </div>

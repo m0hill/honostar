@@ -21,7 +21,7 @@ export const renderer = factory.createMiddleware(async (c, next) => {
     }
     const runtimeDataJson = JSON.stringify(runtimeData).replace(/</g, '\\u003c')
     return (
-      <html lang="en">
+      <html lang="en" class="dark">
         <head>
           <meta charSet="utf-8" />
           <meta name="color-scheme" content="dark light" />
