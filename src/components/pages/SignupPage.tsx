@@ -4,13 +4,13 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { routes } from '@/routes'
 
-export default function LoginPage() {
+export function SignupPage() {
   return (
     <div class="flex items-center justify-center min-h-screen bg-background text-foreground px-4">
       <Card class="w-full max-w-md">
         <CardHeader class="text-center">
-          <CardTitle class="text-3xl">Welcome Back</CardTitle>
-          <CardDescription>Enter your credentials to continue</CardDescription>
+          <CardTitle class="text-3xl">Create Account</CardTitle>
+          <CardDescription>Enter your details to sign up</CardDescription>
         </CardHeader>
 
         <CardContent class="space-y-6">
@@ -24,7 +24,7 @@ export default function LoginPage() {
 
           <form
             class="space-y-4"
-            data-on:submit__prevent="@post('/auth/login')"
+            data-on:submit__prevent="@post('/auth/signup')"
             data-signals__ifmissing='{"error":"","form":{"username":"","password":""}}'
           >
             <div class="space-y-2">
@@ -50,17 +50,17 @@ export default function LoginPage() {
             </div>
 
             <Button type="submit" class="w-full">
-              Login
+              Sign Up
             </Button>
           </form>
 
           <div class="mt-4 text-center text-sm text-muted-foreground">
-            <span>Don&apos;t have an account?</span>{' '}
+            <span>Already have an account?</span>{' '}
             <a
-              href={routes.signup.href()}
+              href={routes.auth.login.href()}
               class="font-medium text-primary underline-offset-4 hover:underline"
             >
-              Sign up
+              Log in
             </a>
           </div>
         </CardContent>

@@ -24,6 +24,10 @@ export const routesManifest: RouteManifestEntry[] = [
     load: () => import("./pages/logout"),
   },
   {
+    routePath: "/signup",
+    load: () => import("./pages/signup"),
+  },
+  {
     routePath: "/login",
     load: () => import("./pages/login"),
   },

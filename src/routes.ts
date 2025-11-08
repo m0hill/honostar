@@ -18,6 +18,7 @@ export const routes = route({
     show: '/issues/:id',
   },
   labels: '/labels',
+  signup: '/signup',
   sse: '/_/events',
 })
 
