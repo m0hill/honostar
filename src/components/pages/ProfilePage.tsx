@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { routes } from '@/routes'
 import type { User } from '@/types'
 
 export default function ProfilePage({ user }: { user: User }) {
@@ -10,9 +11,12 @@ export default function ProfilePage({ user }: { user: User }) {
           <CardTitle class="text-4xl">Welcome!</CardTitle>
           <CardDescription class="text-2xl mt-2">{user.username}</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent class="space-y-4">
+          <Button asChild variant="default" size="lg" class="w-full">
+            <a href={routes.home.href()}>View Issues</a>
+          </Button>
           <form data-on:submit__prevent="@post('/logout')">
-            <Button type="submit" variant="destructive" size="lg">
+            <Button type="submit" variant="destructive" size="lg" class="w-full">
               Logout
             </Button>
           </form>
