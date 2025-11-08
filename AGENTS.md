@@ -192,7 +192,179 @@ data-on:bonsai-theme-change__window="renderChart(evt.detail.resolved)"
 
 ---
 
-## 10. Workflow Checklist
+## 10. shadcn/ui + Hono JSX
+
+- **Design System**: shadcn/ui components live under `src/components/ui`. Styling depends on `class-variance-authority`, `clsx`, `tailwind-merge`, and `lucide-react`, with tokens defined in `styles.css` and the `cn()` helper in `src/lib/utils.ts`.
+- **Adding Components**: run `bunx --bun shadcn@latest add <component>` to scaffold, then convert from React to Hono JSX—drop React/Radix imports, replace `className` with `class`, remove `Slot`/`asChild`, and keep markup in native HTML elements.
+- **Typing Requirements**: define props via `type Props = JSX.IntrinsicElements['tag'] & { customVariantProps }`; never fall back to `[key: string]: any`. Variant-driven styling stays in `cva` definitions so types line up with `VariantProps<typeof componentVariants>`.
+- **Available Building Blocks**: `Button`, `Card` (+Header/Title/Description/Content/Action/Footer), `Input`, `Label`, `Badge`, and `Textarea` are pre-converted and Datastar-safe. Import them from `@/components/ui/*` and freely add `data-*` attributes for signals, indicators, and bindings.
+- **Usage Patterns**: always merge classes with `cn()`, keep elements focusable/ARIA-correct, and wrap datastar conditionals with `data-show` + `style="display:none"`. For actions, pair shadcn controls with `@post(...)` and indicator signals the same way other Bonsai components do.
+- **Trigger Rule**: when a shadcn control acts as a Datastar trigger, style the native `<button>`/`<a>` directly (e.g., via `buttonVariants`). Never nest a shadcn `<Button>` inside another interactive element or you'll swallow the Datastar handlers.
+- **Verification**: after adding or editing components, run `bun run build:css` and `bun run typecheck`.
+
+---
+
+## 11. Architecture & Meta-Framework
+
+**What is Bonsai?**
+- Bonsai is a meta-framework built on Hono (web server) and Datastar (hypermedia reactivity).
+- It provides a batteries-included foundation for building hypermedia-driven MPAs with real-time SSE updates.
+- Core philosophy: server-rendered HTML is the source of truth, enhanced with reactive signals and live patches.
+
+**Core Framework Structure** (`src/core/`)
+- `router/` - File-based routing with compile-time manifest generation
+- `datastar/` - SSE event bus, responders, formatters, and middleware
+- `page.ts` - Type-safe page and handler definitions
+- `route.ts` - Type-safe route helpers with parameter extraction
+- `renderer.tsx` - Server-side JSX renderer with theme, CSP, and nonce support
+- `theme.ts` & `theme-client.ts` - Server/client theme system
+- `security.ts` - CSRF protection
+- `middleware.ts` - Factory for creating app middleware
+
+**Router System**
+- Routes live in `src/pages/` following Next.js-style file conventions:
+  - `index.tsx` → `/`
+  - `issues.tsx` → `/issues`
+  - `issues/[id].tsx` → `/issues/:id`
+  - `issues/[id]/comments.tsx` → `/issues/:id/comments`
+  - Files starting with `_` are ignored (e.g., `_components/`)
+- **Build-time manifest generation** (`scripts/generate-route-manifest.ts`):
+  - Scans `src/pages/` and generates `src/routes.manifest.ts` with lazy imports
+  - Generates `src/routes.ts` with type-safe route helpers
+  - Run via `bun run routes:generate` (included in dev/build scripts)
+- **Route configuration** (`scripts/routes.config.json`):
+  - Maps routes to custom property paths for the `routes` object
+  - Supports multiple aliases per route
+  - Falls back to auto-generated paths from URL segments
+- **Type-safe routing**:
+  ```typescript
+  import { routes } from '@/routes'
+  
+  routes.issues.href() // → '/issues'
+  routes.issues.id.href({ id: 123 }) // → '/issues/123'
+  routes.issues.id.pattern // → '/issues/:id'
+  ```
+
+**Pages & Handlers**
+- Use `createPage()` for GET routes that render full pages:
+  ```typescript
+  export default createPage({
+    use: [requireAuth], // Optional middleware
+    loader: async (c) => ({ data: await fetchData(c) }), // Optional loader
+    component: (props) => <div>{props.data}</div>,
+    topics: ['issues:list'], // SSE topics to subscribe
+  })
+  ```
+- Use `createHandler()` for POST/PUT/PATCH/DELETE routes:
+  ```typescript
+  export const POST = createHandler({
+    use: [requireAuth],
+    async handler(c) {
+      // Validate, mutate DB, broadcast updates
+      return c.var.datastar.reply([...effects])
+    }
+  })
+  ```
+- **Never export a page and a handler with the same HTTP method** - the router will register only the first match.
+
+---
+
+## 12. Pub/Sub Bus & Multi-Instance Scaling
+
+**Bus Abstraction**
+- Bonsai uses a `PubSubBus` interface to decouple SSE distribution from implementation.
+- Two implementations:
+  - `MemoryBus` - In-process pub/sub (default, single-instance)
+  - `RedisBus` - Redis-backed pub/sub (multi-instance deployments)
+
+**When to Use Which**
+- **MemoryBus** (default): Development, single-server deployments, no Redis available.
+- **RedisBus**: Production with multiple server instances, horizontal scaling, or when SSE clients may connect to different servers.
+
+**Configuration** (`src/middleware/bus.ts`)
+- The app automatically detects `BONSAI_REDIS_URL` or `REDIS_URL` environment variables.
+- If present, initializes `RedisBus` with separate publisher/subscriber connections.
+- Falls back to `MemoryBus` if Redis is unavailable.
+- **Never hardcode bus selection** - use the environment-based factory in `src/middleware/bus.ts`.
+
+**RedisBus Internals**
+- Channel naming: `${prefix}:${kind}:${id}` (e.g., `bonsai:bus:topic:issues:list`)
+- Three channel types:
+  - `client` - Tab-specific messages (replies)
+  - `topic` - Topic-based broadcasts
+  - `broadcast` - Global messages to all connected clients
+- Manages subscriptions dynamically: subscribes when first sink registers, unsubscribes when last sink deregisters.
+- Uses reference counting to track sinks across multiple topic/client subscriptions.
+
+**Bus API** (available via `c.var.bus`)
+```typescript
+// Low-level API (use datastar responder instead)
+bus.subscribeClient(clientId, sink) // Subscribe to client-specific messages
+bus.subscribeTopic(topic, sink) // Subscribe to topic broadcasts
+bus.toClient(clientId, msg) // Send SSE payload to a specific client
+bus.toTopic(topic, msg) // Broadcast SSE payload to all subscribers of a topic
+bus.toAll(msg) // Broadcast to all connected clients
+```
+
+**Best Practices**
+- Always use `c.var.datastar.reply()` and `c.var.datastar.broadcast()` instead of calling bus methods directly.
+- The datastar responder handles rendering, serialization, and bus routing.
+- Define all topics in `src/lib/topics.ts` and reference them via imports - never inline topic strings.
+
+**Testing**
+- `MemoryBus` and `RedisBus` share the same test suite (`bus.test.ts`, `redis-bus.test.ts`).
+- Both implementations must satisfy the `PubSubBus` contract.
+- Tests verify: subscription/unsubscription, targeted client messages, topic broadcasts, global broadcasts, and cleanup.
+
+---
+
+## 13. Type-Safe Routes
+
+**Route Definition**
+- Routes are auto-generated from `src/pages/` file structure.
+- `scripts/generate-route-manifest.ts` runs before every build/dev to update `src/routes.ts` and `src/routes.manifest.ts`.
+- **Never manually edit** `src/routes.ts` or `src/routes.manifest.ts` - they are overwritten on every build.
+
+**Route Helpers** (`src/core/route.ts`)
+- `route()` - Builds a nested object tree of route definitions with type-safe `.href()` methods.
+- Parameter extraction: `:param` in route paths becomes required parameter in `.href({ param: value })`.
+- Type safety: TypeScript enforces parameter presence and types at compile time.
+
+**Customizing Route Paths** (`scripts/routes.config.json`)
+```json
+{
+  "/issues/:id": [["issues", "detail"]],
+  "/issues/:id/comments": [["issues", "detail", "comments"], ["comments", "forIssue"]]
+}
+```
+- Maps URL patterns to property paths in the `routes` object.
+- Supports multiple aliases: one route can be accessed via different paths in the `routes` tree.
+- If a route is not in the config, it falls back to auto-generated property names (URL segments with camelCase sanitization).
+
+**Usage in Components**
+```tsx
+import { routes } from '@/routes'
+
+<a href={routes.issues.href()}>All Issues</a>
+<a href={routes.issues.id.href({ id: issue.id })}>Issue #{issue.id}</a>
+<a href={routes.issues.new.href()}>New Issue</a>
+```
+
+**Usage in Handlers**
+```typescript
+import { routes } from '@/routes'
+
+// Redirect after mutation
+return c.redirect(routes.issues.id.href({ id: created.id }))
+```
+
+**Parameter Encoding**
+- Route helpers automatically `encodeURIComponent()` parameter values.
+- **Never manually encode** parameters before passing to `.href()`.
+
+---
+
+## 14. Workflow Checklist
 
 Before opening a PR, confirm:
 
@@ -207,11 +379,14 @@ Before opening a PR, confirm:
 9. **Fat patches** - prefer full region re-renders over incremental append/prepend.
 10. **Modals** conform to the pattern (Escape/outside close, focus trap, teardown).
 11. **`openWhenHidden`** only where truly needed.
-12. **Lint + typecheck** (`bun run lint`, `bun run typecheck`) succeed locally; include results in your summary if requested.
+12. **Routes manifest** is regenerated (`bun run routes:generate` runs automatically in dev/build).
+13. **Type-safe routes** - use `routes` object instead of hardcoded strings.
+14. **Bus usage** - use `c.var.datastar.reply()`/`broadcast()` instead of calling bus directly.
+15. **Lint + typecheck** (`bun run lint`, `bun run typecheck`) succeed locally; include results in your summary if requested.
 
 ---
 
-## 11. Quick Start for New Features
+## 15. Quick Start for New Features
 
 1. **Model shared vs tab-specific** state to determine reply/broadcast.
 2. **Add/extend topic** in `src/lib/topics.ts`.
@@ -227,16 +402,4 @@ If in doubt, search the repo for an existing pattern (`LabelsSection`, `IssueMod
 
 ---
 
-## 12. shadcn/ui + Hono JSX
-
-- **Design System**: shadcn/ui components live under `src/components/ui`. Styling depends on `class-variance-authority`, `clsx`, `tailwind-merge`, and `lucide-react`, with tokens defined in `styles.css` and the `cn()` helper in `src/lib/utils.ts`.
-- **Adding Components**: run `bunx --bun shadcn@latest add <component>` to scaffold, then convert from React to Hono JSX—drop React/Radix imports, replace `className` with `class`, remove `Slot`/`asChild`, and keep markup in native HTML elements.
-- **Typing Requirements**: define props via `type Props = JSX.IntrinsicElements['tag'] & { customVariantProps }`; never fall back to `[key: string]: any`. Variant-driven styling stays in `cva` definitions so types line up with `VariantProps<typeof componentVariants>`.
-- **Available Building Blocks**: `Button`, `Card` (+Header/Title/Description/Content/Action/Footer), `Input`, `Label`, `Badge`, and `Textarea` are pre-converted and Datastar-safe. Import them from `@/components/ui/*` and freely add `data-*` attributes for signals, indicators, and bindings.
-- **Usage Patterns**: always merge classes with `cn()`, keep elements focusable/ARIA-correct, and wrap datastar conditionals with `data-show` + `style="display:none"`. For actions, pair shadcn controls with `@post(...)` and indicator signals the same way other Bonsai components do.
-- **Trigger Rule**: when a shadcn control acts as a Datastar trigger, style the native `<button>`/`<a>` directly (e.g., via `buttonVariants`). Never nest a shadcn `<Button>` inside another interactive element or you'll swallow the Datastar handlers.
-- **Verification**: after adding or editing components, run `bun run build:css` and `bun run typecheck`.
-
----
-
-By adhering to these conventions we keep Bonsai predictable: every page load is deterministic, real-time updates heal themselves, and agents can ship features quickly without regressing the MPA contract. When you find a scenario not covered here, document it in this file before landing your change.***
+By adhering to these conventions we keep Bonsai predictable: every page load is deterministic, real-time updates heal themselves, and agents can ship features quickly without regressing the MPA contract. When you find a scenario not covered here, document it in this file before landing your change.

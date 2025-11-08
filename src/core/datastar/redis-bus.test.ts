@@ -2,8 +2,8 @@ import * as assert from 'node:assert/strict'
 import { EventEmitter } from 'node:events'
 import { describe, it } from 'node:test'
 import type { SSEPayload } from '@/core/datastar/bus'
-import type { PatchElementsOptions } from '@/core/datastar/types'
 import { RedisBus, type RedisClient } from '@/core/datastar/redis-bus'
+import type { PatchElementsOptions } from '@/core/datastar/types'
 
 const patch = (html: string): SSEPayload => ({
   event: 'datastar-patch-elements',

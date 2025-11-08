@@ -2,7 +2,7 @@
 import { mkdir } from 'node:fs/promises'
 import { dirname, join, posix, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import routesConfigJson from './routes.config.json' assert { type: 'json' }
+import routesConfigJson from './routes.config.json' with { type: 'json' }
 
 const repoRoot = resolve(fileURLToPath(new URL('..', import.meta.url)))
 const pagesDir = resolve(repoRoot, 'src/pages')
@@ -40,7 +40,9 @@ async function ensureDirForFile(path: string) {
 }
 
 function countDynamicSegments(path: string): number {
-  return path.split('/').filter(seg => seg.startsWith(':') || seg === '*' || seg === '*?' || seg === '**').length
+  return path
+    .split('/')
+    .filter(seg => seg.startsWith(':') || seg === '*' || seg === '*?' || seg === '**').length
 }
 
 function buildEntries(): ManifestEntry[] {
@@ -169,7 +171,8 @@ function buildRoutesFile(entries: ManifestEntry[]) {
 
   for (const routePath of Array.from(paths).sort()) {
     const configured = routesConfig[routePath]
-    const propertyPaths = configured && configured.length > 0 ? configured : [fallbackPropertyPath(routePath)]
+    const propertyPaths =
+      configured && configured.length > 0 ? configured : [fallbackPropertyPath(routePath)]
     for (const propertyPath of propertyPaths) {
       assignRoute(tree, propertyPath, routePath)
     }
@@ -193,7 +196,7 @@ function serializeTree(node: RouteValue, indentLevel: number): string {
   if (typeof node === 'string') {
     return `'${node}'`
   }
-  const entries = Object.entries(node).sort(([a], [b]) => a.localeCompare(b))
+  const entries = Object.entries(node).toSorted(([a], [b]) => a.localeCompare(b))
   const inner = entries
     .map(([key, value]) => `${indent}  ${key}: ${serializeTree(value, indentLevel + 1)},`)
     .join('\n')

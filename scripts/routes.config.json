@@ -1,10 +1,7 @@
 {
   "/": [["home"]],
   "/auth/:action": [["auth", "action"]],
-  "/issues": [
-    ["issues", "list"],
-    ["issues", "create"]
-  ],
+  "/issues": [["issues", "list"], ["issues", "create"]],
   "/issues/:id": [["issues", "show"]],
   "/issues/:id/comments": [["issues", "comments"]],
   "/issues/new": [["issues", "new"]],

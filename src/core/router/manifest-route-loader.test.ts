@@ -1,6 +1,9 @@
 import * as assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { createManifestRouteLoader, type RouteManifestEntry } from '@/core/router/manifest-route-loader'
+import {
+  createManifestRouteLoader,
+  type RouteManifestEntry,
+} from '@/core/router/manifest-route-loader'
 
 void describe('createManifestRouteLoader', () => {
   void it('yields manifest entries in order and loads modules lazily', async () => {
