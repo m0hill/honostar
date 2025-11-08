@@ -114,10 +114,14 @@ export default function IssueModal({ labels }: { labels: Label[] }) {
               </button>
               <button
                 type="submit"
-                class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-md font-semibold"
+                class="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-md font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                data-attr:disabled="$creating"
                 data-auto-focus
               >
-                Save
+                <span data-show="!$creating">Save</span>
+                <span data-show="$creating" style="display:none">
+                  Saving...
+                </span>
               </button>
             </div>
           </form>
