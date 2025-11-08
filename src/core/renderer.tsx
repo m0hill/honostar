@@ -78,10 +78,8 @@ export const renderer = factory.createMiddleware(async (c, next) => {
             dangerouslySetInnerHTML={{
               __html: `
               @view-transition { navigation: auto; }
-              /* Prevent white flash before CSS; explicitly participate in VT */
+              /* Explicitly participate in VT */
               html {
-                background: #0b0f1a;
-                color-scheme: dark;
                 view-transition-name: root;
               }
               body { background: transparent; }
