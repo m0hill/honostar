@@ -10,6 +10,7 @@ export const routes = route({
     profile: '/profile',
   },
   home: '/',
+  inspectorDemo: '/inspector-demo',
   issues: {
     comments: '/issues/:id/comments',
     create: '/issues',

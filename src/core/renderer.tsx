@@ -141,7 +141,11 @@ export const renderer = (userConfig?: Partial<BonsaiConfig>) => {
             <script type="module" src={config.assets.datastar} />
           </head>
           <body data-init={`@get('${config.endpoints.sse}${topicsQuery}')`}>
-            <div id="app">{children}</div>
+            <div id="app">
+              {children}
+              {/* Hidden element for inspector to read all signals - must be inside app to access scoped signals */}
+              <pre id="ds-inspector-signals" data-json-signals style="display:none;"></pre>
+            </div>
             {/* Global overlay host for modals/overlays, persists across in-app navigations */}
             <div id="ds-overlays" aria-live="polite"></div>
           </body>

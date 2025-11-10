@@ -4,6 +4,10 @@ import type { RouteManifestEntry } from '@/core/router/manifest-route-loader'
 
 export const routesManifest: RouteManifestEntry[] = [
   {
+    routePath: "/inspector-demo",
+    load: () => import("./pages/inspector-demo"),
+  },
+  {
     routePath: "/issues/new",
     load: () => import("./pages/issues/new"),
   },

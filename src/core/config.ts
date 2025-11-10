@@ -99,6 +99,43 @@ export type BonsaiConfig = {
      */
     pingIntervalMs?: number
   }
+  /**
+   * Developer tools configuration
+   */
+  devtools?: {
+    /**
+     * Enable the Datastar Inspector for debugging signals and SSE events
+     * (default: false in production, true in development)
+     */
+    inspector?: {
+      enabled?: boolean
+      /**
+       * Keyboard shortcut to toggle inspector
+       * (default: 'Ctrl+Shift+D' or 'Cmd+Shift+D')
+       */
+      keyboardShortcut?: string
+      /**
+       * Maximum number of events to store in history
+       * (default: 100)
+       */
+      maxEvents?: number
+      /**
+       * Default tab to show when inspector opens
+       * (default: 'signals')
+       */
+      defaultTab?: 'signals' | 'patches' | 'sse' | 'persisted'
+      /**
+       * Default view mode for signals/persisted tabs
+       * (default: 'json')
+       */
+      defaultViewMode?: 'json' | 'table'
+      /**
+       * Default position of the inspector panel
+       * (default: 'bottom')
+       */
+      defaultPosition?: 'bottom' | 'right' | 'left' | 'top'
+    }
+  }
 }
 
 /**
@@ -131,6 +168,16 @@ export const DEFAULT_CONFIG: BonsaiConfig = {
   sse: {
     pingIntervalMs: 25000,
   },
+  devtools: {
+    inspector: {
+      enabled: false, // Disabled by default, enable per environment
+      keyboardShortcut: 'Ctrl+Shift+D',
+      maxEvents: 100,
+      defaultTab: 'signals',
+      defaultViewMode: 'json',
+      defaultPosition: 'bottom',
+    },
+  },
 }
 
 /**
@@ -157,6 +204,14 @@ export function createConfig(user?: Partial<BonsaiConfig>): BonsaiConfig {
       },
     },
     sse: { ...DEFAULT_CONFIG.sse, ...user?.sse },
+    devtools: {
+      ...DEFAULT_CONFIG.devtools,
+      ...user?.devtools,
+      inspector: {
+        ...DEFAULT_CONFIG.devtools?.inspector,
+        ...user?.devtools?.inspector,
+      },
+    },
   }
 
   // Auto-sync CSRF exceptPaths with SSE endpoint if not explicitly overridden

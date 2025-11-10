@@ -16,6 +16,14 @@ export { mountRoutes } from '@/core/router'
 export { generateRouteManifest } from '@/core/router/generator'
 export { createManifestRouteLoader } from '@/core/router/manifest-route-loader'
 export type { RouteLoader } from '@/core/router/types'
+export type {
+  InspectorApi,
+  InspectorConfig,
+  InspectorTab,
+  InspectorViewMode,
+  SignalFilter,
+} from '@/core/runtime/inspector'
+export { createInspector } from '@/core/runtime/inspector'
 export { csrf } from '@/core/security'
 export type { ThemeOptions, ThemePreference, ThemeRuntimeConfig, ThemeValue } from '@/core/theme'
 export { resolveThemeProvider } from '@/core/theme'

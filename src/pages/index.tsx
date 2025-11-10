@@ -26,7 +26,7 @@ function IndexPage({
             A simple, reactive issue tracker built with Bonsai and Datastar.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent class="space-y-4">
           {user ? (
             <div class="flex justify-between items-center">
               <p class="text-xl">
@@ -44,6 +44,11 @@ function IndexPage({
               </Button>
             </div>
           )}
+          <div class="pt-4 border-t">
+            <Button asChild variant="outline" size="sm">
+              <a href="/inspector-demo">🔍 Inspector Demo (Test Signals)</a>
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
