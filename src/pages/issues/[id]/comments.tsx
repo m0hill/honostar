@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { CommentsSection } from '@/components/pages/IssueDetailPage'
+import { CommentsSection } from '@/components/CommentsSection'
 import { createHandler } from '@/core/page'
 import { comments } from '@/db/schema'
 import { requireAuth } from '@/lib/auth-middleware'
