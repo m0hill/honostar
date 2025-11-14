@@ -6,9 +6,13 @@ import { installImageEnhancements } from '@/core/runtime/image'
 import type { InspectorConfig } from '@/core/runtime/inspector'
 import { createInspector } from '@/core/runtime/inspector'
 import { createModalHost } from '@/core/runtime/modals'
+import { installPluginSystem } from '@/core/runtime/plugins'
 import { readRuntimeData } from '@/core/runtime/runtime-data'
 import { ensureTabId } from '@/core/runtime/tab'
 import { createThemeController, installThemeActions } from '@/core/theme-client'
+
+// Import built-in plugins to register them with Datastar
+import '@/runtime/plugins'
 
 ;(function bootstrap() {
   const data = readRuntimeData()
@@ -20,6 +24,10 @@ import { createThemeController, installThemeActions } from '@/core/theme-client'
 
   const bonsai = ensureBonsai()
   bonsai.theme = theme ?? undefined
+
+  // Install plugin system early so user code can register plugins
+  const plugins = installPluginSystem()
+  bonsai.plugins = plugins
 
   const prefetch = createPrefetchClient({
     enabled: true,

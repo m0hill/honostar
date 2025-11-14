@@ -4,51 +4,51 @@ import type { RouteManifestEntry } from '@/core/router/manifest-route-loader'
 
 export const routesManifest: RouteManifestEntry[] = [
   {
-    routePath: "/inspector-demo",
-    load: () => import("./pages/inspector-demo"),
+    routePath: '/inspector-demo',
+    load: () => import('./pages/inspector-demo'),
   },
   {
-    routePath: "/issues/new",
-    load: () => import("./pages/issues/new"),
+    routePath: '/issues/new',
+    load: () => import('./pages/issues/new'),
   },
   {
-    routePath: "/profile",
-    load: () => import("./pages/profile"),
+    routePath: '/profile',
+    load: () => import('./pages/profile'),
   },
   {
-    routePath: "/issues",
-    load: () => import("./pages/issues"),
+    routePath: '/issues',
+    load: () => import('./pages/issues'),
   },
   {
-    routePath: "/labels",
-    load: () => import("./pages/labels"),
+    routePath: '/labels',
+    load: () => import('./pages/labels'),
   },
   {
-    routePath: "/logout",
-    load: () => import("./pages/logout"),
+    routePath: '/logout',
+    load: () => import('./pages/logout'),
   },
   {
-    routePath: "/signup",
-    load: () => import("./pages/signup"),
+    routePath: '/signup',
+    load: () => import('./pages/signup'),
   },
   {
-    routePath: "/login",
-    load: () => import("./pages/login"),
+    routePath: '/login',
+    load: () => import('./pages/login'),
   },
   {
-    routePath: "/",
-    load: () => import("./pages/index"),
+    routePath: '/',
+    load: () => import('./pages/index'),
   },
   {
-    routePath: "/issues/:id/comments",
-    load: () => import("./pages/issues/[id]/comments"),
+    routePath: '/issues/:id/comments',
+    load: () => import('./pages/issues/[id]/comments'),
   },
   {
-    routePath: "/auth/:action",
-    load: () => import("./pages/auth/[action]"),
+    routePath: '/auth/:action',
+    load: () => import('./pages/auth/[action]'),
   },
   {
-    routePath: "/issues/:id",
-    load: () => import("./pages/issues/[id]"),
+    routePath: '/issues/:id',
+    load: () => import('./pages/issues/[id]'),
   },
 ]

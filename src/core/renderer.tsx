@@ -86,8 +86,10 @@ export const renderer = (userConfig?: Partial<BonsaiConfig>) => {
             />
             <title>Bonsai</title>
             <link rel="stylesheet" href={config.assets.css} />
-            <link rel="modulepreload" href={config.assets.runtime} />
             <link rel="modulepreload" href={config.assets.datastar} />
+            <link rel="modulepreload" href={config.assets.runtime} />
+            {/* Load Datastar first so plugins can register with it */}
+            <script type="module" src={config.assets.datastar} />
             <script type="module" src={config.assets.runtime} />
 
             {/* Opt-in to native MPA view transitions and set subtle, fast defaults */}
@@ -138,7 +140,6 @@ export const renderer = (userConfig?: Partial<BonsaiConfig>) => {
             />
 
             <link rel="expect" href="#app" blocking="render" />
-            <script type="module" src={config.assets.datastar} />
           </head>
           <body data-init={`@get('${config.endpoints.sse}${topicsQuery}')`}>
             <div id="app">

@@ -60,12 +60,27 @@ function CommentForm({ issueId, user }: { issueId: number; user: User | null }) 
 }
 
 function IssueDetailPage({ issue, user }: { issue: IssueWithDetails; user: User | null }) {
+  const issueUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}${routes.issues.show.href({ id: issue.id })}`
+
   return (
     <div class="min-h-screen bg-background text-foreground flex flex-col items-center pt-10 px-4">
       <div class="max-w-4xl w-full">
-        <div class="mb-6">
+        <div class="mb-6 flex items-center justify-between">
           <Button asChild variant="link" class="p-0 h-auto">
             <a href={routes.home.href()}>&larr; Back to Issues</a>
+          </Button>
+
+          {/* Share button using clipboard plugin */}
+          <Button
+            variant="outline"
+            size="sm"
+            data-signals={JSON.stringify({ copied: false })}
+            data-on:click={`@clipboard('${issueUrl}'); $copied = true; setTimeout(() => $copied = false, 2000)`}
+          >
+            <span data-show="!$copied">Share Link</span>
+            <span data-show="$copied" style="display:none">
+              ✓ Copied!
+            </span>
           </Button>
         </div>
 
@@ -104,9 +119,25 @@ function IssueDetailPage({ issue, user }: { issue: IssueWithDetails; user: User 
           </CardContent>
         </Card>
 
-        <h2 class="mt-8 text-xl font-bold">Comments</h2>
-        <CommentsSection comments={issue.comments} />
-        <CommentForm issueId={issue.id} user={user} />
+        <div id="comments" class="scroll-mt-20">
+          <div class="mt-8 flex items-center justify-between">
+            <h2 class="text-xl font-bold">Comments</h2>
+            {issue.comments.length > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                data-on:click="@scroll('#comment-form', 'smooth', 'center')"
+              >
+                Add Comment
+              </Button>
+            )}
+          </div>
+          <CommentsSection comments={issue.comments} />
+        </div>
+
+        <div id="comment-form">
+          <CommentForm issueId={issue.id} user={user} />
+        </div>
       </div>
     </div>
   )

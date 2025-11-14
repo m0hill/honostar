@@ -31,6 +31,8 @@ export type {
   SignalFilter,
 } from '@/core/runtime/inspector'
 export { createInspector } from '@/core/runtime/inspector'
+export type { PluginHandler, PluginsApi } from '@/core/runtime/plugins'
+export { createPluginSystem, installPluginSystem } from '@/core/runtime/plugins'
 export { csrf } from '@/core/security'
 export type { ThemeOptions, ThemePreference, ThemeRuntimeConfig, ThemeValue } from '@/core/theme'
 export { resolveThemeProvider } from '@/core/theme'

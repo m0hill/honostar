@@ -16,6 +16,8 @@ import {
 } from '@/core'
 
 import '@/core/polyfills/compression.js'
+// Import built-in plugins - will be registered in the client runtime
+import '@/runtime/plugins'
 import { createManifestRouteLoader } from '@/core/router/manifest-route-loader'
 import { customEffects } from '@/custom-effects'
 import { auth } from '@/middleware/auth'
