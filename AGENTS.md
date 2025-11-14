@@ -19,8 +19,10 @@ Decide this **before** writing code:
 
 | Use | When | API |
 | --- | --- | --- |
-| `c.var.datastar.reply()` | Feedback that should only update the initiating tab (validation errors, modal close, toast) | tab-scoped SSE sent to the caller via `X-Tab-ID` |
+| `c.var.datastar.reply()` | Feedback that should only update the initiating tab (validation errors, modal close, toast) | Tab-scoped patch via HTTP (built-in effects) with automatic SSE fallback |
 | `c.var.datastar.broadcast(topic, …)` | Shared state that all viewers must see (new issue/comment/label) | broadcast to a page topic (define topics in `src/lib/topics.ts`) |
+
+`reply()` inspects the incoming request. If it came from a Datastar action and the response can be expressed as a single built-in effect (`patch-elements`, `patch-elements-seq`, or `patch-signals`), Bonsai returns an HTTP response (`text/html` or `application/json`) with the appropriate `datastar-*` headers so the client can morph the DOM without relying on the SSE bus. When the response contains multiple effects, custom effect handlers, or scripts, it automatically falls back to the prior SSE-based delivery through the request’s `X-Tab-ID`.
 
 Rules:
 1. Every shared state change must “fan out” through a **topic** defined in `src/lib/topics.ts`. Never inline topic strings.

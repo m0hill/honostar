@@ -99,6 +99,8 @@ export const POST = createHandler({
 
 **Rule**: Every shared state change must broadcast through a topic defined in `src/lib/topics.ts`.
 
+`reply()` now inspects the incoming request and, when it comes from a Datastar action, automatically returns HTTP patches for simple built-in effects (`patch-elements`, `patch-elements-seq`, `patch-signals`). The response includes the required `datastar-*` headers so the client can morph the DOM without needing an SSE connection. More complex replies (custom effects, execute-script, multi-effect responses) continue to use SSE just like before.
+
 ### SSE Patch Discipline
 
 ```typescript

@@ -33,12 +33,128 @@ const isExecuteScriptEffect = (
 
 export class DatastarResponder {
   private c: Context<AppEnv>
+  private isExecutingEffect = false
   public effectRegistry: EffectRegistry
 
   constructor(c: Context<AppEnv>) {
     this.c = c
     this.effectRegistry = new EffectRegistry()
     this.registerBuiltInEffects()
+  }
+
+  private isDatastarRequest(): boolean {
+    return this.c.req.header('datastar-request') !== null
+  }
+
+  private shouldAttemptHttpReply(toClient: boolean | undefined, topics?: string[]): boolean {
+    if (this.isExecutingEffect) return false
+    return Boolean(toClient && !topics && this.isDatastarRequest())
+  }
+
+  private mergeHeaders(
+    base: Record<string, string> | undefined,
+    overrides: Record<string, string>
+  ): Record<string, string> {
+    return {
+      ...base,
+      ...overrides,
+    }
+  }
+
+  private buildElementsHeaders(
+    opts: PatchElementsOptions | undefined,
+    base?: Record<string, string>
+  ): Record<string, string> {
+    const headers: Record<string, string> = this.mergeHeaders(base, {
+      'Content-Type': 'text/html; charset=utf-8',
+    })
+
+    if (opts?.selector) {
+      headers['datastar-selector'] = opts.selector
+    }
+    if (opts?.mode) {
+      headers['datastar-mode'] = opts.mode
+    }
+    if (typeof opts?.useViewTransition === 'boolean') {
+      headers['datastar-use-view-transition'] = String(opts.useViewTransition)
+    }
+
+    return headers
+  }
+
+  private buildSignalsHeaders(
+    opts: PatchSignalsOptions | undefined,
+    base?: Record<string, string>
+  ): Record<string, string> {
+    const headers: Record<string, string> = this.mergeHeaders(base, {
+      'Content-Type': 'application/json',
+    })
+
+    if (typeof opts?.onlyIfMissing === 'boolean') {
+      headers['datastar-only-if-missing'] = String(opts.onlyIfMissing)
+    }
+
+    return headers
+  }
+
+  private async renderNode(node: JSX.Element | string | null | undefined): Promise<string> {
+    if (node === null || node === undefined) return ''
+    if (typeof node === 'string') return node
+    return await this.c.var.renderFragmentToString(node)
+  }
+
+  private async renderElementsPayload(
+    payload: JSX.Element | JSX.Element[] | string
+  ): Promise<string> {
+    if (Array.isArray(payload)) {
+      const html = await Promise.all(payload.map(part => this.renderNode(part)))
+      return html.join('\n')
+    }
+    return await this.renderNode(payload)
+  }
+
+  private async renderElementsSeqPayload(payload: Array<JSX.Element | string>): Promise<string> {
+    const html = await Promise.all(payload.map(part => this.renderNode(part)))
+    return html.join('\n')
+  }
+
+  private async tryCreateHttpResponse(
+    effects: EffectDefinition[],
+    status: StatusCode,
+    headers?: Record<string, string>
+  ): Promise<Response | null> {
+    if (effects.length !== 1) return null
+
+    const effect = effects[0]!
+
+    if (isPatchElementsEffect(effect)) {
+      const [, payload, opts] = effect
+      const html = await this.renderElementsPayload(payload)
+      return new Response(html, {
+        status,
+        headers: this.buildElementsHeaders(opts, headers),
+      })
+    }
+
+    if (isPatchElementsSeqEffect(effect)) {
+      const [, payload, opts] = effect
+      const html = await this.renderElementsSeqPayload(payload)
+      return new Response(html, {
+        status,
+        headers: this.buildElementsHeaders(opts, headers),
+      })
+    }
+
+    if (isPatchSignalsEffect(effect)) {
+      const [, payload, opts] = effect
+      const body = JSON.stringify(payload)
+      return new Response(body, {
+        status,
+        headers: this.buildSignalsHeaders(opts, headers),
+      })
+    }
+
+    return null
   }
 
   /**
@@ -178,11 +294,6 @@ export class DatastarResponder {
    * It tries the registry first, then falls back to built-in switch handling.
    */
   public async fx(topic: string, effects: EffectDefinition[]): Promise<void> {
-    const renderOne = async (x: JSX.Element | string): Promise<string> => {
-      if (typeof x === 'string') return x
-      return await this.c.var.renderFragmentToString(x)
-    }
-
     for (const fx of effects) {
       const [effectName, ...args] = fx
 
@@ -192,17 +303,15 @@ export class DatastarResponder {
 
       if (isPatchElementsEffect(fx)) {
         const [, payload, opts] = fx
-        const htmls: string[] = Array.isArray(payload)
-          ? await Promise.all(payload.map(v => renderOne(v)))
-          : [await renderOne(payload)]
-        this.patchElements(topic, htmls.join('\n'), opts ?? {})
+        const html = await this.renderElementsPayload(payload)
+        this.patchElements(topic, html, opts ?? {})
         continue
       }
 
       if (isPatchElementsSeqEffect(fx)) {
         const [, payload, opts] = fx
-        const htmls = await Promise.all(payload.map(v => renderOne(v)))
-        this.patchElements(topic, htmls.join('\n'), opts ?? {})
+        const html = await this.renderElementsSeqPayload(payload)
+        this.patchElements(topic, html, opts ?? {})
         continue
       }
 
@@ -238,6 +347,11 @@ export class DatastarResponder {
       await Promise.all(args.topics.map(t => this.fx(t, effects)))
     }
 
+    const httpResponse =
+      this.shouldAttemptHttpReply(args.toClient, args.topics) && effects.length > 0
+        ? await this.tryCreateHttpResponse(effects, args.status ?? 200, args.headers)
+        : null
+
     if (args.toClient) {
       const clientId = this.c.var.clientId
       for (const fx of effects) {
@@ -246,32 +360,34 @@ export class DatastarResponder {
         // Try registry first for custom effects
         if (
           this.effectRegistry.has(effectName) &&
-          ![
-            'patch-elements',
-            'patch-elements-seq',
-            'patch-signals',
-            'execute-script',
-            'close-sse',
-          ].includes(effectName)
+          !isPatchElementsEffect(fx) &&
+          !isPatchElementsSeqEffect(fx) &&
+          !isPatchSignalsEffect(fx) &&
+          !isExecuteScriptEffect(fx) &&
+          effectName !== 'close-sse'
         ) {
           // Custom effect - call the registered handler
-          await this.effectRegistry.execute(this.c, effectName, ...args)
+
+          this.isExecutingEffect = true
+          try {
+            await this.effectRegistry.execute(this.c, effectName, ...args)
+          } finally {
+            this.isExecutingEffect = false
+          }
+
           continue
         }
 
-        const renderOne = async (x: JSX.Element | string): Promise<string> => {
-          if (typeof x === 'string') return x
-          return await this.c.var.renderFragmentToString(x)
+        if (httpResponse) {
+          continue
         }
 
         if (isPatchElementsEffect(fx)) {
           const [, payload, opts] = fx
-          const htmls = Array.isArray(payload)
-            ? await Promise.all(payload.map(v => renderOne(v)))
-            : [await renderOne(payload)]
+          const html = await this.renderElementsPayload(payload)
           this.c.var.bus.toClient(clientId, {
             event: 'datastar-patch-elements',
-            html: htmls.join('\n'),
+            html,
             options: opts ?? {},
           })
           continue
@@ -279,10 +395,10 @@ export class DatastarResponder {
 
         if (isPatchElementsSeqEffect(fx)) {
           const [, payload, opts] = fx
-          const htmls = await Promise.all(payload.map(v => renderOne(v)))
+          const html = await this.renderElementsSeqPayload(payload)
           this.c.var.bus.toClient(clientId, {
             event: 'datastar-patch-elements',
-            html: htmls.join('\n'),
+            html,
             options: opts ?? {},
           })
           continue
@@ -316,6 +432,10 @@ export class DatastarResponder {
 
     if (args.close && args.topics) {
       for (const t of args.topics) this.c.var.bus.toTopic(t, { event: 'close' })
+    }
+
+    if (httpResponse) {
+      return httpResponse
     }
 
     const status = args.status ?? 204
