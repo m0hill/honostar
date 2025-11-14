@@ -28,6 +28,10 @@ export const routesManifest: RouteManifestEntry[] = [
     load: () => import('./pages/logout'),
   },
   {
+    routePath: '/search',
+    load: () => import('./pages/search'),
+  },
+  {
     routePath: '/signup',
     load: () => import('./pages/signup'),
   },

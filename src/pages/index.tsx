@@ -1,6 +1,7 @@
 import { ModeToggle } from '@/components/ModeToggle'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
 import { createPage } from '@/core/page'
 import { labels } from '@/db/schema'
 import { routes } from '@/routes'
@@ -14,6 +15,9 @@ function IndexPage({
   issues: IssueWithAuthor[]
   labels: Label[]
 }) {
+  const searchInputProps = {
+    'data-on:input__debounce.200ms': `@get('${routes.search.href()}')`,
+  }
   return (
     <div class="min-h-screen bg-background text-foreground flex flex-col items-center pt-10 px-4">
       <div class="w-full max-w-4xl flex justify-end mb-4">
@@ -52,9 +56,44 @@ function IndexPage({
         </CardContent>
       </Card>
 
-      <div class="mt-8 max-w-4xl w-full">
-        <div class="flex justify-between items-center mb-4">
+      <div class="mt-8 max-w-4xl w-full" data-signals="{search: '', searching: false}">
+        <div class="flex justify-between items-center mb-4 gap-4">
           <h2 class="text-3xl font-bold">Issues</h2>
+          <div class="flex-1 max-w-sm relative">
+            <Input
+              type="text"
+              placeholder="Search issues..."
+              data-bind="search"
+              data-indicator="searching"
+              {...searchInputProps}
+            />
+            <div
+              class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
+              data-show="$searching"
+              style="display:none"
+            >
+              <svg
+                class="animate-spin h-4 w-4 text-muted-foreground"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                />
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+            </div>
+          </div>
           {user && <Button data-on:click="@get('/issues/new')">Create Issue</Button>}
         </div>
         <Card id="issues-list" class="gap-0 py-0">
