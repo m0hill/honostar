@@ -15,11 +15,8 @@
  * ```
  */
 
-import './beacon'
 import './clipboard'
 import './focus'
 import './scroll'
 import './toast'
 
-// Re-export for programmatic usage if needed
-export {}
