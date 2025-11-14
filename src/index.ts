@@ -11,11 +11,13 @@ import {
   fxResponder,
   initContext,
   mountRoutes,
+  registerEffects,
   renderer,
 } from '@/core'
 
 import '@/core/polyfills/compression.js'
 import { createManifestRouteLoader } from '@/core/router/manifest-route-loader'
+import { customEffects } from '@/custom-effects'
 import { auth } from '@/middleware/auth'
 import { attachBus } from '@/middleware/bus'
 import { attachDb } from '@/middleware/db'
@@ -39,6 +41,10 @@ app.use('*', initContext)
 app.use('*', attachBus)
 app.use('*', datastarResponder)
 app.use('*', fxResponder)
+
+// Register custom effects (must be after datastarResponder/fxResponder)
+app.use('*', registerEffects(customEffects))
+
 app.use('*', attachDb)
 app.use('*', auth)
 

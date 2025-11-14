@@ -1,9 +1,13 @@
+import type { SQL } from 'drizzle-orm'
+import type { SQLiteColumn } from 'drizzle-orm/sqlite-core'
 import { z } from 'zod'
-import { CommentsSection } from '@/components/CommentsSection'
 import { createHandler } from '@/core/page'
-import { comments } from '@/db/schema'
+import { comments as commentsTable } from '@/db/schema'
 import { requireAuth } from '@/lib/auth-middleware'
-import { topics } from '@/lib/topics'
+
+// Drizzle ORM query builder types
+type CommentsTable = typeof commentsTable
+type OrderByColumn = SQLiteColumn | SQL
 
 const bodySchema = z.object({
   comment: z.string().trim().min(1, 'Comment cannot be empty.'),
@@ -26,30 +30,22 @@ export const POST = createHandler({
       })
     }
 
-    await c.var.db.insert(comments).values({
+    await c.var.db.insert(commentsTable).values({
       body: validation.data.comment,
       issueId,
       authorId: user.id,
     })
 
-    const updatedComments = await c.var.db.query.comments.findMany({
-      where: (co, { eq }) => eq(co.issueId, issueId),
-      with: { author: true },
-      orderBy: (co, { asc }) => [asc(co.createdAt)],
+    const commentCount = await c.var.db.query.comments.findMany({
+      where: (
+        comments: CommentsTable['_']['columns'],
+        { eq }: { eq: (column: OrderByColumn, value: number) => SQL }
+      ) => eq(comments.issueId, issueId),
     })
 
-    return c.var.datastar.broadcast(
-      topics.issue(issueId).comments(),
-      [
-        [
-          'patch-elements',
-          <CommentsSection comments={updatedComments} />,
-          { selector: '#comments-section' },
-        ],
-        // Clear any error on success
-        ['patch-signals', { commentError: '' }],
-      ],
-      { status: 201 }
-    )
+    // Use custom effect! Handles broadcasting + success toast
+    return c.var.datastar.reply([['comment:created-success', issueId, commentCount.length]], {
+      status: 201,
+    })
   },
 })

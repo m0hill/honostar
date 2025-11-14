@@ -148,6 +148,12 @@ export const renderer = (userConfig?: Partial<BonsaiConfig>) => {
             </div>
             {/* Global overlay host for modals/overlays, persists across in-app navigations */}
             <div id="ds-overlays" aria-live="polite"></div>
+            {/* Toast notification container, fixed to top-right */}
+            <div
+              id="toast-container"
+              class="fixed top-4 right-4 z-50 flex flex-col items-end gap-2"
+              aria-live="polite"
+            ></div>
           </body>
         </html>
       )

@@ -1,4 +1,3 @@
-import IssuesList from '@/components/IssuesList'
 import { createHandler } from '@/core/page'
 import { issues, issuesToLabels, labels as labelsTable } from '@/db/schema'
 import { requireAuth } from '@/lib/auth-middleware'
@@ -79,43 +78,11 @@ export const POST = createHandler({
         .values(labelIds.map(labelId => ({ issueId: created.id, labelId })))
     }
 
-    const allIssues = await c.var.db.query.issues.findMany({
-      with: { author: true },
-      orderBy: (i, { desc }) => [desc(i.createdAt)],
-    })
-
-    const issuesList = <IssuesList issues={allIssues} />
-
-    // 1) Broadcast updated list to everyone on the issues:list topic
-    await c.var.datastar.fx('issues:list', [
-      ['patch-elements', issuesList, { selector: '#issues-list' }],
-    ])
-
-    // 2) Close the modal and reset the issue signal for the requesting client only
-    return c.var.datastar.reply(
-      [
-        [
-          'patch-elements',
-          '',
-          {
-            selector: '#ds-overlays [data-modal-id="create-issue"]',
-            mode: 'remove',
-          },
-        ],
-        [
-          'patch-signals',
-          {
-            issue: {
-              title: '',
-              description: '',
-              labels: [],
-              newLabel: '',
-              image: null,
-            },
-          },
-        ],
-      ],
-      { status: 201 }
-    )
+    // Use custom effect instead of manual composition!
+    // This single effect handles:
+    // - Broadcasting updated list to all viewers
+    // - Showing success toast to creator
+    // - Closing modal and resetting form
+    return c.var.datastar.reply([['issue:created-success', created]], { status: 201 })
   },
 })

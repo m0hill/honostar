@@ -236,7 +236,154 @@ This section is now covered by Framework Configuration (section 7).
 
 ---
 
-## 10. Theme System & Global APIs
+## 10. Extensible Effect System
+
+**Philosophy**
+- Bonsai elevates from a framework implementation to a true meta-framework by making effects extensible.
+- Users can create their own high-level, declarative effects that compose built-in effects.
+- This keeps handlers clean and enables application-specific abstractions.
+
+**Effect Registry**
+- Every `DatastarResponder` instance has an `effectRegistry` that maps effect names to handler functions.
+- Built-in effects (`patch-elements`, `patch-signals`, etc.) are pre-registered.
+- Custom effects can be registered via middleware.
+
+**Registering Custom Effects**
+```typescript
+// Single effect
+import { registerEffect } from '@/core'
+
+app.use('*', registerEffect('toast:show', async (c, message: string, type: 'success' | 'error') => {
+  // Custom effects can compose other effects
+  await c.var.datastar.reply([
+    ['patch-elements', <Toast message={message} type={type} />, { selector: '#toast-container', mode: 'append' }]
+  ])
+}))
+
+// Multiple effects at once
+import { registerEffects } from '@/core'
+
+app.use('*', registerEffects({
+  'toast:show': async (c, message: string, type: 'success' | 'error') => {
+    await c.var.datastar.reply([
+      ['patch-elements', <Toast message={message} type={type} />, { selector: '#toast-container', mode: 'append' }]
+    ])
+  },
+  'modal:close': async (c, modalId: string) => {
+    await c.var.datastar.reply([
+      ['patch-elements', '', { selector: `#${modalId}`, mode: 'remove' }]
+    ])
+  },
+  'analytics:track': async (c, event: string, properties: Record<string, unknown>) => {
+    // Side-effect only effects are valid too
+    await fetch('https://analytics.example.com/track', {
+      method: 'POST',
+      body: JSON.stringify({ event, properties })
+    })
+  }
+}))
+```
+
+**Using Custom Effects**
+```typescript
+export const POST = createHandler({
+  async handler(c) {
+    // Validate and process...
+    
+    // Use custom effect instead of verbose built-in composition
+    return c.var.datastar.reply([
+      ['toast:show', 'Issue created successfully!', 'success'],
+      ['modal:close', 'create-issue-modal']
+    ])
+  }
+})
+```
+
+**Effect Handler Signature**
+```typescript
+type EffectHandler<TArgs extends unknown[] = unknown[]> = (
+  c: Context<AppEnv>,
+  ...args: TArgs
+) => Promise<void>
+```
+
+**Built-in Effects** (pre-registered, always available):
+- `patch-elements` - Render JSX and patch HTML into the DOM
+- `patch-elements-seq` - Patch a sequence of HTML fragments
+- `patch-signals` - Update reactive signals
+- `execute-script` - Execute JavaScript (use sparingly)
+- `close-sse` - Close the SSE connection
+
+**Effect Composition Patterns**
+```typescript
+// Good: Compose multiple patches into a semantic effect
+registerEffect('issue:created', async (c, issue: Issue) => {
+  await c.var.datastar.broadcast('issues:list', [
+    ['patch-elements', <IssuesList issues={await fetchIssues(c)} />],
+    ['patch-signals', { selectedIssueId: issue.id }]
+  ])
+})
+
+// Good: Side-effect + UI update
+registerEffect('notification:send', async (c, userId: string, message: string) => {
+  await sendPushNotification(userId, message)
+  await c.var.datastar.broadcast(`user:${userId}`, [
+    ['patch-elements', <NotificationBadge count={await getUnreadCount(c, userId)} />]
+  ])
+})
+
+// Bad: Effects that just wrap a single built-in effect without adding value
+registerEffect('just-patch', async (c, component) => {
+  await c.var.datastar.reply([['patch-elements', component]])
+}) // ❌ Just use patch-elements directly
+```
+
+**Type Safety**
+```typescript
+import type { TypedEffectHandler } from '@/core'
+
+// Define your effect signature
+type ToastEffect = ['toast:show', message: string, type: 'success' | 'error']
+
+// Type-safe handler
+const toastHandler: TypedEffectHandler<ToastEffect> = async (c, message, type) => {
+  // TypeScript knows message is string and type is 'success' | 'error'
+}
+
+app.use('*', registerEffect('toast:show', toastHandler))
+```
+
+**Effect Registry API**
+```typescript
+// Access via c.var.datastar.effectRegistry
+
+// Check if effect exists
+if (c.var.datastar.effectRegistry.has('toast:show')) { /* ... */ }
+
+// Get all registered effects
+const effects = c.var.datastar.effectRegistry.getEffectNames()
+
+// Unregister an effect (rare)
+c.var.datastar.effectRegistry.unregister('toast:show')
+```
+
+**Best Practices**
+1. **Naming**: Use namespaced names like `domain:action` (e.g., `toast:show`, `modal:close`, `analytics:track`).
+2. **Composition**: Custom effects should compose built-in effects or handle side-effects, not duplicate logic.
+3. **Type Safety**: Use `TypedEffectHandler` to ensure type-safe effect handlers.
+4. **Registration**: Register effects early in the middleware chain (before route handlers).
+5. **Documentation**: Document custom effects in your app's README or a dedicated file.
+
+**When to Create Custom Effects**
+- ✅ You use the same composition of effects in multiple handlers
+- ✅ You want domain-specific abstractions (e.g., `order:complete`, `user:notify`)
+- ✅ You need to integrate with external services (analytics, logging, webhooks)
+- ❌ One-off effect usage (just use built-in effects directly)
+- ❌ Simple wrappers that don't add value
+
+---
+
+## 11. Theme System & Global APIs
 
 **Architecture**
 - Bonsai uses a server-rendered theme provider with a client-side controller to prevent FOUC and enable seamless theme switching.
@@ -288,7 +435,7 @@ data-on:bonsai-theme-change__window="renderChart(evt.detail.resolved)"
 
 ---
 
-## 11. shadcn/ui + Hono JSX
+## 12. shadcn/ui + Hono JSX
 
 - **Design System**: shadcn/ui components live under `src/components/ui`. Styling depends on `class-variance-authority`, `clsx`, `tailwind-merge`, and `lucide-react`, with tokens defined in `styles.css` and the `cn()` helper in `src/lib/utils.ts`.
 - **Adding Components**: run `bunx --bun shadcn@latest add <component>` to scaffold, then convert from React to Hono JSX—drop React/Radix imports, replace `className` with `class`, remove `Slot`/`asChild`, and keep markup in native HTML elements.
@@ -300,7 +447,7 @@ data-on:bonsai-theme-change__window="renderChart(evt.detail.resolved)"
 
 ---
 
-## 12. Architecture & Meta-Framework
+## 13. Architecture & Meta-Framework
 
 **What is Bonsai?**
 - Bonsai is a **runtime-agnostic** meta-framework built on Hono (web server) and Datastar (hypermedia reactivity).
@@ -368,7 +515,7 @@ data-on:bonsai-theme-change__window="renderChart(evt.detail.resolved)"
 
 ---
 
-## 13. Pub/Sub Bus & Multi-Instance Scaling
+## 14. Pub/Sub Bus & Multi-Instance Scaling
 
 **Bus Abstraction**
 - Bonsai uses a `PubSubBus` interface to decouple SSE distribution from implementation.
@@ -417,7 +564,7 @@ bus.toAll(msg) // Broadcast to all connected clients
 
 ---
 
-## 14. Type-Safe Routes
+## 15. Type-Safe Routes
 
 **Route Definition**
 - Routes are auto-generated from `src/pages/` file structure.
@@ -463,7 +610,7 @@ return c.redirect(routes.issues.id.href({ id: created.id }))
 
 ---
 
-## 15. Workflow Checklist
+## 16. Workflow Checklist
 
 Before opening a PR, confirm:
 
@@ -487,7 +634,7 @@ Before opening a PR, confirm:
 
 ---
 
-## 16. Quick Start for New Features
+## 17. Quick Start for New Features
 
 1. **Model shared vs tab-specific** state to determine reply/broadcast.
 2. **Add/extend topic** in `src/lib/topics.ts`.
