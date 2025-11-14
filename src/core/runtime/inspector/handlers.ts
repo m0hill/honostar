@@ -229,6 +229,7 @@ export function setupKeyboardShortcut(keyboardShortcut: string, onToggle: () => 
   const shortcut = normalizeShortcut(keyboardShortcut)
 
   const listener = (evt: KeyboardEvent) => {
+    if (!evt.key) return
     const key = evt.key.toUpperCase()
     if (!shortcut.key || key !== shortcut.key) return
 
