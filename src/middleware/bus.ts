@@ -1,37 +1,70 @@
-import Redis from 'ioredis'
 import { MemoryBus, type PubSubBus } from '@/core/datastar/bus'
-import { RedisBus } from '@/core/datastar/redis-bus'
 import { factory } from '@/core/middleware'
 
-const createBus = (): PubSubBus => {
+const createBus = async (): Promise<PubSubBus> => {
+  // Check for NATS first
+  const natsUrl = process.env.BONSAI_NATS_URL ?? process.env.NATS_URL
+  if (natsUrl) {
+    try {
+      const { NatsBus } = await import('@/core/datastar/nats-bus')
+      const { connect } = await import('nats')
+      const nc = await connect({ servers: natsUrl })
+      console.log('[bus] Connected to NATS')
+      return new NatsBus({ connection: nc })
+    } catch (err) {
+      console.error('[bus] Failed to connect to NATS, falling back to MemoryBus', err)
+      return new MemoryBus()
+    }
+  }
+
+  // Check for Redis second
   const redisUrl = process.env.BONSAI_REDIS_URL ?? process.env.REDIS_URL
-  if (!redisUrl) {
-    return new MemoryBus()
+  if (redisUrl) {
+    try {
+      const { RedisBus } = await import('@/core/datastar/redis-bus')
+      const Redis = (await import('ioredis')).default
+      const publisher = new Redis(redisUrl, { lazyConnect: true })
+      const subscriber = new Redis(redisUrl, { lazyConnect: true })
+
+      void publisher.connect().catch(err => {
+        console.error('[bus] Failed to connect Redis publisher', err)
+      })
+      void subscriber.connect().catch(err => {
+        console.error('[bus] Failed to connect Redis subscriber', err)
+      })
+
+      console.log('[bus] Connected to Redis')
+      return new RedisBus({ publisher, subscriber })
+    } catch (err) {
+      console.error('[bus] Failed to connect to Redis, falling back to MemoryBus', err)
+      return new MemoryBus()
+    }
   }
 
-  try {
-    const publisher = new Redis(redisUrl, { lazyConnect: true })
-    const subscriber = new Redis(redisUrl, { lazyConnect: true })
-
-    void publisher.connect().catch(err => {
-      console.error('[bus] Failed to connect Redis publisher', err)
-    })
-    void subscriber.connect().catch(err => {
-      console.error('[bus] Failed to connect Redis subscriber', err)
-    })
-
-    return new RedisBus({ publisher, subscriber })
-  } catch (err) {
-    console.error('[bus] Falling back to MemoryBus due to Redis init error', err)
-    return new MemoryBus()
-  }
+  // Default to MemoryBus
+  console.log('[bus] Using MemoryBus (in-process)')
+  return new MemoryBus()
 }
 
-const appBus = createBus()
+const busPromise = createBus()
+let appBus: PubSubBus
+
+// Initialize bus eagerly
+void busPromise.then(bus => {
+  appBus = bus
+})
 
 export const attachBus = factory.createMiddleware(async (c, next) => {
+  if (!appBus) {
+    appBus = await busPromise
+  }
   c.set('bus', appBus)
   await next()
 })
 
-export { appBus as bus }
+export const getBus = async (): Promise<PubSubBus> => {
+  if (!appBus) {
+    appBus = await busPromise
+  }
+  return appBus
+}

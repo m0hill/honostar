@@ -521,23 +521,28 @@ data-on:bonsai-theme-change__window="renderChart(evt.detail.resolved)"
 
 **Bus Abstraction**
 - Bonsai uses a `PubSubBus` interface to decouple SSE distribution from implementation.
-- Two implementations:
+- Three implementations:
   - `MemoryBus` - In-process pub/sub (default, single-instance)
   - `RedisBus` - Redis-backed pub/sub (multi-instance deployments)
+  - `NatsBus` - NATS-backed pub/sub (multi-instance deployments)
 
 **When to Use Which**
-- **MemoryBus** (default): Development, single-server deployments, no Redis available.
-- **RedisBus**: Production with multiple server instances, horizontal scaling, or when SSE clients may connect to different servers.
+- **MemoryBus** (default): Development, single-server deployments, no external message broker available.
+- **RedisBus**: Production with multiple server instances using Redis infrastructure.
+- **NatsBus**: Production with multiple server instances using NATS infrastructure.
 
 **Configuration** (`src/middleware/bus.ts`)
-- The app automatically detects `BONSAI_REDIS_URL` or `REDIS_URL` environment variables.
-- If present, initializes `RedisBus` with separate publisher/subscriber connections.
-- Falls back to `MemoryBus` if Redis is unavailable.
+- The app automatically detects environment variables in priority order:
+  1. `BONSAI_NATS_URL` or `NATS_URL` → initializes `NatsBus`
+  2. `BONSAI_REDIS_URL` or `REDIS_URL` → initializes `RedisBus`
+  3. Falls back to `MemoryBus` if neither is configured
+- Uses dynamic imports so nats and ioredis are optional dependencies.
 - **Never hardcode bus selection** - use the environment-based factory in `src/middleware/bus.ts`.
 
-**RedisBus Internals**
-- Channel naming: `${prefix}:${kind}:${id}` (e.g., `bonsai:bus:topic:issues:list`)
-- Three channel types:
+**Bus Internals**
+- **RedisBus**: Channel naming `${prefix}:${kind}:${id}` (e.g., `bonsai:bus:topic:issues:list`)
+- **NatsBus**: Subject naming `${prefix}.${kind}.${id}` (e.g., `bonsai.bus.topic.issues:list`)
+- Three channel/subject types:
   - `client` - Tab-specific messages (replies)
   - `topic` - Topic-based broadcasts
   - `broadcast` - Global messages to all connected clients
@@ -560,8 +565,8 @@ bus.toAll(msg) // Broadcast to all connected clients
 - Define all topics in `src/lib/topics.ts` and reference them via imports - never inline topic strings.
 
 **Testing**
-- `MemoryBus` and `RedisBus` share the same test suite (`bus.test.ts`, `redis-bus.test.ts`).
-- Both implementations must satisfy the `PubSubBus` contract.
+- `MemoryBus`, `RedisBus`, and `NatsBus` follow the same test patterns (`bus.test.ts`, `redis-bus.test.ts`, `nats-bus.test.ts`).
+- All implementations must satisfy the `PubSubBus` contract.
 - Tests verify: subscription/unsubscription, targeted client messages, topic broadcasts, global broadcasts, and cleanup.
 
 ---

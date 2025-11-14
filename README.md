@@ -17,7 +17,7 @@ HonoStar embraces **server-rendered HTML as the source of truth**. Every navigat
 ### 🎯 Zero-Config Hypermedia MPA
 - File-based routing (`src/pages/`) with Next.js-style conventions
 - Type-safe route helpers with automatic parameter extraction
-- SSE event bus for real-time updates (in-memory or Redis-backed)
+- SSE event bus for real-time updates (in-memory, Redis, or NATS)
 - Built-in CSRF protection and CSP with nonce support
 
 ### 🔄 Declarative Real-Time Updates
@@ -182,17 +182,23 @@ app.get('/_/events', createSseEndpoint(config))
 
 ## Multi-Instance Scaling
 
-HonoStar supports horizontal scaling via Redis-backed SSE:
+HonoStar supports horizontal scaling via Redis or NATS for distributed SSE:
 
 ```bash
-# Set Redis URL (auto-detected)
-export REDIS_URL="redis://localhost:6379"
+# Option 1: NATS (checked first)
+export NATS_URL="nats://localhost:4222"
+# Or Bonsai-specific
+export BONSAI_NATS_URL="nats://user:pass@host:4222"
 
+# Option 2: Redis (checked second)
+export REDIS_URL="redis://localhost:6379"
 # Or Bonsai-specific
 export BONSAI_REDIS_URL="redis://user:pass@host:6379"
 ```
 
-Falls back to in-memory pub/sub if Redis is unavailable.
+**Bus Priority**: NATS → Redis → MemoryBus (in-process fallback)
+
+All three implementations satisfy the same `PubSubBus` interface, so your application code remains identical regardless of which bus is active.
 
 ## Type-Safe Routing
 
