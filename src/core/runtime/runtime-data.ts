@@ -1,15 +1,24 @@
 import type { ThemePreference, ThemeRuntimeConfig, ThemeValue } from '@/core/theme'
 import { resolveThemeProvider } from '@/core/theme'
 
+type RuntimeAssets = {
+  datastar: string
+}
+
 type RuntimeData = {
   csrfToken: string | null
   theme: ThemeRuntimeConfig
+  assets: RuntimeAssets
 }
 
 const FALLBACK_THEME_CONFIG = resolveThemeProvider().config
+const FALLBACK_ASSETS: RuntimeAssets = {
+  datastar: '/datastar.js',
+}
 const FALLBACK_RUNTIME_DATA: RuntimeData = {
   csrfToken: null,
   theme: FALLBACK_THEME_CONFIG,
+  assets: FALLBACK_ASSETS,
 }
 
 function isThemeValue(candidate: unknown): candidate is ThemeValue {
@@ -55,6 +64,19 @@ function normalizeThemeConfig(candidate: unknown): ThemeRuntimeConfig {
   }
 }
 
+function normalizeAssets(candidate: unknown): RuntimeAssets {
+  if (!candidate || typeof candidate !== 'object') {
+    return FALLBACK_ASSETS
+  }
+  const raw = candidate as Partial<RuntimeAssets>
+  return {
+    datastar:
+      typeof raw.datastar === 'string' && raw.datastar.length > 0
+        ? raw.datastar
+        : FALLBACK_ASSETS.datastar,
+  }
+}
+
 function parseRuntimeData(raw: string): RuntimeData {
   try {
     const parsed: unknown = JSON.parse(raw)
@@ -63,6 +85,7 @@ function parseRuntimeData(raw: string): RuntimeData {
       return {
         csrfToken: typeof token === 'string' ? token : null,
         theme: normalizeThemeConfig((parsed as { theme?: unknown }).theme),
+        assets: normalizeAssets((parsed as { assets?: unknown }).assets),
       }
     }
     return FALLBACK_RUNTIME_DATA

@@ -33,8 +33,8 @@ describe('generateRouteManifest', () => {
     await generateRouteManifest({ pagesDir, manifestPath, routesPath })
 
     const manifest = await readFile(manifestPath, 'utf-8')
-    expect(manifest).toContain('routePath: "/"')
-    expect(manifest).toContain('routePath: "/about"')
+    expect(manifest).toContain("routePath: '/'")
+    expect(manifest).toContain("routePath: '/about'")
     expect(manifest).toContain('load: () => import')
 
     const routes = await readFile(routesPath, 'utf-8')
@@ -54,7 +54,7 @@ describe('generateRouteManifest', () => {
     await generateRouteManifest({ pagesDir, manifestPath, routesPath })
 
     const manifest = await readFile(manifestPath, 'utf-8')
-    expect(manifest).toContain('routePath: "/posts/:id"')
+    expect(manifest).toContain("routePath: '/posts/:id'")
 
     await teardown()
   })
@@ -70,8 +70,8 @@ describe('generateRouteManifest', () => {
     await generateRouteManifest({ pagesDir, manifestPath, routesPath })
 
     const manifest = await readFile(manifestPath, 'utf-8')
-    expect(manifest).toContain('routePath: "/blog/posts"')
-    expect(manifest).toContain('routePath: "/blog/posts/:slug"')
+    expect(manifest).toContain("routePath: '/blog/posts'")
+    expect(manifest).toContain("routePath: '/blog/posts/:slug'")
 
     await teardown()
   })
@@ -87,7 +87,7 @@ describe('generateRouteManifest', () => {
 
     const manifest = await readFile(manifestPath, 'utf-8')
     expect(manifest).not.toContain('_component')
-    expect(manifest).toContain('routePath: "/page"')
+    expect(manifest).toContain("routePath: '/page'")
 
     await teardown()
   })
@@ -103,8 +103,8 @@ describe('generateRouteManifest', () => {
     await generateRouteManifest({ pagesDir, manifestPath, routesPath })
 
     const manifest = await readFile(manifestPath, 'utf-8')
-    const newIndex = manifest.indexOf('routePath: "/posts/new"')
-    const idIndex = manifest.indexOf('routePath: "/posts/:id"')
+    const newIndex = manifest.indexOf("routePath: '/posts/new'")
+    const idIndex = manifest.indexOf("routePath: '/posts/:id'")
     expect(newIndex).toBeLessThan(idIndex)
 
     await teardown()
@@ -140,7 +140,7 @@ describe('generateRouteManifest', () => {
     await generateRouteManifest({ pagesDir, manifestPath, routesPath })
 
     const manifest = await readFile(manifestPath, 'utf-8')
-    expect(manifest).toContain('routePath: "/docs/*"')
+    expect(manifest).toContain("routePath: '/docs/*'")
 
     await teardown()
   })
@@ -162,7 +162,7 @@ describe('generateRouteManifest', () => {
     })
 
     const manifest = await readFile(deepManifestPath, 'utf-8')
-    expect(manifest).toContain('routePath: "/"')
+    expect(manifest).toContain("routePath: '/'")
 
     await teardown()
   })

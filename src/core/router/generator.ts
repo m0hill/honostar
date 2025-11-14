@@ -105,8 +105,8 @@ function generateManifestFile(entries: ManifestEntry[]): string {
   lines.push('export const routesManifest: RouteManifestEntry[] = [')
   for (const entry of entries) {
     lines.push('  {')
-    lines.push(`    routePath: ${JSON.stringify(entry.routePath)},`)
-    lines.push(`    load: () => import(${JSON.stringify(entry.importPath)}),`)
+    lines.push(`    routePath: '${entry.routePath}',`)
+    lines.push(`    load: () => import('${entry.importPath}'),`)
     lines.push('  },')
   }
   lines.push(']')

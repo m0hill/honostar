@@ -62,7 +62,7 @@ registerRuntimePlugin(
       dismissBtn.innerHTML = '&times;'
       dismissBtn.className = 'ml-2 font-bold opacity-70 hover:opacity-100'
       dismissBtn.setAttribute('aria-label', 'Dismiss')
-      dismissBtn.onclick = () => removeToast(toast)
+      dismissBtn.addEventListener('click', () => removeToast(toast))
       toast.appendChild(dismissBtn)
     }
 

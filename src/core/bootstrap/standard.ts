@@ -26,7 +26,7 @@ import '@/runtime/plugins'
   bonsai.theme = theme ?? undefined
 
   // Install plugin system early so user code can register plugins
-  const plugins = installPluginSystem()
+  const plugins = installPluginSystem(data.assets.datastar)
   bonsai.plugins = plugins
 
   const prefetch = createPrefetchClient({

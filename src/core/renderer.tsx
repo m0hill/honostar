@@ -54,6 +54,9 @@ export const renderer = (userConfig?: Partial<BonsaiConfig>) => {
       const runtimeData = {
         csrfToken: c.var.csrfToken ?? null,
         theme: theme.config,
+        assets: {
+          datastar: config.assets.datastar,
+        },
       }
       const runtimeDataJson = JSON.stringify(runtimeData).replace(/</g, '\\u003c')
       const csp = config.security.csp.replace('${nonce}', scriptNonce)

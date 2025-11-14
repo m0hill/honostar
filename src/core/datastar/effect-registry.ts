@@ -12,10 +12,9 @@ import type {
  * Effect handler function signature.
  * Takes context and effect-specific arguments, returns Promise<void>.
  */
-export type EffectHandler<TArgs extends unknown[] = unknown[]> = (
-  c: Context<AppEnv>,
-  ...args: TArgs
-) => Promise<void>
+export type EffectHandler<TArgs extends unknown[] = unknown[]> = {
+  bivarianceHack(c: Context<AppEnv>, ...args: TArgs): Promise<void>
+}['bivarianceHack']
 
 /**
  * Built-in effect names that come with Bonsai.
@@ -55,7 +54,7 @@ export class EffectRegistry {
     if (this.handlers.has(name)) {
       console.warn(`[Bonsai] Effect '${name}' is being overridden`)
     }
-    this.handlers.set(name, handler as EffectHandler)
+    this.handlers.set(name, handler)
   }
 
   /**

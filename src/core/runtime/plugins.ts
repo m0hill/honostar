@@ -19,11 +19,18 @@
  * ```
  */
 
-type DatastarActionModule = {
+export type DatastarActionModule = {
   action: (config: {
     name: string
     apply: (ctx: DatastarActionContext, ...args: unknown[]) => void
   }) => void
+}
+
+const isDatastarModule = (value: unknown): value is DatastarActionModule => {
+  if (typeof value !== 'object' || value === null) return false
+  if (!('action' in value)) return false
+  const candidate = value as { action?: unknown }
+  return typeof candidate.action === 'function'
 }
 
 // Datastar action registration function - will be dynamically imported
@@ -35,23 +42,18 @@ export interface DatastarActionContext {
   error: (message: string | Error) => void
 }
 
+type BivariantPluginHandler<TArgs extends unknown[] = unknown[]> = {
+  bivarianceHack(c: DatastarActionContext, ...args: TArgs): void | Promise<void>
+}['bivarianceHack']
+
 // Plugin handler signature: receives context + user-defined arguments
-export type PluginHandler<TArgs extends unknown[] = unknown[]> = (
-  ctx: DatastarActionContext,
-  ...args: TArgs
-) => void | Promise<void>
+export type PluginHandler<TArgs extends unknown[] = unknown[]> = BivariantPluginHandler<TArgs>
 
-type AnyPluginHandler = PluginHandler<unknown[]>
-type PendingPluginRegistration = { name: string; handler: AnyPluginHandler }
-
-interface BonsaiWindow extends Window {
-  Bonsai?: { plugins?: PluginsApi }
-  __bonsaiPendingPluginRegistrations?: PendingPluginRegistration[]
-}
+type PendingPluginRegistration = { name: string; handler: PluginHandler }
 
 // Registry of all registered plugins
 interface PluginRegistry {
-  [name: string]: AnyPluginHandler
+  [name: string]: PluginHandler
 }
 
 // Public API exposed on window.Bonsai.plugins
@@ -111,16 +113,24 @@ export interface PluginsApi {
  * Creates the plugin system instance
  * @internal
  */
-export function createPluginSystem(): PluginsApi {
+export function createPluginSystem(datastarEntrypoint?: string): PluginsApi {
   const registry: PluginRegistry = {}
-  const pendingRegistrations: Array<{ name: string; handler: AnyPluginHandler }> = []
+  const pendingRegistrations: PendingPluginRegistration[] = []
+  const resolvedEntrypoint = datastarEntrypoint ?? '/datastar.js'
 
   // Dynamically import Datastar's action function
   const loadDatastar = async () => {
     if (datastarAction) return
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      // In non-browser environments (tests/SSR), skip loading Datastar
+      return
+    }
     try {
-      const datastarEntrypoint = '/datastar.js'
-      const ds = (await import(datastarEntrypoint)) as DatastarActionModule
+      const ds = await import(resolvedEntrypoint)
+      if (!isDatastarModule(ds)) {
+        console.error('[Bonsai] Loaded Datastar module does not expose an action() function')
+        return
+      }
       datastarAction = ds.action
       // Register any pending plugins
       for (const { name, handler } of pendingRegistrations) {
@@ -132,7 +142,7 @@ export function createPluginSystem(): PluginsApi {
     }
   }
 
-  const registerWithDatastar = (name: string, handler: AnyPluginHandler) => {
+  const registerWithDatastar = (name: string, handler: PluginHandler) => {
     if (!datastarAction) {
       pendingRegistrations.push({ name, handler })
       return
@@ -155,7 +165,7 @@ export function createPluginSystem(): PluginsApi {
   }
 
   // Start loading Datastar
-  loadDatastar()
+  void loadDatastar()
 
   const api: PluginsApi = {
     register<TArgs extends unknown[] = unknown[]>(
@@ -175,10 +185,10 @@ export function createPluginSystem(): PluginsApi {
       }
 
       // Store in our registry
-      registry[name] = handler as AnyPluginHandler
+      registry[name] = handler
 
       // Register with Datastar
-      registerWithDatastar(name, handler as AnyPluginHandler)
+      registerWithDatastar(name, handler)
     },
 
     registerAll(plugins: Record<string, PluginHandler>): void {
@@ -219,16 +229,14 @@ export function registerRuntimePlugin<TArgs extends unknown[] = unknown[]>(
 ): void {
   if (typeof window === 'undefined') return
 
-  const w = window as BonsaiWindow
-
-  if (w.Bonsai?.plugins) {
-    w.Bonsai.plugins.register(name, handler)
+  if (window.Bonsai?.plugins) {
+    window.Bonsai.plugins.register(name, handler)
     return
   }
   // Queue registration until the plugin system is ready
-  ;(w.__bonsaiPendingPluginRegistrations ??= []).push({
+  ;(window.__bonsaiPendingPluginRegistrations ??= []).push({
     name,
-    handler: handler as AnyPluginHandler,
+    handler,
   })
 }
 
@@ -236,23 +244,22 @@ export function registerRuntimePlugin<TArgs extends unknown[] = unknown[]>(
  * Install the plugin system on window.Bonsai
  * @internal
  */
-export function installPluginSystem(): PluginsApi {
-  const w = window as BonsaiWindow
-  if (!w.Bonsai) w.Bonsai = {}
+export function installPluginSystem(datastarEntrypoint?: string): PluginsApi {
+  if (!window.Bonsai) window.Bonsai = {}
 
-  if (w.Bonsai.plugins) {
+  if (window.Bonsai.plugins) {
     console.warn('[Bonsai] Plugin system already installed')
-    return w.Bonsai.plugins
+    return window.Bonsai.plugins
   }
 
-  const plugins = createPluginSystem()
-  w.Bonsai.plugins = Object.freeze(plugins) as PluginsApi
+  const plugins = createPluginSystem(datastarEntrypoint)
+  window.Bonsai.plugins = Object.freeze(plugins) as PluginsApi
 
   // Flush any pending plugin registrations that ran before the system existed
-  const pending = w.__bonsaiPendingPluginRegistrations
+  const pending = window.__bonsaiPendingPluginRegistrations
   if (pending?.length) {
     for (const { name, handler } of pending) {
-      plugins.register(name, handler as PluginHandler)
+      plugins.register(name, handler)
     }
     pending.length = 0
   }

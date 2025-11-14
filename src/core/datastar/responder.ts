@@ -12,6 +12,25 @@ import type {
 } from '@/core/datastar/types'
 import { factory } from '@/core/middleware'
 
+const isPatchElementsEffect = (
+  fx: EffectDefinition
+): fx is ['patch-elements', JSX.Element | JSX.Element[] | string, PatchElementsOptions?] =>
+  fx[0] === 'patch-elements'
+
+const isPatchElementsSeqEffect = (
+  fx: EffectDefinition
+): fx is ['patch-elements-seq', Array<JSX.Element | string>, PatchElementsOptions?] =>
+  fx[0] === 'patch-elements-seq'
+
+const isPatchSignalsEffect = (
+  fx: EffectDefinition
+): fx is ['patch-signals', Record<string, Jsonifiable>, PatchSignalsOptions?] =>
+  fx[0] === 'patch-signals'
+
+const isExecuteScriptEffect = (
+  fx: EffectDefinition
+): fx is ['execute-script', string, ExecuteScriptOptions?] => fx[0] === 'execute-script'
+
 export class DatastarResponder {
   private c: Context<AppEnv>
   public effectRegistry: EffectRegistry
@@ -167,50 +186,40 @@ export class DatastarResponder {
     for (const fx of effects) {
       const [effectName, ...args] = fx
 
-      // Try registry first (extensibility layer)
       if (this.effectRegistry.has(effectName)) {
-        // Call the registered handler
         await this.effectRegistry.execute(this.c, effectName, ...args)
       }
 
-      // Handle built-in effects (core functionality)
-      // This keeps backward compatibility and handles the actual bus communication
-      switch (effectName) {
-        case 'patch-elements': {
-          const [payload, opts] = args as [
-            JSX.Element | JSX.Element[] | string,
-            PatchElementsOptions?,
-          ]
-          const htmls: string[] = Array.isArray(payload)
-            ? await Promise.all(payload.map(v => renderOne(v)))
-            : [await renderOne(payload)]
-          this.patchElements(topic, htmls.join('\n'), opts || {})
-          break
-        }
-        case 'patch-elements-seq': {
-          const [payload, opts] = args as [Array<JSX.Element | string>, PatchElementsOptions?]
-          const htmls = await Promise.all(payload.map(v => renderOne(v)))
-          this.patchElements(topic, htmls.join('\n'), opts || {})
-          break
-        }
-        case 'patch-signals': {
-          const [payload, opts] = args as [Record<string, Jsonifiable>, PatchSignalsOptions?]
-          this.patchSignals(topic, payload, opts)
-          break
-        }
-        case 'execute-script': {
-          const [script, opts] = args as [string, ExecuteScriptOptions?]
-          this.executeScript(topic, script, opts)
-          break
-        }
-        case 'close-sse': {
-          this.c.var.bus.toTopic(topic, { event: 'close' })
-          break
-        }
-        default: {
-          // Unknown effect - warning already logged by registry.execute
-          break
-        }
+      if (isPatchElementsEffect(fx)) {
+        const [, payload, opts] = fx
+        const htmls: string[] = Array.isArray(payload)
+          ? await Promise.all(payload.map(v => renderOne(v)))
+          : [await renderOne(payload)]
+        this.patchElements(topic, htmls.join('\n'), opts ?? {})
+        continue
+      }
+
+      if (isPatchElementsSeqEffect(fx)) {
+        const [, payload, opts] = fx
+        const htmls = await Promise.all(payload.map(v => renderOne(v)))
+        this.patchElements(topic, htmls.join('\n'), opts ?? {})
+        continue
+      }
+
+      if (isPatchSignalsEffect(fx)) {
+        const [, payload, opts] = fx
+        this.patchSignals(topic, payload, opts)
+        continue
+      }
+
+      if (isExecuteScriptEffect(fx)) {
+        const [, script, opts] = fx
+        this.executeScript(topic, script, opts)
+        continue
+      }
+
+      if (effectName === 'close-sse') {
+        this.c.var.bus.toTopic(topic, { event: 'close' })
       }
     }
   }
@@ -250,49 +259,57 @@ export class DatastarResponder {
           continue
         }
 
-        // Handle built-in effects for client
-        switch (effectName) {
-          case 'patch-elements':
-          case 'patch-elements-seq': {
-            const [payload, opts] = args as [
-              JSX.Element | JSX.Element[] | string | Array<JSX.Element | string>,
-              PatchElementsOptions?,
-            ]
-            const renderOne = async (x: JSX.Element | string): Promise<string> => {
-              if (typeof x === 'string') return x
-              return await this.c.var.renderFragmentToString(x)
-            }
-            const htmls = Array.isArray(payload)
-              ? await Promise.all(payload.map(v => renderOne(v)))
-              : [await renderOne(payload)]
-            this.c.var.bus.toClient(clientId, {
-              event: 'datastar-patch-elements',
-              html: htmls.join('\n'),
-              options: opts || {},
-            })
-            break
-          }
-          case 'patch-signals': {
-            const [payload, opts] = args as [Record<string, Jsonifiable>, PatchSignalsOptions?]
-            this.c.var.bus.toClient(clientId, {
-              event: 'datastar-patch-signals',
-              signals: JSON.stringify(payload),
-              options: opts || {},
-            })
-            break
-          }
-          case 'execute-script': {
-            const [script, opts] = args as [string, ExecuteScriptOptions?]
-            this.c.var.bus.toClient(clientId, {
-              event: 'execute-script',
-              script,
-              ...(opts && { options: opts }),
-            })
-            break
-          }
-          case 'close-sse':
-            this.c.var.bus.toClient(clientId, { event: 'close' })
-            break
+        const renderOne = async (x: JSX.Element | string): Promise<string> => {
+          if (typeof x === 'string') return x
+          return await this.c.var.renderFragmentToString(x)
+        }
+
+        if (isPatchElementsEffect(fx)) {
+          const [, payload, opts] = fx
+          const htmls = Array.isArray(payload)
+            ? await Promise.all(payload.map(v => renderOne(v)))
+            : [await renderOne(payload)]
+          this.c.var.bus.toClient(clientId, {
+            event: 'datastar-patch-elements',
+            html: htmls.join('\n'),
+            options: opts ?? {},
+          })
+          continue
+        }
+
+        if (isPatchElementsSeqEffect(fx)) {
+          const [, payload, opts] = fx
+          const htmls = await Promise.all(payload.map(v => renderOne(v)))
+          this.c.var.bus.toClient(clientId, {
+            event: 'datastar-patch-elements',
+            html: htmls.join('\n'),
+            options: opts ?? {},
+          })
+          continue
+        }
+
+        if (isPatchSignalsEffect(fx)) {
+          const [, payload, opts] = fx
+          this.c.var.bus.toClient(clientId, {
+            event: 'datastar-patch-signals',
+            signals: JSON.stringify(payload),
+            options: opts ?? {},
+          })
+          continue
+        }
+
+        if (isExecuteScriptEffect(fx)) {
+          const [, script, opts] = fx
+          this.c.var.bus.toClient(clientId, {
+            event: 'execute-script',
+            script,
+            ...(opts && { options: opts }),
+          })
+          continue
+        }
+
+        if (effectName === 'close-sse') {
+          this.c.var.bus.toClient(clientId, { event: 'close' })
         }
       }
     }
