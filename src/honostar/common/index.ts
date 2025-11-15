@@ -2,52 +2,48 @@
 // CONSTANTS
 // ============================================================================
 export {
-  DefaultSseRetryDurationMs,
+  DatastarDatalineElements,
+  DatastarDatalineOnlyIfMissing,
+  DatastarDatalinePatchMode,
+  DatastarDatalinePaths,
+  DatastarDatalineSelector,
+  DatastarDatalineSignals,
+  DatastarDatalineUseViewTransition,
+  DefaultElementPatchMode,
   DefaultElementsUseViewTransitions,
   DefaultPatchSignalsOnlyIfMissing,
-  DatastarDatalineSelector,
-  DatastarDatalinePatchMode,
-  DatastarDatalineElements,
-  DatastarDatalineUseViewTransition,
-  DatastarDatalineSignals,
-  DatastarDatalineOnlyIfMissing,
-  DatastarDatalinePaths,
+  DefaultSseRetryDurationMs,
   ElementPatchModes,
-  DefaultElementPatchMode,
   EventTypes,
 } from './constants'
-
-// ============================================================================
-// TYPES
-// ============================================================================
-export type {
-  Jsonifiable,
-  ElementPatchMode,
-  EventType,
-  StreamOptions,
-  DatastarEventOptions,
-  ElementOptions,
-  PatchElementsOptions,
-  patchElementsEvent,
-  PatchSignalsOptions,
-  ExecuteScriptOptions,
-  patchSignalsEvent,
-  MultilineDatalinePrefix,
-  DatastarEventOptionsUnion,
-  DatastarEvent,
-} from './types'
-
-export { sseHeaders, DefaultMapping } from './types'
-
 // ============================================================================
 // THEME
 // ============================================================================
 export type {
-  ThemeValue,
-  ThemePreference,
   ThemeOptions,
-  ThemeRuntimeConfig,
+  ThemePreference,
   ThemeProviderArtifacts,
+  ThemeRuntimeConfig,
+  ThemeValue,
 } from './theme'
-
 export { resolveThemeProvider } from './theme'
+// ============================================================================
+// TYPES
+// ============================================================================
+export type {
+  DatastarEvent,
+  DatastarEventOptions,
+  DatastarEventOptionsUnion,
+  ElementOptions,
+  ElementPatchMode,
+  EventType,
+  ExecuteScriptOptions,
+  Jsonifiable,
+  MultilineDatalinePrefix,
+  PatchElementsOptions,
+  PatchSignalsOptions,
+  patchElementsEvent,
+  patchSignalsEvent,
+  StreamOptions,
+} from './types'
+export { DefaultMapping, sseHeaders } from './types'

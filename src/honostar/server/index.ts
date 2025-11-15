@@ -9,23 +9,21 @@ export { createConfig, DEFAULT_CONFIG } from './config'
 // ============================================================================
 export type { AppEnv, AppHandler, AppVariables, AppVariablesBase } from './context'
 export { factory, initContext } from './middleware'
-
+export type { HandlerDefinition, PageDefinition } from './page'
 // ============================================================================
 // PAGES & HANDLERS
 // ============================================================================
 export { createHandler, createPage } from './page'
-export type { PageDefinition, HandlerDefinition } from './page'
 
 // ============================================================================
 // RENDERING
 // ============================================================================
 export { renderer } from './renderer'
-
+export type { BuildRoutes, Route } from './route'
 // ============================================================================
 // ROUTING
 // ============================================================================
 export { route } from './route'
-export type { Route, BuildRoutes } from './route'
 
 export { mountRoutes } from './router'
 export { generateRouteManifest } from './router/generator'
@@ -42,8 +40,67 @@ export { signTopics, verifyTopics } from './security/topics'
 // SSE (Server-Sent Events)
 // ============================================================================
 
+export {
+  DatastarDatalineElements,
+  DatastarDatalineOnlyIfMissing,
+  DatastarDatalinePatchMode,
+  DatastarDatalinePaths,
+  DatastarDatalineSelector,
+  DatastarDatalineSignals,
+  DatastarDatalineUseViewTransition,
+  DefaultElementPatchMode,
+  DefaultElementsUseViewTransitions,
+  DefaultPatchSignalsOnlyIfMissing,
+  DefaultSseRetryDurationMs,
+  ElementPatchModes,
+  EventTypes,
+} from '../common/constants'
+// ============================================================================
+// THEME
+// ============================================================================
+export type {
+  ThemeOptions,
+  ThemePreference,
+  ThemeProviderArtifacts,
+  ThemeRuntimeConfig,
+  ThemeValue,
+} from '../common/theme'
+export { resolveThemeProvider } from '../common/theme'
+// ============================================================================
+// COMMON TYPES (Shared between server and client)
+// ============================================================================
+export type {
+  DatastarEvent,
+  DatastarEventOptions,
+  DatastarEventOptionsUnion,
+  ElementOptions,
+  ElementPatchMode,
+  EventType,
+  ExecuteScriptOptions,
+  Jsonifiable,
+  MultilineDatalinePrefix,
+  PatchElementsOptions,
+  PatchSignalsOptions,
+  patchElementsEvent,
+  patchSignalsEvent,
+  StreamOptions,
+} from '../common/types'
+export { DefaultMapping, sseHeaders } from '../common/types'
+// Effect system
+export type {
+  BuiltInEffectName,
+  EffectDefinition,
+  EffectHandler,
+  TypedEffectHandler,
+} from './sse/effect-registry'
+export { EffectRegistry } from './sse/effect-registry'
+// SSE endpoint and middleware
+export { createSseEndpoint } from './sse/endpoint'
+export { SseFormatter } from './sse/generator'
+export type { FxResponse } from './sse/middleware'
+export { fxResponder, registerEffect, registerEffects } from './sse/middleware'
 // Bus implementations
-export type { PubSubBus, SSEPayload, Sink } from './sse/pubsub/bus'
+export type { PubSubBus, Sink, SSEPayload } from './sse/pubsub/bus'
 export { MemoryBus } from './sse/pubsub/bus'
 export type {
   NatsBusOptions,
@@ -54,69 +111,4 @@ export type {
 export { NatsBus } from './sse/pubsub/nats-bus'
 export type { RedisBusOptions, RedisClient } from './sse/pubsub/redis-bus'
 export { RedisBus } from './sse/pubsub/redis-bus'
-
-// Effect system
-export type {
-  BuiltInEffectName,
-  EffectDefinition,
-  EffectHandler,
-  TypedEffectHandler,
-} from './sse/effect-registry'
-export { EffectRegistry } from './sse/effect-registry'
-
-// SSE endpoint and middleware
-export { createSseEndpoint } from './sse/endpoint'
-export { SseFormatter } from './sse/generator'
-export type { FxResponse } from './sse/middleware'
-export { fxResponder, registerEffect, registerEffects } from './sse/middleware'
 export { DatastarResponder, datastarResponder } from './sse/responder'
-
-// ============================================================================
-// COMMON TYPES (Shared between server and client)
-// ============================================================================
-export type {
-  Jsonifiable,
-  ElementPatchMode,
-  EventType,
-  StreamOptions,
-  DatastarEventOptions,
-  ElementOptions,
-  PatchElementsOptions,
-  patchElementsEvent,
-  PatchSignalsOptions,
-  ExecuteScriptOptions,
-  patchSignalsEvent,
-  MultilineDatalinePrefix,
-  DatastarEventOptionsUnion,
-  DatastarEvent,
-} from '../common/types'
-
-export { sseHeaders, DefaultMapping } from '../common/types'
-
-export {
-  DefaultSseRetryDurationMs,
-  DefaultElementsUseViewTransitions,
-  DefaultPatchSignalsOnlyIfMissing,
-  DatastarDatalineSelector,
-  DatastarDatalinePatchMode,
-  DatastarDatalineElements,
-  DatastarDatalineUseViewTransition,
-  DatastarDatalineSignals,
-  DatastarDatalineOnlyIfMissing,
-  DatastarDatalinePaths,
-  ElementPatchModes,
-  DefaultElementPatchMode,
-  EventTypes,
-} from '../common/constants'
-
-// ============================================================================
-// THEME
-// ============================================================================
-export type {
-  ThemeOptions,
-  ThemePreference,
-  ThemeRuntimeConfig,
-  ThemeValue,
-  ThemeProviderArtifacts,
-} from '../common/theme'
-export { resolveThemeProvider } from '../common/theme'

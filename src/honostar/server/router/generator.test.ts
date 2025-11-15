@@ -38,7 +38,7 @@ describe('generateRouteManifest', () => {
     expect(manifest).toContain('load: () => import')
 
     const routes = await readFile(routesPath, 'utf-8')
-    expect(routes).toContain("import { route } from '@/honostar/server/route'")
+    expect(routes).toContain("import { route } from '@/honostar/server'")
     expect(routes).toContain('export const routes = route(')
 
     await teardown()

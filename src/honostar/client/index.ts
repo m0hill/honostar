@@ -9,34 +9,32 @@ export type {
   InspectorViewMode,
   SignalFilter,
 } from './inspector/types'
-
-// ============================================================================
-// RUNTIME
-// ============================================================================
-export { registerRuntimePlugin, installPluginSystem } from './runtime/plugins'
-export type {
-  PluginHandler,
-  DatastarActionContext,
-  DatastarActionModule,
-} from './runtime/plugins'
-
-export { installFetchAugmentation } from './runtime/fetch'
-export { ensureHonostar, freeze } from './runtime/global'
-export { readRuntimeData } from './runtime/runtime-data'
-export { ensureTabId } from './runtime/tab'
-export { onPageRevealFocusApp } from './runtime/focus'
-export { installImageEnhancements } from './runtime/image'
-export { createModalHost } from './runtime/modals'
-
-// ============================================================================
-// PREFETCH
-// ============================================================================
-export { createPrefetchClient } from './prefetch'
 export type {
   PrefetchClient,
   PrefetchOptions,
   PrefetchPolicy,
 } from './prefetch'
+// ============================================================================
+// PREFETCH
+// ============================================================================
+export { createPrefetchClient } from './prefetch'
+
+export { installFetchAugmentation } from './runtime/fetch'
+export { onPageRevealFocusApp } from './runtime/focus'
+export { ensureHonostar, freeze } from './runtime/global'
+export { installImageEnhancements } from './runtime/image'
+export { createModalHost } from './runtime/modals'
+export type {
+  DatastarActionContext,
+  DatastarActionModule,
+  PluginHandler,
+} from './runtime/plugins'
+// ============================================================================
+// RUNTIME
+// ============================================================================
+export { installPluginSystem, registerRuntimePlugin } from './runtime/plugins'
+export { readRuntimeData } from './runtime/runtime-data'
+export { ensureTabId } from './runtime/tab'
 
 // ============================================================================
 // THEME
