@@ -2,7 +2,7 @@ import type { Handler, MiddlewareHandler } from 'hono'
 import type { JSX } from 'hono/jsx/jsx-runtime'
 import type { ThemeOptions } from '@/honostar/common/theme'
 import type { FxResponse } from '@/honostar/server/sse/middleware'
-import type { PubSubBus } from '@/honostar/server/sse/pubsub/bus'
+import type { PubSubBus } from '@/honostar/server/sse/pubsub/memory'
 
 export interface AppVariablesBase {
   bus: PubSubBus

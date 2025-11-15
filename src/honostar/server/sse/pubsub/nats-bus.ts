@@ -1,4 +1,4 @@
-import type { PubSubBus, Sink, SSEPayload } from '@/honostar/server/sse/pubsub/bus'
+import type { PubSubBus, Sink, SSEPayload } from '@/honostar/server/sse/pubsub/memory'
 
 export interface NatsConnection {
   subscribe(

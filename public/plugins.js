@@ -475,7 +475,7 @@ function resolveThemeProvider(options, cookiePreference) {
 
 // src/honostar/client/runtime/runtime-data.ts
 var FALLBACK_THEME_CONFIG = resolveThemeProvider().config;
-// src/plugins/clipboard.ts
+// src/lib/plugins/clipboard.ts
 registerRuntimePlugin("clipboard", async (ctx, text) => {
   if (!navigator.clipboard) {
     return ctx.error("Clipboard API not supported in this browser");
@@ -487,7 +487,7 @@ registerRuntimePlugin("clipboard", async (ctx, text) => {
   }
 });
 
-// src/plugins/focus.ts
+// src/lib/plugins/focus.ts
 registerRuntimePlugin("focus", (ctx, selector) => {
   const target = document.querySelector(selector);
   if (!target) {
@@ -503,7 +503,7 @@ registerRuntimePlugin("focus", (ctx, selector) => {
   }
 });
 
-// src/plugins/scroll.ts
+// src/lib/plugins/scroll.ts
 registerRuntimePlugin("scroll", (ctx, selector, behavior = "smooth", block = "start") => {
   const target = document.querySelector(selector);
   if (!target) {
@@ -520,7 +520,7 @@ registerRuntimePlugin("scroll", (ctx, selector, behavior = "smooth", block = "st
   }
 });
 
-// src/plugins/toast.ts
+// src/lib/plugins/toast.ts
 var DEFAULT_DURATION = 3000;
 registerRuntimePlugin("toast", (ctx, message, type = "info", options = {}) => {
   const container = document.getElementById("toast-container");

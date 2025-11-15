@@ -100,8 +100,8 @@ export { SseFormatter } from './sse/generator'
 export type { FxResponse } from './sse/middleware'
 export { fxResponder, registerEffect, registerEffects } from './sse/middleware'
 // Bus implementations
-export type { PubSubBus, Sink, SSEPayload } from './sse/pubsub/bus'
-export { MemoryBus } from './sse/pubsub/bus'
+export type { PubSubBus, Sink, SSEPayload } from './sse/pubsub/memory'
+export { MemoryBus } from './sse/pubsub/memory'
 export type {
   NatsBusOptions,
   NatsConnection,

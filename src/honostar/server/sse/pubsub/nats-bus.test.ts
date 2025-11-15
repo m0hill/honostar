@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import type { PatchElementsOptions } from '@/honostar/common/types'
-import type { SSEPayload } from '@/honostar/server/sse/pubsub/bus'
+import type { SSEPayload } from '@/honostar/server/sse/pubsub/memory'
 import {
   NatsBus,
   type NatsConnection,

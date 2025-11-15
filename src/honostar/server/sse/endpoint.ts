@@ -4,7 +4,7 @@ import type { HonostarConfig } from '@/honostar/server/config'
 import { createConfig } from '@/honostar/server/config'
 import { verifyTopics } from '@/honostar/server/security/topics'
 import { SseFormatter } from '@/honostar/server/sse/generator'
-import type { SSEPayload } from '@/honostar/server/sse/pubsub/bus'
+import type { SSEPayload } from '@/honostar/server/sse/pubsub/memory'
 
 /**
  * Creates an SSE endpoint handler with optional configuration
