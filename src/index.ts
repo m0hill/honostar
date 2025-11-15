@@ -5,6 +5,7 @@ import { compress } from 'hono/compress'
 import { logger } from 'hono/logger'
 import {
   type AppEnv,
+  createConfig,
   createSseEndpoint,
   csrf,
   datastarResponder,
@@ -16,8 +17,17 @@ import {
 } from '@/core'
 
 import '@/core/polyfills/compression.js'
-// Import built-in plugins - will be registered in the client runtime
-import '@/runtime/plugins'
+
+// Define your application config
+const config = createConfig({
+  assets: {
+    css: '/styles.css',
+    runtime: '/runtime.js',
+    datastar: '/datastar.js',
+    plugins: ['/plugins.js'],
+  },
+})
+
 import { createManifestRouteLoader } from '@/core/router/manifest-route-loader'
 import { customEffects } from '@/custom-effects'
 import { auth } from '@/middleware/auth'
@@ -34,11 +44,9 @@ app.use('*', logger())
 
 app.use('*', except('/_/events', compress()))
 
-// Zero-config usage with framework defaults
-// Optional: Pass HonostarConfig for custom asset paths, CSP, SSE config, etc.
-app.use('*', csrf())
-
-app.use('*', renderer())
+// Pass config to framework middleware
+app.use('*', csrf(config))
+app.use('*', renderer(config))
 app.use('*', initContext)
 app.use('*', attachBus)
 app.use('*', datastarResponder)
@@ -50,7 +58,7 @@ app.use('*', registerEffects(customEffects))
 app.use('*', attachDb)
 app.use('*', auth)
 
-app.get('/_/events', createSseEndpoint())
+app.get('/_/events', createSseEndpoint(config))
 
 await mountRoutes(app, createManifestRouteLoader(routesManifest))
 

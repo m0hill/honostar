@@ -16,6 +16,8 @@ export type HonostarConfig = {
     runtime: string
     /** Path to the Datastar library (default: '/datastar.js') */
     datastar: string
+    /** Paths to client-side plugin entry files (default: []) */
+    plugins?: string[]
   }
   /**
    * Framework endpoint paths
@@ -147,6 +149,7 @@ export const DEFAULT_CONFIG: HonostarConfig = {
     css: '/styles.css',
     runtime: '/runtime.js',
     datastar: '/datastar.js',
+    plugins: [],
   },
   endpoints: {
     sse: '/_/events',

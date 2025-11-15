@@ -1,9 +1,11 @@
 {
   "scripts": {
     "routes:generate": "tsx scripts/generate-routes.ts",
-    "build:assets": "bun run build:css && bun run build:runtime",
+    "build:plugins": "bun build src/plugins/index.ts --outfile public/plugins.js --target browser --format esm --minify",
+    "dev:plugins": "bun build src/plugins/index.ts --outfile public/plugins.js --target browser --format esm --watch",
+    "build:assets": "bun run build:css && bun run build:runtime && bun run build:plugins",
     "start": "bun run routes:generate && bun run build:assets && bun src/index.ts",
-    "dev": "bun run routes:generate && bunx concurrently \"bun run dev:css\" \"bun run dev:runtime\" \"bun --hot src/index.ts\"",
+    "dev": "bunx concurrently \"bun run dev:css\" \"bun run dev:runtime\" \"bun run dev:plugins\" \"bun --hot src/index.ts\"",
     "build": "bun run routes:generate && bun run build:assets && bun build src/index.ts --outdir dist --target bun",
     "build:prod": "bun run routes:generate && bun run build:assets && bun build src/index.ts --outdir dist --target bun --minify --release",
     "build:css": "tailwindcss -i ./styles.css -o ./public/styles.css",
@@ -36,7 +38,7 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.2.4",
+    "@biomejs/biome": "^2.3.5",
     "@tailwindcss/cli": "^4.1.13",
     "@types/bun": "latest",
     "@types/node": "^22.10.1",

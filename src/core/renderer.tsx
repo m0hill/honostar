@@ -56,6 +56,7 @@ export const renderer = (userConfig?: Partial<HonostarConfig>) => {
         theme: theme.config,
         assets: {
           datastar: config.assets.datastar,
+          plugins: config.assets.plugins ?? [],
         },
       }
       const runtimeDataJson = JSON.stringify(runtimeData).replace(/</g, '\\u003c')

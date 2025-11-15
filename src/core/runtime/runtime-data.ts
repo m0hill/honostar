@@ -3,6 +3,7 @@ import { resolveThemeProvider } from '@/core/theme'
 
 type RuntimeAssets = {
   datastar: string
+  plugins: string[]
 }
 
 type RuntimeData = {
@@ -14,6 +15,7 @@ type RuntimeData = {
 const FALLBACK_THEME_CONFIG = resolveThemeProvider().config
 const FALLBACK_ASSETS: RuntimeAssets = {
   datastar: '/datastar.js',
+  plugins: [],
 }
 const FALLBACK_RUNTIME_DATA: RuntimeData = {
   csrfToken: null,
@@ -74,6 +76,10 @@ function normalizeAssets(candidate: unknown): RuntimeAssets {
       typeof raw.datastar === 'string' && raw.datastar.length > 0
         ? raw.datastar
         : FALLBACK_ASSETS.datastar,
+    plugins:
+      Array.isArray(raw.plugins) && raw.plugins.every(p => typeof p === 'string')
+        ? raw.plugins
+        : FALLBACK_ASSETS.plugins,
   }
 }
 

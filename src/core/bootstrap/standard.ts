@@ -11,10 +11,27 @@ import { readRuntimeData } from '@/core/runtime/runtime-data'
 import { ensureTabId } from '@/core/runtime/tab'
 import { createThemeController, installThemeActions } from '@/core/theme-client'
 
-// Import built-in plugins to register them with Datastar
-import '@/runtime/plugins'
+/**
+ * Dynamically loads plugin entry points provided from the server config.
+ */
+async function loadPlugins(pluginPaths: string[]) {
+  if (!pluginPaths || pluginPaths.length === 0) {
+    return
+  }
 
-;(function bootstrap() {
+  for (const path of pluginPaths) {
+    try {
+      // Dynamically import the plugin module.
+      // This executes the code, calling registerRuntimePlugin() for each plugin.
+      await import(path)
+      console.log(`[Honostar] Plugin module loaded: ${path}`)
+    } catch (err) {
+      console.error(`[Honostar] Failed to load plugin module: ${path}`, err)
+    }
+  }
+}
+
+;(async function bootstrap() {
   const data = readRuntimeData()
   const tabId = ensureTabId()
   installFetchAugmentation({ tabId, csrfToken: data.csrfToken })
@@ -28,6 +45,9 @@ import '@/runtime/plugins'
   // Install plugin system early so user code can register plugins
   const plugins = installPluginSystem(data.assets.datastar)
   honostar.plugins = plugins
+
+  // Dynamically load all configured plugins
+  await loadPlugins(data.assets.plugins)
 
   const prefetch = createPrefetchClient({
     enabled: true,
