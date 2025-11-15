@@ -1,5 +1,5 @@
 import { deleteCookie } from 'hono/cookie'
-import { createHandler } from '@/core/page'
+import { createHandler } from '@/core'
 import { routes } from '@/routes'
 
 export const POST = createHandler({

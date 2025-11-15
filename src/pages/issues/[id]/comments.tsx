@@ -1,7 +1,7 @@
 import type { SQL } from 'drizzle-orm'
 import type { SQLiteColumn } from 'drizzle-orm/sqlite-core'
 import { z } from 'zod'
-import { createHandler } from '@/core/page'
+import { createHandler } from '@/core'
 import { comments as commentsTable } from '@/db/schema'
 import { requireAuth } from '@/lib/auth-middleware'
 
@@ -14,24 +14,22 @@ const bodySchema = z.object({
 })
 
 export const POST = createHandler({
+  schema: bodySchema,
   use: [requireAuth],
-  async handler(c) {
+  hook: (result, c) => {
+    const error = result.error[0]?.message || 'Invalid comment'
+    return c.var.datastar.reply([['patch-signals', { commentError: error }]], {
+      status: 400,
+    })
+  },
+
+  async handler(c, data) {
     const { id } = c.req.param()
     const issueId = Number(id)
     const user = c.var.user!
-    const json = await c.req.json()
-
-    const validation = bodySchema.safeParse(json)
-
-    if (!validation.success) {
-      const error = validation.error.issues[0]?.message || 'Invalid comment'
-      return c.var.datastar.reply([['patch-signals', { commentError: error }]], {
-        status: 400,
-      })
-    }
 
     await c.var.db.insert(commentsTable).values({
-      body: validation.data.comment,
+      body: data.comment,
       issueId,
       authorId: user.id,
     })

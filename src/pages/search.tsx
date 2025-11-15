@@ -1,22 +1,18 @@
 import { like } from 'drizzle-orm'
+import { z } from 'zod'
 import IssuesList from '@/components/IssuesList'
-import { createHandler } from '@/core/page'
+import { createHandler } from '@/core'
 import { issues } from '@/db/schema'
 
-export const GET = createHandler({
-  async handler(c) {
-    // Read Datastar signals from query parameter
-    const datastarParam = c.req.query('datastar')
-    let searchQuery = ''
+const searchSchema = z.object({
+  search: z.string().optional().default(''),
+})
 
-    if (datastarParam) {
-      try {
-        const signals = JSON.parse(datastarParam)
-        searchQuery = (signals?.search ?? '').trim()
-      } catch (error) {
-        console.error('Failed to parse datastar signals:', error)
-      }
-    }
+export const GET = createHandler({
+  schema: searchSchema,
+
+  async handler(c, data) {
+    const searchQuery = data.search.trim()
 
     if (!searchQuery) {
       // Return all issues if no search query

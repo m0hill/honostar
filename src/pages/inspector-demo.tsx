@@ -1,10 +1,11 @@
+import { z } from 'zod'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { createHandler, createPage } from '@/core/page'
+import { createHandler, createPage } from '@/core'
 import { routes } from '@/routes'
 
 const arraySignalTemplateId = 'array-signal-item-template'
@@ -576,12 +577,14 @@ export default createPage({
   component: InspectorDemoPage,
 })
 
+const submitSchema = z.object({
+  email: z.email(),
+})
+
 // Handler for form submission
 export const POST = createHandler({
-  async handler(c) {
-    const body = await c.req.json()
-    const email = body.email
-
+  schema: submitSchema,
+  async handler(c, data) {
     // Simulate processing
     await new Promise(resolve => setTimeout(resolve, 500))
 
@@ -589,7 +592,7 @@ export const POST = createHandler({
       [
         'patch-signals',
         {
-          submitStatus: `Success! Submitted ${email}`,
+          submitStatus: `Success! Submitted ${data.email}`,
           email: '',
         },
       ],

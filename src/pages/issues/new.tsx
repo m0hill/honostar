@@ -1,9 +1,14 @@
+import { z } from 'zod'
 import IssueModal from '@/components/IssueModal'
-import { createHandler } from '@/core/page'
+import { createHandler } from '@/core'
 import { labels } from '@/db/schema'
 import { requireAuth } from '@/lib/auth-middleware'
 
+// No data expected from client - empty schema
+const emptySchema = z.object({}).optional()
+
 export const GET = createHandler({
+  schema: emptySchema,
   use: [requireAuth],
   async handler(c) {
     const allLabels = await c.var.db.select().from(labels)

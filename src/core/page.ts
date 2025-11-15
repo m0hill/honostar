@@ -1,3 +1,4 @@
+import type { StandardSchemaV1 } from '@standard-schema/spec'
 import type { Context, MiddlewareHandler } from 'hono'
 import type { JSX } from 'hono/jsx/jsx-runtime'
 import type { AppEnv } from '@/core/context'
@@ -18,10 +19,27 @@ export interface PageDefinition<T extends Record<string, unknown> = {}> {
   topics?: PageTopics
 }
 
-export interface HandlerDefinition {
+type ValidationHook = (
+  result: { success: false; error: readonly StandardSchemaV1.Issue[] },
+  c: Context<AppEnv>
+) => Response | FxResponse | Promise<Response | FxResponse>
+
+interface BaseHandlerDefinition {
   use?: MiddlewareHandler<AppEnv>[]
   handler: (c: Context<AppEnv>) => Promise<Response | FxResponse>
 }
+
+interface ValidatedHandlerDefinition<Schema extends StandardSchemaV1> {
+  schema: Schema
+  use?: MiddlewareHandler<AppEnv>[]
+  hook?: ValidationHook
+  handler: (
+    c: Context<AppEnv>,
+    data: StandardSchemaV1.InferOutput<Schema>
+  ) => Promise<Response | FxResponse>
+}
+
+export type HandlerDefinition = BaseHandlerDefinition
 
 export function createPage<T extends Record<string, unknown>>(
   definition: PageDefinition<T>
@@ -29,6 +47,124 @@ export function createPage<T extends Record<string, unknown>>(
   return definition
 }
 
-export function createHandler(definition: HandlerDefinition): HandlerDefinition {
-  return definition
+/**
+ * Creates a handler with automatic Datastar request validation and type-safe data extraction.
+ *
+ * This is the unified handler creator that handles both validated and non-validated cases.
+ * It automatically detects whether a schema is provided and adjusts behavior accordingly.
+ *
+ * **Validated Handler (with schema):**
+ * - Automatically extracts data from JSON body (POST/PUT/PATCH/DELETE) or query param (GET)
+ * - Validates data against any Standard Schema compliant validator (Zod, Valibot, ArkType, etc.)
+ * - Provides 100% type-safe data to your handler
+ * - Handles validation errors via optional hook or sensible default
+ *
+ * **Base Handler (without schema):**
+ * - Simple passthrough for traditional endpoints
+ * - No validation, no data extraction
+ * - Full manual control
+ *
+ * @example
+ * ```typescript
+ * // Validated handler with Zod (recommended for Datastar endpoints)
+ * import { z } from 'zod'
+ *
+ * const schema = z.object({
+ *   issue: z.object({
+ *     title: z.string().min(1, 'Title is required'),
+ *   })
+ * })
+ *
+ * export const POST = createHandler({
+ *   schema,
+ *   use: [requireAuth],
+ *   hook: (result, c) => {
+ *     const error = result.error[0]?.message || 'Invalid input'
+ *     return c.var.datastar.reply([['patch-signals', { error }]], { status: 400 })
+ *   },
+ *   async handler(c, data) {
+ *     // data is 100% type-safe!
+ *     const { issue } = data
+ *     // ... your logic
+ *   }
+ * })
+ *
+ * // Validated handler with Valibot
+ * import * as v from 'valibot'
+ *
+ * const schema = v.object({
+ *   email: v.pipe(v.string(), v.email()),
+ *   age: v.number()
+ * })
+ *
+ * export const POST = createHandler({
+ *   schema,
+ *   async handler(c, data) {
+ *     // data.email and data.age are fully typed!
+ *   }
+ * })
+ *
+ * // Base handler (for traditional endpoints)
+ * export const POST = createHandler({
+ *   async handler(c) {
+ *     deleteCookie(c, 'token')
+ *     return c.redirect('/login', 303)
+ *   }
+ * })
+ * ```
+ */
+export function createHandler<Schema extends StandardSchemaV1>(
+  definition: ValidatedHandlerDefinition<Schema>
+): HandlerDefinition
+export function createHandler(definition: BaseHandlerDefinition): HandlerDefinition
+export function createHandler<Schema extends StandardSchemaV1>(
+  definition: ValidatedHandlerDefinition<Schema> | BaseHandlerDefinition
+): HandlerDefinition {
+  // If schema is provided, this is a validated handler
+  if ('schema' in definition && definition.schema) {
+    const validatedDef = definition as ValidatedHandlerDefinition<Schema>
+    return {
+      ...(validatedDef.use ? { use: validatedDef.use } : {}),
+      async handler(c) {
+        let rawData: unknown
+
+        // 1. Automatically find the data based on request method
+        if (c.req.method === 'GET') {
+          // GET requests: data is in the 'datastar' query parameter as a JSON string
+          const datastarParam = c.req.query('datastar')
+          try {
+            rawData = datastarParam ? JSON.parse(datastarParam) : {}
+          } catch {
+            rawData = {}
+          }
+        } else {
+          // POST/PUT/PATCH/DELETE requests: data is in the JSON body
+          try {
+            rawData = await c.req.json()
+          } catch {
+            rawData = {}
+          }
+        }
+
+        // 2. Validate the data against the Standard Schema
+        const result = await validatedDef.schema['~standard'].validate(rawData)
+
+        // 3. Run validation hook on failure
+        if (result.issues) {
+          if (validatedDef.hook) {
+            return validatedDef.hook({ success: false, error: result.issues }, c)
+          }
+          // Default error response if no hook provided
+          const error = result.issues[0]?.message || 'Invalid input'
+          return c.var.datastar.reply([['patch-signals', { error }]], { status: 400 })
+        }
+
+        // 4. On success, call the handler with 100% type-safe data
+        return validatedDef.handler(c, result.value)
+      },
+    }
+  }
+
+  // Otherwise, this is a base handler - return as-is
+  return definition as BaseHandlerDefinition
 }
