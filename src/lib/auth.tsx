@@ -2,9 +2,9 @@ import type { Context } from 'hono'
 import { setCookie } from 'hono/cookie'
 import { sign } from 'hono/jwt'
 import type { StatusCode } from 'hono/utils/http-status'
-import type { AppEnv } from '@/core'
 import type { DB } from '@/db'
 import { users } from '@/db/schema'
+import type { AppEnv } from '@/honostar/server'
 import type { User } from '@/types'
 
 type Credentials = { username: string; password: string }

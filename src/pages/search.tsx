@@ -1,8 +1,8 @@
 import { like } from 'drizzle-orm'
 import { z } from 'zod'
 import IssuesList from '@/components/IssuesList'
-import { createHandler } from '@/core'
 import { issues } from '@/db/schema'
+import { createHandler } from '@/honostar/server'
 
 const searchSchema = z.object({
   search: z.string().optional().default(''),

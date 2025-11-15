@@ -1,4 +1,4 @@
-import { factory } from '@/core'
+import { factory } from '@/honostar/server'
 
 export const requireAuth = factory.createMiddleware(async (c, next) => {
   if (!c.var.user) {

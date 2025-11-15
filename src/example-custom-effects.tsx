@@ -9,8 +9,8 @@
 
 import type { Context } from 'hono'
 import type { JSX } from 'hono/jsx/jsx-runtime'
-import { type EffectHandler, type TypedEffectHandler } from '@/core'
-import type { AppEnv } from '@/core/context'
+import { type EffectHandler, type TypedEffectHandler } from '@/honostar/server'
+import type { AppEnv } from '@/honostar/server/context'
 
 // ============================================================================
 // Toast Notifications

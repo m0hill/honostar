@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { createPage } from '@/core/page'
+import { createPage } from '@/honostar/server/page'
 import { requireAuth } from '@/lib/auth-middleware'
 import { routes } from '@/routes'
 import type { User } from '@/types'

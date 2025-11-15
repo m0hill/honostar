@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import LabelsSection from '@/components/LabelsSection'
-import { createHandler } from '@/core'
 import { labels } from '@/db/schema'
+import { createHandler } from '@/honostar/server'
 
 const labelSchema = z.object({
   issue: z.object({

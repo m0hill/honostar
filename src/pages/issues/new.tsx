@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import IssueModal from '@/components/IssueModal'
-import { createHandler } from '@/core'
 import { labels } from '@/db/schema'
+import { createHandler } from '@/honostar/server'
 import { requireAuth } from '@/lib/auth-middleware'
 
 // No data expected from client - empty schema

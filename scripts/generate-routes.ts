@@ -2,7 +2,7 @@
 import { readFile } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { generateRouteManifest } from '../src/core/router/generator.js'
+import { generateRouteManifest } from '../src/honostar/server/router/generator.js'
 
 const repoRoot = resolve(fileURLToPath(new URL('..', import.meta.url)))
 const pagesDir = resolve(repoRoot, 'src/pages')

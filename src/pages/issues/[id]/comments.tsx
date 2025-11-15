@@ -1,8 +1,8 @@
 import type { SQL } from 'drizzle-orm'
 import type { SQLiteColumn } from 'drizzle-orm/sqlite-core'
 import { z } from 'zod'
-import { createHandler } from '@/core'
 import { comments as commentsTable } from '@/db/schema'
+import { createHandler } from '@/honostar/server'
 import { requireAuth } from '@/lib/auth-middleware'
 
 // Drizzle ORM query builder types

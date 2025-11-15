@@ -8,8 +8,8 @@ import type { SQL } from 'drizzle-orm'
 import type { SQLiteColumn } from 'drizzle-orm/sqlite-core'
 import { CommentsSection } from '@/components/CommentsSection'
 import IssuesList from '@/components/IssuesList'
-import type { EffectHandler } from '@/core'
 import type { comments as commentsTable, issues as issuesTable } from '@/db/schema'
+import type { EffectHandler } from '@/honostar/server'
 import type { Issue } from '@/types'
 
 // Drizzle ORM query builder types for proper type safety

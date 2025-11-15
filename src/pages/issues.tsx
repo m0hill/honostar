@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import { createHandler } from '@/core'
 import { issues, issuesToLabels, labels as labelsTable } from '@/db/schema'
+import { createHandler } from '@/honostar/server'
 import { requireAuth } from '@/lib/auth-middleware'
 import { saveBase64Image } from '@/lib/images'
 

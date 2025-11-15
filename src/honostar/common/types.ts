@@ -1,0 +1,95 @@
+import {
+  DatastarDatalineElements,
+  DatastarDatalineOnlyIfMissing,
+  DatastarDatalinePatchMode,
+  DatastarDatalineSelector,
+  DatastarDatalineSignals,
+  DatastarDatalineUseViewTransition,
+  DefaultElementPatchMode,
+  DefaultElementsUseViewTransitions,
+  DefaultPatchSignalsOnlyIfMissing,
+  ElementPatchModes,
+  EventTypes,
+} from '@/honostar/common/constants'
+
+export type Jsonifiable =
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | Jsonifiable[]
+  | { [key: string]: Jsonifiable }
+
+export type ElementPatchMode = (typeof ElementPatchModes)[number]
+export type EventType = (typeof EventTypes)[number]
+
+export type StreamOptions = Partial<{
+  onError: (error: unknown) => Promise<void> | void
+  onAbort: (reason?: string) => Promise<void> | void
+  responseInit: Record<string, unknown>
+  keepalive: boolean
+}>
+
+export interface DatastarEventOptions {
+  eventId?: string
+  retryDuration?: number
+}
+
+export interface ElementOptions extends DatastarEventOptions {
+  [DatastarDatalineUseViewTransition]?: boolean
+}
+
+export interface PatchElementsOptions extends ElementOptions {
+  [DatastarDatalinePatchMode]?: ElementPatchMode
+  [DatastarDatalineSelector]?: string
+}
+
+export interface patchElementsEvent {
+  event: 'datastar-patch-elements'
+  options: PatchElementsOptions
+  [DatastarDatalineElements]: string
+}
+
+export interface PatchSignalsOptions extends DatastarEventOptions {
+  [DatastarDatalineOnlyIfMissing]?: boolean
+}
+
+/**
+ * Options for executeScript - from official Datastar SDK.
+ * Implemented using patch-elements with a script tag injection.
+ */
+export interface ExecuteScriptOptions extends DatastarEventOptions {
+  autoRemove?: boolean
+  attributes?: string[] | Record<string, string>
+}
+
+export interface patchSignalsEvent {
+  event: 'datastar-patch-signals'
+  options: PatchSignalsOptions
+  [DatastarDatalineSignals]: Record<string, Jsonifiable>
+}
+
+export const sseHeaders = {
+  'Cache-Control': 'no-cache',
+  Connection: 'keep-alive',
+  'Content-Type': 'text/event-stream',
+} as const
+
+export type MultilineDatalinePrefix =
+  | typeof DatastarDatalineElements
+  | typeof DatastarDatalineSignals
+
+export type DatastarEventOptionsUnion =
+  | PatchElementsOptions
+  | ElementOptions
+  | PatchSignalsOptions
+  | DatastarEventOptions
+
+export type DatastarEvent = patchElementsEvent | patchSignalsEvent
+
+export const DefaultMapping = {
+  [DatastarDatalinePatchMode]: DefaultElementPatchMode,
+  [DatastarDatalineUseViewTransition]: DefaultElementsUseViewTransitions,
+  [DatastarDatalineOnlyIfMissing]: DefaultPatchSignalsOnlyIfMissing,
+} as const

@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { createHandler, createPage } from '@/core'
+import { createHandler, createPage } from '@/honostar/server'
 import { routes } from '@/routes'
 
 const arraySignalTemplateId = 'array-signal-item-template'

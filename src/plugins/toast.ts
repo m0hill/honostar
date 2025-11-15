@@ -1,4 +1,4 @@
-import { registerRuntimePlugin } from '@/core/runtime/plugins'
+import { registerRuntimePlugin } from '@/honostar/client/runtime/plugins'
 
 /**
  * Toast Plugin

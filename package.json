@@ -10,8 +10,8 @@
     "build:prod": "bun run routes:generate && bun run build:assets && bun build src/index.ts --outdir dist --target bun --minify --release",
     "build:css": "tailwindcss -i ./styles.css -o ./public/styles.css",
     "dev:css": "tailwindcss -i ./styles.css -o ./public/styles.css --watch",
-    "build:runtime": "bun build src/core/bootstrap/standard.ts --outfile public/runtime.js --target browser --format esm --minify",
-    "dev:runtime": "bun build src/core/bootstrap/standard.ts --outfile public/runtime.js --target browser --format esm --watch",
+    "build:runtime": "bun build src/honostar/client/bootstrap/standard.ts --outfile public/runtime.js --target browser --format esm --minify",
+    "dev:runtime": "bun build src/honostar/client/bootstrap/standard.ts --outfile public/runtime.js --target browser --format esm --watch",
     "lint": "oxlint --type-aware",
     "format": "biome check --write .",
     "typecheck": "tsc -noEmit",
@@ -44,8 +44,8 @@
     "@types/node": "^22.10.1",
     "concurrently": "^9.2.1",
     "drizzle-kit": "^0.31.4",
-    "oxlint": "^1.16.0",
-    "oxlint-tsgolint": "^0.2.0",
+    "oxlint": "^1.28.0",
+    "oxlint-tsgolint": "^0.6.0",
     "tailwindcss": "^4.1.13",
     "tsx": "^4.7.2"
   }

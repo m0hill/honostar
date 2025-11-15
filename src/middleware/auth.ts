@@ -1,6 +1,6 @@
 import { deleteCookie, getCookie } from 'hono/cookie'
 import { verify } from 'hono/jwt'
-import { factory } from '@/core/middleware'
+import { factory } from '@/honostar/server/middleware'
 
 export const auth = factory.createMiddleware(async (c, next) => {
   const token = getCookie(c, 'token')

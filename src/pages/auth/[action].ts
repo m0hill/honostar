@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { createHandler } from '@/core'
+import { createHandler } from '@/honostar/server'
 import { createAuthResponse, handleLogin, handleSignup } from '@/lib/auth'
 import { routes } from '@/routes'
 

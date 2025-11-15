@@ -14,9 +14,9 @@ import {
   mountRoutes,
   registerEffects,
   renderer,
-} from '@/core'
+} from '@/honostar/server'
 
-import '@/core/polyfills/compression.js'
+import '@/honostar/server/polyfills/compression.js'
 
 // Define your application config
 const config = createConfig({
@@ -28,8 +28,8 @@ const config = createConfig({
   },
 })
 
-import { createManifestRouteLoader } from '@/core/router/manifest-route-loader'
 import { customEffects } from '@/custom-effects'
+import { createManifestRouteLoader } from '@/honostar/server/router/manifest-route-loader'
 import { auth } from '@/middleware/auth'
 import { attachBus } from '@/middleware/bus'
 import { attachDb } from '@/middleware/db'
