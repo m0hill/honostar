@@ -26,21 +26,24 @@ export const POST = createHandler({
 
       if (!already) {
         await c.var.db.insert(labels).values({ name: newLabel, color: '#999999' })
-      }
 
-      const currentLabels = await c.var.db.select().from(labels)
+        const currentLabels = await c.var.db.select().from(labels)
 
-      return c.var.fx.broadcast(
-        'labels:list',
-        [
+        await c.var.fx.broadcast('labels:list', [
           [
             'patch-elements',
             <LabelsSection labels={currentLabels} />,
             { selector: '#labels-section' },
           ],
-        ],
-        { status: 201 }
-      )
+        ])
+
+        return c.var.fx.reply(
+          [['toast:show', `Label "${newLabel}" created successfully!`, 'success']],
+          { status: 201 }
+        )
+      } else {
+        return c.var.fx.reply([['toast:show', 'Label already exists', 'error']], { status: 409 })
+      }
     } catch (e: unknown) {
       console.error('Labels POST error:', e)
       return c.var.fx.reply([['patch-signals', { error: 'Failed to create label' }]], {
