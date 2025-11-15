@@ -1,4 +1,4 @@
-import { registerRuntimePlugin } from '@/honostar/client/runtime/plugins'
+import { registerRuntimePlugin } from '@/honostar/client'
 
 /**
  * Clipboard Plugin

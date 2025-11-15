@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { labels } from '@/db/schema'
-import { createPage } from '@/honostar/server/page'
+import { createPage } from '@/honostar/server'
 import { routes } from '@/routes'
 import type { IssueWithAuthor, Label, User } from '@/types'
 
