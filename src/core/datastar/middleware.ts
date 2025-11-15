@@ -38,7 +38,7 @@ export const fxResponder = factory.createMiddleware(async (c, next) => {
 
 /**
  * Register a custom effect handler.
- * This middleware allows you to extend Bonsai with your own effects.
+ * This middleware allows you to extend Honostar with your own effects.
  *
  * @example
  * ```typescript

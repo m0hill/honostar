@@ -65,7 +65,7 @@ export class NatsBus implements PubSubBus {
 
   constructor(options: NatsBusOptions) {
     this.connection = options.connection
-    this.subjectPrefix = options.subjectPrefix ?? 'bonsai.bus'
+    this.subjectPrefix = options.subjectPrefix ?? 'honostar.bus'
     this.broadcastSubject = this.subjectName('broadcast', 'all')
 
     // Subscribe to broadcast subject

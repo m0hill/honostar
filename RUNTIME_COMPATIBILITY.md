@@ -1,6 +1,6 @@
 # Runtime Compatibility
 
-Bonsai is designed to be **runtime-agnostic** and work with any JavaScript runtime supported by Hono.
+Honostar is designed to be **runtime-agnostic** and work with any JavaScript runtime supported by Hono.
 
 ## Current Status
 

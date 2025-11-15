@@ -6,7 +6,7 @@ import type { ThemeController } from '@/core/theme-client'
 
 declare global {
   interface Window {
-    Bonsai?: {
+    Honostar?: {
       theme?: ThemeController | undefined
       prefetch?: ReturnType<typeof createPrefetchClient> | undefined
       modals?: ModalsApi | undefined
@@ -27,7 +27,7 @@ declare global {
         }
       }
     }
-    __bonsaiPendingPluginRegistrations?: Array<{
+    __honostarPendingPluginRegistrations?: Array<{
       name: string
       handler: PluginHandler
     }>

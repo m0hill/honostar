@@ -1,5 +1,5 @@
-import { ensureBonsai } from '@/core/runtime/bonsai-global'
 import { installFetchAugmentation } from '@/core/runtime/fetch'
+import { ensureHonostar } from '@/core/runtime/honostar-global'
 import { readRuntimeData } from '@/core/runtime/runtime-data'
 import { ensureTabId } from '@/core/runtime/tab'
 import { createThemeController, installThemeActions } from '@/core/theme-client'
@@ -12,6 +12,6 @@ import { createThemeController, installThemeActions } from '@/core/theme-client'
   const theme = createThemeController(data.theme)
   if (theme) installThemeActions(theme)
 
-  const bonsai = ensureBonsai()
-  bonsai.theme = theme ?? undefined
+  const honostar = ensureHonostar()
+  honostar.theme = theme ?? undefined
 })()

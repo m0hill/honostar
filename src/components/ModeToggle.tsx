@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
  * ModeToggle - Theme switcher component
  *
  * Provides a dropdown menu to switch between light, dark, and system theme preferences.
- * Uses the Bonsai framework's global theme API for clean, type-safe theme management.
+ * Uses the Honostar framework's global theme API for clean, type-safe theme management.
  */
 export function ModeToggle() {
   return (
@@ -70,7 +70,7 @@ export function ModeToggle() {
           type="button"
           role="menuitem"
           class="relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-          data-on:click="window.Bonsai.actions.theme.setLight(); $modeToggle.open = false"
+          data-on:click="window.Honostar.actions.theme.setLight(); $modeToggle.open = false"
         >
           Light
         </button>
@@ -78,7 +78,7 @@ export function ModeToggle() {
           type="button"
           role="menuitem"
           class="relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-          data-on:click="window.Bonsai.actions.theme.setDark(); $modeToggle.open = false"
+          data-on:click="window.Honostar.actions.theme.setDark(); $modeToggle.open = false"
         >
           Dark
         </button>
@@ -86,7 +86,7 @@ export function ModeToggle() {
           type="button"
           role="menuitem"
           class="relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-          data-on:click="window.Bonsai.actions.theme.setSystem(); $modeToggle.open = false"
+          data-on:click="window.Honostar.actions.theme.setSystem(); $modeToggle.open = false"
         >
           System
         </button>

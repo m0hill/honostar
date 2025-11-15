@@ -1,5 +1,5 @@
 /**
- * Bonsai Plugin System
+ * Honostar Plugin System
  *
  * Provides a clean, type-safe API for registering custom Datastar actions
  * that extend the client runtime without requiring server roundtrips.
@@ -7,7 +7,7 @@
  * @example
  * ```typescript
  * // Register a clipboard action
- * window.Bonsai.plugins.register('clipboard', (ctx, text: string) => {
+ * window.Honostar.plugins.register('clipboard', (ctx, text: string) => {
  *   if (!navigator.clipboard) {
  *     return ctx.error('Clipboard API not supported')
  *   }
@@ -56,7 +56,7 @@ interface PluginRegistry {
   [name: string]: PluginHandler
 }
 
-// Public API exposed on window.Bonsai.plugins
+// Public API exposed on window.Honostar.plugins
 export interface PluginsApi {
   /**
    * Register a custom Datastar action
@@ -65,7 +65,7 @@ export interface PluginsApi {
    *
    * @example
    * ```typescript
-   * window.Bonsai.plugins.register('toast', (ctx, message: string, type = 'info') => {
+   * window.Honostar.plugins.register('toast', (ctx, message: string, type = 'info') => {
    *   const toast = document.createElement('div')
    *   toast.className = `toast toast-${type}`
    *   toast.textContent = message
@@ -82,7 +82,7 @@ export interface PluginsApi {
    *
    * @example
    * ```typescript
-   * window.Bonsai.plugins.registerAll({
+   * window.Honostar.plugins.registerAll({
    *   clipboard: (ctx, text) => navigator.clipboard.writeText(text),
    *   focus: (ctx, selector) => document.querySelector(selector)?.focus(),
    *   scroll: (ctx, selector) => document.querySelector(selector)?.scrollIntoView()
@@ -128,7 +128,7 @@ export function createPluginSystem(datastarEntrypoint?: string): PluginsApi {
     try {
       const ds = await import(resolvedEntrypoint)
       if (!isDatastarModule(ds)) {
-        console.error('[Bonsai] Loaded Datastar module does not expose an action() function')
+        console.error('[Honostar] Loaded Datastar module does not expose an action() function')
         return
       }
       datastarAction = ds.action
@@ -138,7 +138,7 @@ export function createPluginSystem(datastarEntrypoint?: string): PluginsApi {
       }
       pendingRegistrations.length = 0
     } catch (err) {
-      console.error('[Bonsai] Failed to load Datastar:', err)
+      console.error('[Honostar] Failed to load Datastar:', err)
     }
   }
 
@@ -160,7 +160,7 @@ export function createPluginSystem(datastarEntrypoint?: string): PluginsApi {
         },
       })
     } catch (err) {
-      console.error(`[Bonsai] Failed to register plugin "${name}" with Datastar:`, err)
+      console.error(`[Honostar] Failed to register plugin "${name}" with Datastar:`, err)
     }
   }
 
@@ -181,7 +181,7 @@ export function createPluginSystem(datastarEntrypoint?: string): PluginsApi {
       }
 
       if (registry[name]) {
-        console.warn(`[Bonsai] Plugin "${name}" is already registered. Overwriting.`)
+        console.warn(`[Honostar] Plugin "${name}" is already registered. Overwriting.`)
       }
 
       // Store in our registry
@@ -229,34 +229,34 @@ export function registerRuntimePlugin<TArgs extends unknown[] = unknown[]>(
 ): void {
   if (typeof window === 'undefined') return
 
-  if (window.Bonsai?.plugins) {
-    window.Bonsai.plugins.register(name, handler)
+  if (window.Honostar?.plugins) {
+    window.Honostar.plugins.register(name, handler)
     return
   }
   // Queue registration until the plugin system is ready
-  ;(window.__bonsaiPendingPluginRegistrations ??= []).push({
+  ;(window.__honostarPendingPluginRegistrations ??= []).push({
     name,
     handler,
   })
 }
 
 /**
- * Install the plugin system on window.Bonsai
+ * Install the plugin system on window.Honostar
  * @internal
  */
 export function installPluginSystem(datastarEntrypoint?: string): PluginsApi {
-  if (!window.Bonsai) window.Bonsai = {}
+  if (!window.Honostar) window.Honostar = {}
 
-  if (window.Bonsai.plugins) {
-    console.warn('[Bonsai] Plugin system already installed')
-    return window.Bonsai.plugins
+  if (window.Honostar.plugins) {
+    console.warn('[Honostar] Plugin system already installed')
+    return window.Honostar.plugins
   }
 
   const plugins = createPluginSystem(datastarEntrypoint)
-  window.Bonsai.plugins = Object.freeze(plugins) as PluginsApi
+  window.Honostar.plugins = Object.freeze(plugins) as PluginsApi
 
   // Flush any pending plugin registrations that ran before the system existed
-  const pending = window.__bonsaiPendingPluginRegistrations
+  const pending = window.__honostarPendingPluginRegistrations
   if (pending?.length) {
     for (const { name, handler } of pending) {
       plugins.register(name, handler)

@@ -1,5 +1,5 @@
 /**
- * Custom Effects for Bonsai Issue Tracker
+ * Custom Effects for Honostar Issue Tracker
  *
  * Domain-specific effects that make handlers cleaner and more maintainable.
  */

@@ -1,7 +1,7 @@
 import { createPrefetchClient } from '@/core/prefetch'
-import { ensureBonsai, freeze } from '@/core/runtime/bonsai-global'
 import { installFetchAugmentation } from '@/core/runtime/fetch'
 import { onPageRevealFocusApp } from '@/core/runtime/focus'
+import { ensureHonostar, freeze } from '@/core/runtime/honostar-global'
 import { installImageEnhancements } from '@/core/runtime/image'
 import type { InspectorConfig } from '@/core/runtime/inspector'
 import { createInspector } from '@/core/runtime/inspector'
@@ -22,12 +22,12 @@ import '@/runtime/plugins'
   const theme = createThemeController(data.theme)
   if (theme) installThemeActions(theme)
 
-  const bonsai = ensureBonsai()
-  bonsai.theme = theme ?? undefined
+  const honostar = ensureHonostar()
+  honostar.theme = theme ?? undefined
 
   // Install plugin system early so user code can register plugins
   const plugins = installPluginSystem(data.assets.datastar)
-  bonsai.plugins = plugins
+  honostar.plugins = plugins
 
   const prefetch = createPrefetchClient({
     enabled: true,
@@ -37,11 +37,11 @@ import '@/runtime/plugins'
     respectSlowConnections: true,
   })
   prefetch.start()
-  bonsai.prefetch = prefetch
+  honostar.prefetch = prefetch
 
   installImageEnhancements()
   onPageRevealFocusApp()
-  bonsai.modals = createModalHost()
+  honostar.modals = createModalHost()
 
   // Initialize inspector if enabled (check both env and explicit config)
   // In development, enable by default; in production, require explicit opt-in
@@ -59,11 +59,11 @@ import '@/runtime/plugins'
     }
 
     const inspector = createInspector(inspectorConfig)
-    bonsai.inspector = inspector
+    honostar.inspector = inspector
 
     // Expose actions for programmatic control
-    bonsai.actions = {
-      ...bonsai.actions,
+    honostar.actions = {
+      ...honostar.actions,
       inspector: freeze({
         open: () => inspector.open(),
         close: () => inspector.close(),

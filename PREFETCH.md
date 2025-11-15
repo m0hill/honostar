@@ -1,6 +1,6 @@
 # Prefetch Client Guide
 
-The Prefetch Client lives entirely inside `src/core/` and powers all navigation prefetching logic for Bonsai apps. It keeps the app server-rendered while giving you fine-grained control over when and how URLs are preloaded. This document explains how it works, how to configure it globally, how to opt individual links in or out, and how to use the programmatic APIs.
+The Prefetch Client lives entirely inside `src/core/` and powers all navigation prefetching logic for Honostar apps. It keeps the app server-rendered while giving you fine-grained control over when and how URLs are preloaded. This document explains how it works, how to configure it globally, how to opt individual links in or out, and how to use the programmatic APIs.
 
 ---
 
@@ -8,7 +8,7 @@ The Prefetch Client lives entirely inside `src/core/` and powers all navigation 
 
 - **Server remains the source of truth.** Prefetching just warms the browser cache so full navigations feel faster.
 - **Multi-page architecture.** Prefetched documents are still rendered by the server; the client never mutates routing logic.
-- **Policy + anchors + APIs.** A single `PrefetchClient` instance enforces a global policy, wires up anchor tags, maintains a TTL cache, and exposes a small API surface on `window.Bonsai.prefetch`.
+- **Policy + anchors + APIs.** A single `PrefetchClient` instance enforces a global policy, wires up anchor tags, maintains a TTL cache, and exposes a small API surface on `window.Honostar.prefetch`.
 
 ---
 
@@ -25,8 +25,8 @@ const prefetch = createPrefetchClient({
   respectSlowConnections: true,
 })
 prefetch.start()
-window.Bonsai = window.Bonsai ?? {}
-window.Bonsai.prefetch = prefetch
+window.Honostar = window.Honostar ?? {}
+window.Honostar.prefetch = prefetch
 ```
 
 This means:
@@ -40,7 +40,7 @@ You can change these defaults at runtime (see §4).
 
 ## 3. Configuring Global Policy
 
-Call `window.Bonsai.prefetch.configure(partialPolicy)` anytime to override defaults. Available knobs (from `PrefetchPolicy`):
+Call `window.Honostar.prefetch.configure(partialPolicy)` anytime to override defaults. Available knobs (from `PrefetchPolicy`):
 
 | Option | Type | Description |
 | --- | --- | --- |
@@ -60,13 +60,13 @@ Call `window.Bonsai.prefetch.configure(partialPolicy)` anytime to override defau
 
 ```js
 // Opt-in only: disable automatic hover wiring.
-window.Bonsai.prefetch.configure({
+window.Honostar.prefetch.configure({
   attachAllAnchors: false,
   defaultStrategy: 'none',
 })
 
 // Aggressive document-level intents with a shorter TTL.
-window.Bonsai.prefetch.configure({
+window.Honostar.prefetch.configure({
   defaultStrategy: 'intent',
   defaultTTLms: 60_000,
 })
@@ -113,7 +113,7 @@ Any anchor can override global policy with data attributes:
 
 ## 5. Programmatic APIs
 
-The global instance is accessible at `window.Bonsai.prefetch`. Useful methods include:
+The global instance is accessible at `window.Honostar.prefetch`. Useful methods include:
 
 | Method | Description |
 | --- | --- |
@@ -129,21 +129,21 @@ The global instance is accessible at `window.Bonsai.prefetch`. Useful methods in
 
 ```js
 // Fetch navigation HTML immediately.
-window.Bonsai.prefetch.prefetch('/issues/42', {
+window.Honostar.prefetch.prefetch('/issues/42', {
   method: 'link',
   kind: 'document',
   ttlMs: 120_000,
 })
 
 // Invalidate whenever you know the server content changed.
-window.Bonsai.prefetch.invalidate('/issues/42')
+window.Honostar.prefetch.invalidate('/issues/42')
 
 // Warm up a CDN before loading assets.
-window.Bonsai.prefetch.preconnect('https://cdn.example.com')
+window.Honostar.prefetch.preconnect('https://cdn.example.com')
 
 // Prefetch dynamically added links inside a modal you just rendered.
 const modal = document.getElementById('issue-modal')
-window.Bonsai.prefetch.bindAnchors(modal)
+window.Honostar.prefetch.bindAnchors(modal)
 ```
 
 ---
@@ -162,7 +162,7 @@ window.Bonsai.prefetch.bindAnchors(modal)
 
 ```html
 <script>
-  window.Bonsai.prefetch.configure({
+  window.Honostar.prefetch.configure({
     attachAllAnchors: false,
     defaultStrategy: 'none',
   })
@@ -175,7 +175,7 @@ window.Bonsai.prefetch.bindAnchors(modal)
 ### Intent-Based Mobile Prefetch
 
 ```js
-window.Bonsai.prefetch.configure({
+window.Honostar.prefetch.configure({
   defaultStrategy: 'tap', // pointerdown/touchstart triggers
   hoverDelayMs: 60,
   intentDelayMs: 0,
@@ -187,7 +187,7 @@ window.Bonsai.prefetch.configure({
 ```js
 const related = ['/issues/41', '/issues/42', '/issues/43']
 related.forEach(url => {
-  window.Bonsai.prefetch.prefetch(url, { method: 'fetch', ttlMs: 30_000 })
+  window.Honostar.prefetch.prefetch(url, { method: 'fetch', ttlMs: 30_000 })
 })
 ```
 
@@ -195,7 +195,7 @@ related.forEach(url => {
 
 ## 8. Troubleshooting
 
-- **Nothing happens on hover:** Verify `window.Bonsai.prefetch` exists, `policy.enabled` is true, and the link is same-origin without `target`/`download`.
+- **Nothing happens on hover:** Verify `window.Honostar.prefetch` exists, `policy.enabled` is true, and the link is same-origin without `target`/`download`.
 - **Prefetch blocked:** Check if `navigator.connection.saveData` or `effectiveType` triggers throttling. Override with `respectDataSaver: false`.
 - **Custom DOM injections:** If you disable `watchMutations`, call `bindAnchors()` after adding content.
 - **Cross-origin resources:** Set `data-prefetch-allow-cross-origin` on the link or pass `allowCrossOrigin: true` in programmatic calls, and set `crossOrigin` if credentials are required.

@@ -1,5 +1,5 @@
 /**
- * Example: Custom Effects with Bonsai's Extensible Effect System
+ * Example: Custom Effects with Honostar's Extensible Effect System
  *
  * This file demonstrates how to create and use custom effects to build
  * domain-specific abstractions that make your handlers cleaner and more maintainable.

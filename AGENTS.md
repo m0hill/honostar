@@ -1,6 +1,6 @@
-# Bonsai Engineering & Agent Guide
+# Honostar Engineering & Agent Guide
 
-This is the canonical playbook for any human or AI engineer working on Bonsai. The rules below reflect production constraints and Datastar best-practices—follow them exactly unless product requirements explicitly say otherwise.
+This is the canonical playbook for any human or AI engineer working on Honostar. The rules below reflect production constraints and Datastar best-practices—follow them exactly unless product requirements explicitly say otherwise.
 
 ---
 
@@ -22,7 +22,7 @@ Decide this **before** writing code:
 | `c.var.datastar.reply()` | Feedback that should only update the initiating tab (validation errors, modal close, toast) | Tab-scoped patch via HTTP (built-in effects) with automatic SSE fallback |
 | `c.var.datastar.broadcast(topic, …)` | Shared state that all viewers must see (new issue/comment/label) | broadcast to a page topic (define topics in `src/lib/topics.ts`) |
 
-`reply()` inspects the incoming request. If it came from a Datastar action and the response can be expressed as a single built-in effect (`patch-elements`, `patch-elements-seq`, or `patch-signals`), Bonsai returns an HTTP response (`text/html` or `application/json`) with the appropriate `datastar-*` headers so the client can morph the DOM without relying on the SSE bus. When the response contains multiple effects, custom effect handlers, or scripts, it automatically falls back to the prior SSE-based delivery through the request’s `X-Tab-ID`.
+`reply()` inspects the incoming request. If it came from a Datastar action and the response can be expressed as a single built-in effect (`patch-elements`, `patch-elements-seq`, or `patch-signals`), Honostar returns an HTTP response (`text/html` or `application/json`) with the appropriate `datastar-*` headers so the client can morph the DOM without relying on the SSE bus. When the response contains multiple effects, custom effect handlers, or scripts, it automatically falls back to the prior SSE-based delivery through the request’s `X-Tab-ID`.
 
 Rules:
 1. Every shared state change must “fan out” through a **topic** defined in `src/lib/topics.ts`. Never inline topic strings.
@@ -32,7 +32,7 @@ Rules:
 
 ## 3. Page & Topic Wiring
 
-1. **Pages** (`createPage`) declare their topics. The renderer automatically subscribes via `<body data-init="@get('<sse-endpoint>?topics=…')">` (endpoint defaults to `/_/events`, configurable via `BonsaiConfig`).
+1. **Pages** (`createPage`) declare their topics. The renderer automatically subscribes via `<body data-init="@get('<sse-endpoint>?topics=…')">` (endpoint defaults to `/_/events`, configurable via `HonostarConfig`).
 2. Components that will be patched must expose a **stable root ID** (`id="issues-list"`).
 3. SSE responses should target those IDs and use default `outer` morphing unless you’re intentionally appending/prepending list items.
 
@@ -80,7 +80,7 @@ Requirements for any modal:
 - Backdrop and dialog each use `data-show` with `style="display:none"` to prevent flicker.
 - Escape and outside-click close the modal: `data-on:keydown__window="evt.key==='Escape' && ($modal.open=false)"` and `data-on:click__outside`.
 - Modal content gets focus via `data-ref="modalEl"` + `data-init`.
-- When closing, also remove the DOM node via SSE or `window.Bonsai.modals.close(id)` so inert state clears.
+- When closing, also remove the DOM node via SSE or `window.Honostar.modals.close(id)` so inert state clears.
 
 ---
 
@@ -119,14 +119,14 @@ c.var.datastar.reply([
 
 ## 7. Framework Configuration
 
-**BonsaiConfig System**
-- Bonsai is configurable via a typed `BonsaiConfig` object with safe defaults.
+**HonostarConfig System**
+- Honostar is configurable via a typed `HonostarConfig` object with safe defaults.
 - The `renderer()` and `createSseEndpoint()` factories accept optional config overrides.
 - Zero-config usage works out of the box—defaults match previous hardcoded behavior.
 
 **Configuration Structure** (`src/core/config.ts`)
 ```typescript
-type BonsaiConfig = {
+type HonostarConfig = {
   assets: {
     css: string          // Default: '/styles.css'
     runtime: string      // Default: '/runtime.js'
@@ -181,7 +181,7 @@ app.get('/events', createSseEndpoint(config))
 - Extend the CSP string to allow additional script sources if needed, but never remove `'unsafe-eval'`.
 
 **CSRF Configuration**
-- The `csrf()` middleware accepts either `BonsaiConfig` or legacy `CsrfOpts` for backwards compatibility.
+- The `csrf()` middleware accepts either `HonostarConfig` or legacy `CsrfOpts` for backwards compatibility.
 - `exceptPaths` defaults to the configured SSE endpoint (`config.endpoints.sse`) to allow SSE connections without CSRF validation.
 - When using custom SSE endpoints, the framework automatically syncs `csrf.exceptPaths` unless explicitly overridden.
 - Cookie is not HTTP-only to allow client-side JavaScript to read the token for XHR/fetch requests.
@@ -193,19 +193,19 @@ app.get('/events', createSseEndpoint(config))
 
 **SSE Topic Security**
 - **Threat Model**: Without protection, clients can guess topic names and subscribe to unauthorized data streams (e.g., `user:123`, `org:456`), causing cross-tenant data leakage.
-- **Protection**: Bonsai signs the allowed topic list on page render and validates it on SSE connection.
+- **Protection**: Honostar signs the allowed topic list on page render and validates it on SSE connection.
 - **How it works**:
   1. `renderer()` calls `signTopics(c, c.var.sseTopics, config)` before rendering the page
   2. Sets an HttpOnly cookie with HMAC-SHA256 signed token containing allowed topics
   3. `createSseEndpoint()` verifies the token and only subscribes to the intersection of requested and allowed topics
   4. Tokens are bound to client/tab ID by default to prevent reuse across tabs
 - **Configuration** (`config.security.topics`):
-  - `cookieName`: Cookie name for signed token (default: `bonsai_topics`)
+  - `cookieName`: Cookie name for signed token (default: `honostar_topics`)
   - `maxAgeSec`: Token TTL in seconds (default: 300 / 5 minutes)
-  - `secretEnv`: Environment variable for signing secret (default: `BONSAI_SIGNING_SECRET`)
+  - `secretEnv`: Environment variable for signing secret (default: `HONOSTAR_SIGNING_SECRET`)
   - `bindToClientId`: Bind token to tab ID (default: true)
 - **Deployment Requirements**:
-  - **Production**: Set `BONSAI_SIGNING_SECRET` to a strong random secret (32+ bytes)
+  - **Production**: Set `HONOSTAR_SIGNING_SECRET` to a strong random secret (32+ bytes)
   - **Development**: Without secret, topic enforcement is disabled with a warning
   - **Multi-instance**: Purely stateless HMAC—no shared state required
 - **When to Customize**:
@@ -234,14 +234,14 @@ This section is now covered by Framework Configuration (section 7).
 - `removeElements()` - Convenience wrapper for `patchElements` with `mode: remove`
 - `removeSignals()` - Convenience wrapper for `patchSignals` with null values
 
-**Note:** Bonsai uses a custom `SseFormatter` class that implements the same API as the official Datastar SDK, but adapted for Hono's streaming infrastructure.
+**Note:** Honostar uses a custom `SseFormatter` class that implements the same API as the official Datastar SDK, but adapted for Hono's streaming infrastructure.
 
 ---
 
 ## 10. Extensible Effect System
 
 **Philosophy**
-- Bonsai elevates from a framework implementation to a true meta-framework by making effects extensible.
+- Honostar elevates from a framework implementation to a true meta-framework by making effects extensible.
 - Users can create their own high-level, declarative effects that compose built-in effects.
 - This keeps handlers clean and enables application-specific abstractions.
 
@@ -388,29 +388,29 @@ c.var.datastar.effectRegistry.unregister('toast:show')
 ## 11. Theme System & Global APIs
 
 **Architecture**
-- Bonsai uses a server-rendered theme provider with a client-side controller to prevent FOUC and enable seamless theme switching.
+- Honostar uses a server-rendered theme provider with a client-side controller to prevent FOUC and enable seamless theme switching.
 - A nonce'd bootstrap script in `<head>` applies the theme class before CSS loads.
 - The `ThemeController` manages preference storage, system preference detection, and DOM updates.
 
 **Persistence Strategy**
-- Theme preference is persisted in **both** localStorage and a cookie (`bonsai-ui-theme` by default).
+- Theme preference is persisted in **both** localStorage and a cookie (`honostar-ui-theme` by default).
 - **localStorage**: Client-side preference storage (primary).
 - **Cookie**: Allows the server to read the user's preference before rendering, eliminating FOUC even on slow devices.
 - The server reads the cookie in `renderer` and passes it to `resolveThemeProvider` to set the correct initial class.
 - Cookie attributes: `path=/`, `max-age=1year`, `SameSite=Lax` (not HTTP-only, so client can read/write).
 
 **Global API (Official)**
-- All theme actions are exposed under `window.Bonsai.actions.theme`:
-  - `window.Bonsai.actions.theme.setLight()` - Set light mode
-  - `window.Bonsai.actions.theme.setDark()` - Set dark mode
-  - `window.Bonsai.actions.theme.setSystem()` - Follow system preference
-  - `window.Bonsai.actions.theme.toggle()` - Toggle between light/dark
-  - `window.Bonsai.actions.theme.set(pref)` - Set any preference
+- All theme actions are exposed under `window.Honostar.actions.theme`:
+  - `window.Honostar.actions.theme.setLight()` - Set light mode
+  - `window.Honostar.actions.theme.setDark()` - Set dark mode
+  - `window.Honostar.actions.theme.setSystem()` - Follow system preference
+  - `window.Honostar.actions.theme.toggle()` - Toggle between light/dark
+  - `window.Honostar.actions.theme.set(pref)` - Set any preference
 
 **Usage in Datastar Attributes**
 ```tsx
 // Recommended: Use the namespaced API
-<button data-on:click="window.Bonsai.actions.theme.setLight()">Light</button>
+<button data-on:click="window.Honostar.actions.theme.setLight()">Light</button>
 
 // Or import expression constants for consistency
 import { themeExpressions } from '@/core/theme-client'
@@ -418,22 +418,22 @@ import { themeExpressions } from '@/core/theme-client'
 ```
 
 **Theme Change Event**
-- The runtime emits a `bonsai-theme-change` custom event whenever the theme changes.
+- The runtime emits a `honostar-theme-change` custom event whenever the theme changes.
 - **Always use this event** for components that need to react to theme changes (charts, maps, visualizations).
 - Do not poll or manually check theme state—subscribe to the event instead.
 ```tsx
 // Recommended: Listen to the theme change event
-data-on:bonsai-theme-change__window="/* handle theme change */"
+data-on:honostar-theme-change__window="/* handle theme change */"
 
 // Example: Re-render a chart when theme changes
-data-on:bonsai-theme-change__window="renderChart(evt.detail.resolved)"
+data-on:honostar-theme-change__window="renderChart(evt.detail.resolved)"
 ```
 - Event detail: `{ preference: ThemePreference, resolved: 'light' | 'dark' }`
 - The event fires on every theme change, including system preference changes when preference is "system".
 
 **Advanced Usage**
-- Access the full controller via `window.Bonsai.theme` for subscription, preference queries, etc.
-- Both `window.Bonsai.theme` and `window.Bonsai.actions.theme` are frozen with `Object.freeze()` to prevent mutation and ensure API stability.
+- Access the full controller via `window.Honostar.theme` for subscription, preference queries, etc.
+- Both `window.Honostar.theme` and `window.Honostar.actions.theme` are frozen with `Object.freeze()` to prevent mutation and ensure API stability.
 
 ---
 
@@ -443,7 +443,7 @@ data-on:bonsai-theme-change__window="renderChart(evt.detail.resolved)"
 - **Adding Components**: run `bunx --bun shadcn@latest add <component>` to scaffold, then convert from React to Hono JSX—drop React/Radix imports, replace `className` with `class`, remove `Slot`/`asChild`, and keep markup in native HTML elements.
 - **Typing Requirements**: define props via `type Props = JSX.IntrinsicElements['tag'] & { customVariantProps }`; never fall back to `[key: string]: any`. Variant-driven styling stays in `cva` definitions so types line up with `VariantProps<typeof componentVariants>`.
 - **Available Building Blocks**: `Button`, `Card` (+Header/Title/Description/Content/Action/Footer), `Input`, `Label`, `Badge`, and `Textarea` are pre-converted and Datastar-safe. Import them from `@/components/ui/*` and freely add `data-*` attributes for signals, indicators, and bindings.
-- **Usage Patterns**: always merge classes with `cn()`, keep elements focusable/ARIA-correct, and wrap datastar conditionals with `data-show` + `style="display:none"`. For actions, pair shadcn controls with `@post(...)` and indicator signals the same way other Bonsai components do.
+- **Usage Patterns**: always merge classes with `cn()`, keep elements focusable/ARIA-correct, and wrap datastar conditionals with `data-show` + `style="display:none"`. For actions, pair shadcn controls with `@post(...)` and indicator signals the same way other Honostar components do.
 - **Trigger Rule**: when a shadcn control acts as a Datastar trigger, style the native `<button>`/`<a>` directly (e.g., via `buttonVariants`). Never nest a shadcn `<Button>` inside another interactive element or you'll swallow the Datastar handlers.
 - **Verification**: after adding or editing components, run `bun run build:css` and `bun run typecheck`.
 
@@ -451,8 +451,8 @@ data-on:bonsai-theme-change__window="renderChart(evt.detail.resolved)"
 
 ## 13. Architecture & Meta-Framework
 
-**What is Bonsai?**
-- Bonsai is a **runtime-agnostic** meta-framework built on Hono (web server) and Datastar (hypermedia reactivity).
+**What is Honostar?**
+- Honostar is a **runtime-agnostic** meta-framework built on Hono (web server) and Datastar (hypermedia reactivity).
 - It provides a batteries-included foundation for building hypermedia-driven MPAs with real-time SSE updates.
 - Core philosophy: server-rendered HTML is the source of truth, enhanced with reactive signals and live patches.
 - **Works with**: Node.js, Bun, Deno, Cloudflare Workers, and any runtime supported by Hono.
@@ -562,7 +562,7 @@ data-on:bonsai-theme-change__window="renderChart(evt.detail.resolved)"
 ## 14. Pub/Sub Bus & Multi-Instance Scaling
 
 **Bus Abstraction**
-- Bonsai uses a `PubSubBus` interface to decouple SSE distribution from implementation.
+- Honostar uses a `PubSubBus` interface to decouple SSE distribution from implementation.
 - Three implementations:
   - `MemoryBus` - In-process pub/sub (default, single-instance)
   - `RedisBus` - Redis-backed pub/sub (multi-instance deployments)
@@ -575,15 +575,15 @@ data-on:bonsai-theme-change__window="renderChart(evt.detail.resolved)"
 
 **Configuration** (`src/middleware/bus.ts`)
 - The app automatically detects environment variables in priority order:
-  1. `BONSAI_NATS_URL` or `NATS_URL` → initializes `NatsBus`
-  2. `BONSAI_REDIS_URL` or `REDIS_URL` → initializes `RedisBus`
+  1. `HONOSTAR_NATS_URL` or `NATS_URL` → initializes `NatsBus`
+  2. `HONOSTAR_REDIS_URL` or `REDIS_URL` → initializes `RedisBus`
   3. Falls back to `MemoryBus` if neither is configured
 - Uses dynamic imports so nats and ioredis are optional dependencies.
 - **Never hardcode bus selection** - use the environment-based factory in `src/middleware/bus.ts`.
 
 **Bus Internals**
-- **RedisBus**: Channel naming `${prefix}:${kind}:${id}` (e.g., `bonsai:bus:topic:issues:list`)
-- **NatsBus**: Subject naming `${prefix}.${kind}.${id}` (e.g., `bonsai.bus.topic.issues:list`)
+- **RedisBus**: Channel naming `${prefix}:${kind}:${id}` (e.g., `honostar:bus:topic:issues:list`)
+- **NatsBus**: Subject naming `${prefix}.${kind}.${id}` (e.g., `honostar.bus.topic.issues:list`)
 - Three channel/subject types:
   - `client` - Tab-specific messages (replies)
   - `topic` - Topic-based broadcasts
@@ -665,7 +665,7 @@ Before opening a PR, confirm:
 
 1. **Config**: If customizing assets/endpoints/CSP, use `renderer(config)` and `createSseEndpoint(config)` factories.
 2. **CSP** still allows `'unsafe-eval'` (required for Datastar).
-3. **Topic Security**: `BONSAI_SIGNING_SECRET` is set in production environment.
+3. **Topic Security**: `HONOSTAR_SIGNING_SECRET` is set in production environment.
 4. **Signals** contain no secrets; `data-persist` (if used) filters sensitive data.
 5. **`data-computed` purity**; moved side-effects to `data-effect`.
 6. **Indicators before init**; no request starts without its indicator.
@@ -735,4 +735,4 @@ If in doubt, search the repo for an existing pattern (`LabelsSection`, `IssueMod
 
 ---
 
-By adhering to these conventions we keep Bonsai predictable: every page load is deterministic, real-time updates heal themselves, and agents can ship features quickly without regressing the MPA contract. When you find a scenario not covered here, document it in this file before landing your change.
+By adhering to these conventions we keep Honostar predictable: every page load is deterministic, real-time updates heal themselves, and agents can ship features quickly without regressing the MPA contract. When you find a scenario not covered here, document it in this file before landing your change.

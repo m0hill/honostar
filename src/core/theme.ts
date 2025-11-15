@@ -30,7 +30,7 @@ export interface ThemeProviderArtifacts {
 const DEFAULT_THEME_CONFIG: ThemeRuntimeConfig = {
   attribute: 'class',
   defaultTheme: 'system',
-  storageKey: 'bonsai-ui-theme',
+  storageKey: 'honostar-ui-theme',
   respectSystemPreference: true,
   disableTransitionClass: 'theme-is-changing',
   rootSelector: 'html',

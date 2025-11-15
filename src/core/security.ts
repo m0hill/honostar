@@ -1,5 +1,5 @@
 import { getCookie, setCookie } from 'hono/cookie'
-import type { BonsaiConfig } from '@/core/config'
+import type { HonostarConfig } from '@/core/config'
 import { factory } from '@/core/middleware'
 
 type CsrfOpts = {
@@ -14,13 +14,13 @@ function matches(pathname: string, patterns: (string | RegExp)[] = []) {
 
 /**
  * CSRF protection middleware factory
- * Accepts either a BonsaiConfig or legacy CsrfOpts for backwards compatibility
+ * Accepts either a HonostarConfig or legacy CsrfOpts for backwards compatibility
  */
-export const csrf = (cfg?: Pick<BonsaiConfig, 'security' | 'endpoints'> | CsrfOpts) => {
-  // Normalize config: handle both new BonsaiConfig and legacy CsrfOpts
+export const csrf = (cfg?: Pick<HonostarConfig, 'security' | 'endpoints'> | CsrfOpts) => {
+  // Normalize config: handle both new HonostarConfig and legacy CsrfOpts
   let opts: CsrfOpts
   if (cfg && 'security' in cfg) {
-    // New BonsaiConfig format
+    // New HonostarConfig format
     opts = {
       cookieName: cfg.security.csrf?.cookieName ?? 'ds_csrf',
       headerName: cfg.security.csrf?.headerName ?? 'X-CSRF-Token',

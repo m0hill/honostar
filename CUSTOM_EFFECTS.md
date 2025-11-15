@@ -1,6 +1,6 @@
 # Custom Effects Guide
 
-This guide explains how to use Bonsai's extensible effect system to create domain-specific abstractions that make your code cleaner and more maintainable.
+This guide explains how to use Honostar's extensible effect system to create domain-specific abstractions that make your code cleaner and more maintainable.
 
 ## Why Custom Effects?
 
@@ -246,7 +246,7 @@ See `src/example-custom-effects.tsx` for a complete working example with:
 
 ## Inspiration
 
-Bonsai's extensible effect system is inspired by [datastar.wow](https://github.com/starfederation/datastar.wow), a Clojure library that uses the [nexus](https://github.com/cjohansen/nexus) effect system to make Datastar SSE responses declarative and composable.
+Honostar's extensible effect system is inspired by [datastar.wow](https://github.com/starfederation/datastar.wow), a Clojure library that uses the [nexus](https://github.com/cjohansen/nexus) effect system to make Datastar SSE responses declarative and composable.
 
 ## Further Reading
 

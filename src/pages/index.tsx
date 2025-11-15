@@ -27,7 +27,7 @@ function IndexPage({
         <CardHeader>
           <CardTitle class="text-5xl">GitHub Issues Clone</CardTitle>
           <CardDescription class="text-lg mt-4">
-            A simple, reactive issue tracker built with Bonsai and Datastar.
+            A simple, reactive issue tracker built with Honostar and Datastar.
           </CardDescription>
         </CardHeader>
         <CardContent class="space-y-4">

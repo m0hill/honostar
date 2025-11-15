@@ -61,7 +61,7 @@ export class RedisBus implements PubSubBus {
       throw new Error('RedisBus requires a dedicated subscriber connection.')
     }
     this.subscriber = subscriber
-    this.channelPrefix = options.channelPrefix ?? 'bonsai:bus'
+    this.channelPrefix = options.channelPrefix ?? 'honostar:bus'
     this.broadcastChannel = this.channelName('broadcast', 'all')
 
     this.subscriber.on('message', (...args: unknown[]) => {

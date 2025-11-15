@@ -1,11 +1,11 @@
 /**
- * Bonsai Framework Configuration
+ * Honostar Framework Configuration
  *
  * Centralizes hardcoded client/server values behind a typed config consumed by core modules.
  * Provides safe defaults while allowing app authors to override paths and policies.
  */
 
-export type BonsaiConfig = {
+export type HonostarConfig = {
   /**
    * Asset paths for CSS and client-side scripts
    */
@@ -67,7 +67,7 @@ export type BonsaiConfig = {
     topics?: {
       /**
        * Cookie name for signed topic allowlist
-       * (default: 'bonsai_topics')
+       * (default: 'honostar_topics')
        */
       cookieName?: string
       /**
@@ -78,7 +78,7 @@ export type BonsaiConfig = {
       /**
        * Environment variable name for signing secret
        * Required for production deployments
-       * (default: 'BONSAI_SIGNING_SECRET')
+       * (default: 'HONOSTAR_SIGNING_SECRET')
        */
       secretEnv?: string
       /**
@@ -142,7 +142,7 @@ export type BonsaiConfig = {
  * Default configuration matching current hardcoded behavior
  * Ensures zero-config backwards compatibility
  */
-export const DEFAULT_CONFIG: BonsaiConfig = {
+export const DEFAULT_CONFIG: HonostarConfig = {
   assets: {
     css: '/styles.css',
     runtime: '/runtime.js',
@@ -159,9 +159,9 @@ export const DEFAULT_CONFIG: BonsaiConfig = {
       exceptPaths: ['/_/events'], // Will be overridden by createConfig to match endpoints.sse
     },
     topics: {
-      cookieName: 'bonsai_topics',
+      cookieName: 'honostar_topics',
       maxAgeSec: 300,
-      secretEnv: 'BONSAI_SIGNING_SECRET',
+      secretEnv: 'HONOSTAR_SIGNING_SECRET',
       bindToClientId: true,
     },
   },
@@ -185,7 +185,7 @@ export const DEFAULT_CONFIG: BonsaiConfig = {
  * Preserves all defaults unless explicitly overridden
  * Automatically syncs CSRF exceptPaths with SSE endpoint if not explicitly set
  */
-export function createConfig(user?: Partial<BonsaiConfig>): BonsaiConfig {
+export function createConfig(user?: Partial<HonostarConfig>): HonostarConfig {
   const merged = {
     ...DEFAULT_CONFIG,
     ...user,

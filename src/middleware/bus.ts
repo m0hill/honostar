@@ -3,7 +3,7 @@ import { factory } from '@/core/middleware'
 
 const createBus = async (): Promise<PubSubBus> => {
   // Check for NATS first
-  const natsUrl = process.env.BONSAI_NATS_URL ?? process.env.NATS_URL
+  const natsUrl = process.env.HONOSTAR_NATS_URL ?? process.env.NATS_URL
   if (natsUrl) {
     try {
       const { NatsBus } = await import('@/core/datastar/nats-bus')
@@ -18,7 +18,7 @@ const createBus = async (): Promise<PubSubBus> => {
   }
 
   // Check for Redis second
-  const redisUrl = process.env.BONSAI_REDIS_URL ?? process.env.REDIS_URL
+  const redisUrl = process.env.HONOSTAR_REDIS_URL ?? process.env.REDIS_URL
   if (redisUrl) {
     try {
       const { RedisBus } = await import('@/core/datastar/redis-bus')

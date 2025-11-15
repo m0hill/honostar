@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test } from 'bun:test'
 import { Hono } from 'hono'
-import { type BonsaiConfig, createConfig } from '@/core/config'
+import { createConfig, type HonostarConfig } from '@/core/config'
 import type { AppEnv } from '@/core/context'
 import { canonicalizeTopics, signTopics, verifyTopics } from './topics'
 
@@ -23,10 +23,10 @@ describe('canonicalizeTopics', () => {
 })
 
 describe('Topic security integration', () => {
-  let config: BonsaiConfig
+  let config: HonostarConfig
 
   beforeEach(() => {
-    process.env.BONSAI_SIGNING_SECRET = 'test-secret-key-for-testing-only-minimum-32-chars'
+    process.env.HONOSTAR_SIGNING_SECRET = 'test-secret-key-for-testing-only-minimum-32-chars'
     config = createConfig()
   })
 
@@ -61,7 +61,7 @@ describe('Topic security integration', () => {
     // Extract cookie from response
     const setCookie = signRes.headers.get('set-cookie')
     expect(setCookie).toBeTruthy()
-    expect(setCookie).toContain('bonsai_topics=')
+    expect(setCookie).toContain('honostar_topics=')
 
     // Verify with the cookie
     const verifyRes = await app.request('/verify', {
@@ -156,7 +156,7 @@ describe('Topic security integration', () => {
   })
 
   test('allows all topics in development when no secret', async () => {
-    delete process.env.BONSAI_SIGNING_SECRET
+    delete process.env.HONOSTAR_SIGNING_SECRET
     process.env.NODE_ENV = 'development'
 
     const app = new Hono<AppEnv>()

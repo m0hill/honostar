@@ -102,7 +102,7 @@ function removeToast(toast: HTMLElement): void {
 
 // Add CSS animations if not already present
 if (typeof document !== 'undefined') {
-  const styleId = 'bonsai-toast-animations'
+  const styleId = 'honostar-toast-animations'
   if (!document.getElementById(styleId)) {
     const style = document.createElement('style')
     style.id = styleId

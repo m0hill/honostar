@@ -4,7 +4,7 @@
 
 import type { InspectorConfig, InspectorState } from './types'
 
-export const STORAGE_KEY = 'bonsai-inspector-state'
+export const STORAGE_KEY = 'honostar-inspector-state'
 
 export function loadState(): Partial<InspectorState> {
   try {

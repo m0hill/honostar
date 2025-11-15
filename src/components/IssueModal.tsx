@@ -24,7 +24,7 @@ export default function IssueModal({ labels }: { labels: Label[] }) {
         }
       }`}
       data-on:keydown__window="evt.key === 'Escape' && ($createIssueModal.open = false)"
-      data-effect="!$createIssueModal.open && window.Bonsai?.modals?.close?.('create-issue')"
+      data-effect="!$createIssueModal.open && window.Honostar?.modals?.close?.('create-issue')"
     >
       <div
         data-show="$createIssueModal.open"

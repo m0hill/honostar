@@ -1,4 +1,4 @@
-export type { BonsaiConfig } from '@/core/config'
+export type { HonostarConfig } from '@/core/config'
 export { createConfig, DEFAULT_CONFIG } from '@/core/config'
 export type { AppEnv, AppHandler, AppVariables, AppVariablesBase } from '@/core/context'
 export type { PubSubBus } from '@/core/datastar/bus'

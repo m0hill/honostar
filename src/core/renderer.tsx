@@ -1,6 +1,6 @@
 import type { JSX } from 'hono/jsx/jsx-runtime'
 import { jsxRenderer } from 'hono/jsx-renderer'
-import type { BonsaiConfig } from '@/core/config'
+import type { HonostarConfig } from '@/core/config'
 import { createConfig } from '@/core/config'
 import { factory } from '@/core/middleware'
 import { signTopics } from '@/core/security/topics'
@@ -26,13 +26,13 @@ function generateNonce(): string {
  * Renderer factory that accepts optional configuration
  * Returns middleware that injects HTML shell with configured assets and CSP
  */
-export const renderer = (userConfig?: Partial<BonsaiConfig>) => {
+export const renderer = (userConfig?: Partial<HonostarConfig>) => {
   const config = createConfig(userConfig)
 
   return factory.createMiddleware(async (c, next) => {
     // Read theme preference from cookie if available
     const cookieHeader = c.req.header('cookie')
-    const storageKey = c.var.theme?.storageKey ?? 'bonsai-ui-theme'
+    const storageKey = c.var.theme?.storageKey ?? 'honostar-ui-theme'
     let cookiePreference: string | null = null
 
     if (cookieHeader) {
@@ -65,7 +65,7 @@ export const renderer = (userConfig?: Partial<BonsaiConfig>) => {
           lang="en"
           class={theme.initialClass}
           data-theme-default={theme.config.defaultTheme}
-          data-theme-provider="bonsai"
+          data-theme-provider="honostar"
         >
           <head>
             <meta charSet="utf-8" />
@@ -87,7 +87,7 @@ export const renderer = (userConfig?: Partial<BonsaiConfig>) => {
               nonce={scriptNonce}
               dangerouslySetInnerHTML={{ __html: theme.bootstrapScript }}
             />
-            <title>Bonsai</title>
+            <title>Honostar</title>
             <link rel="stylesheet" href={config.assets.css} />
             <link rel="modulepreload" href={config.assets.datastar} />
             <link rel="modulepreload" href={config.assets.runtime} />

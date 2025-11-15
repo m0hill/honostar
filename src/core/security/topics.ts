@@ -18,7 +18,7 @@
 
 import type { Context } from 'hono'
 import { getCookie, setCookie } from 'hono/cookie'
-import type { BonsaiConfig } from '@/core/config'
+import type { HonostarConfig } from '@/core/config'
 
 /**
  * Topic token payload structure (versioned for future compatibility)
@@ -99,8 +99,8 @@ async function hmacVerify(secret: string, data: string, signature: Uint8Array): 
  * Get signing secret from environment
  * Throws if secret is not configured in production
  */
-function getSigningSecret(cfg: BonsaiConfig): string | null {
-  const secretEnv = cfg.security.topics?.secretEnv ?? 'BONSAI_SIGNING_SECRET'
+function getSigningSecret(cfg: HonostarConfig): string | null {
+  const secretEnv = cfg.security.topics?.secretEnv ?? 'HONOSTAR_SIGNING_SECRET'
   const secret = process.env[secretEnv]
 
   if (!secret) {
@@ -109,7 +109,7 @@ function getSigningSecret(cfg: BonsaiConfig): string | null {
       console.warn(
         `[Topic Security] No signing secret found in ${secretEnv}. ` +
           'Topic allowlist enforcement is DISABLED. ' +
-          'Set BONSAI_SIGNING_SECRET for production.'
+          'Set HONOSTAR_SIGNING_SECRET for production.'
       )
       return null
     }
@@ -128,13 +128,13 @@ function getSigningSecret(cfg: BonsaiConfig): string | null {
  *
  * @param c - Hono context
  * @param topics - List of topic names to allow
- * @param cfg - Bonsai configuration
+ * @param cfg - Honostar configuration
  * @returns Signed token (payload.signature format)
  */
 export async function signTopics(
   c: Context,
   topics: string[],
-  cfg: BonsaiConfig
+  cfg: HonostarConfig
 ): Promise<string | null> {
   const secret = getSigningSecret(cfg)
   if (!secret) {
@@ -143,7 +143,7 @@ export async function signTopics(
   }
 
   const topicsCfg = cfg.security.topics ?? {}
-  const cookieName = topicsCfg.cookieName ?? 'bonsai_topics'
+  const cookieName = topicsCfg.cookieName ?? 'honostar_topics'
   const maxAgeSec = topicsCfg.maxAgeSec ?? 300
   const bindToClientId = topicsCfg.bindToClientId ?? true
 
@@ -195,13 +195,13 @@ export async function signTopics(
  *
  * @param c - Hono context
  * @param requestedTopics - Topics the client wants to subscribe to
- * @param cfg - Bonsai configuration
+ * @param cfg - Honostar configuration
  * @returns Array of allowed topics, or null if verification fails
  */
 export async function verifyTopics(
   c: Context,
   requestedTopics: string[],
-  cfg: BonsaiConfig
+  cfg: HonostarConfig
 ): Promise<string[] | null> {
   const secret = getSigningSecret(cfg)
   if (!secret) {
@@ -211,7 +211,7 @@ export async function verifyTopics(
   }
 
   const topicsCfg = cfg.security.topics ?? {}
-  const cookieName = topicsCfg.cookieName ?? 'bonsai_topics'
+  const cookieName = topicsCfg.cookieName ?? 'honostar_topics'
   const bindToClientId = topicsCfg.bindToClientId ?? true
 
   // Read token from cookie

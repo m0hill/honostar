@@ -2,7 +2,7 @@
  * Main orchestrator for the Datastar Inspector
  */
 
-import { freeze } from '@/core/runtime/bonsai-global'
+import { freeze } from '@/core/runtime/honostar-global'
 import { setupFetchListener, setupSignalObserver, setupSignalPatchListener } from './datastar'
 import {
   attachEventListeners,

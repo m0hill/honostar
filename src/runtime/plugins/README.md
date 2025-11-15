@@ -1,6 +1,6 @@
-# Bonsai Plugin System
+# Honostar Plugin System
 
-The Bonsai plugin system provides a clean, type-safe API for registering custom Datastar actions that extend the client runtime without requiring server roundtrips.
+The Honostar plugin system provides a clean, type-safe API for registering custom Datastar actions that extend the client runtime without requiring server roundtrips.
 
 ## Overview
 
@@ -8,7 +8,7 @@ Plugins are purely client-side Datastar actions that can be invoked from templat
 
 ## Built-in Plugins
 
-Bonsai ships with several useful plugins out of the box:
+Honostar ships with several useful plugins out of the box:
 
 ### `@clipboard(text)`
 Copy text to the clipboard using the Clipboard API.
@@ -129,7 +129,7 @@ import '@/runtime/plugins/focus'
 All plugin modules run in the browser bundle, which means they might execute
 before the runtime finishes installing the plugin system. Use the
 `registerRuntimePlugin()` helper to automatically queue your plugin until
-`window.Bonsai.plugins` is ready:
+`window.Honostar.plugins` is ready:
 
 ```typescript
 import { registerRuntimePlugin } from '@/core/runtime/plugins'
@@ -236,14 +236,14 @@ registerRuntimePlugin('example', (ctx, value: string) => {
 
 ## Programmatic API
 
-Access the plugin registry via `window.Bonsai.plugins`:
+Access the plugin registry via `window.Honostar.plugins`:
 
 ### `register(name, handler)`
 
 Register a new plugin or override an existing one.
 
 ```typescript
-window.Bonsai.plugins.register('myAction', (ctx, ...args) => {
+window.Honostar.plugins.register('myAction', (ctx, ...args) => {
   // Plugin logic
 })
 ```
@@ -253,7 +253,7 @@ window.Bonsai.plugins.register('myAction', (ctx, ...args) => {
 Register multiple plugins at once.
 
 ```typescript
-window.Bonsai.plugins.registerAll({
+window.Honostar.plugins.registerAll({
   action1: (ctx) => { /* ... */ },
   action2: (ctx, arg) => { /* ... */ },
   action3: (ctx, a, b) => { /* ... */ },
@@ -265,7 +265,7 @@ window.Bonsai.plugins.registerAll({
 Check if a plugin is registered.
 
 ```typescript
-if (window.Bonsai.plugins.has('clipboard')) {
+if (window.Honostar.plugins.has('clipboard')) {
   // Clipboard plugin is available
 }
 ```
@@ -275,7 +275,7 @@ if (window.Bonsai.plugins.has('clipboard')) {
 Get all registered plugin names.
 
 ```typescript
-const plugins = window.Bonsai.plugins.getNames()
+const plugins = window.Honostar.plugins.getNames()
 console.log('Available plugins:', plugins)
 ```
 
@@ -284,7 +284,7 @@ console.log('Available plugins:', plugins)
 Unregister a plugin (rare, mainly for testing).
 
 ```typescript
-window.Bonsai.plugins.unregister('myPlugin')
+window.Honostar.plugins.unregister('myPlugin')
 ```
 
 ## Best Practices
@@ -296,7 +296,7 @@ Use TypeScript to define strict types for your plugin arguments:
 ```typescript
 type ToastType = 'info' | 'success' | 'warning' | 'error'
 
-window.Bonsai.plugins.register(
+window.Honostar.plugins.register(
   'toast',
   (ctx, message: string, type: ToastType = 'info') => {
     // TypeScript ensures type is always valid
@@ -309,7 +309,7 @@ window.Bonsai.plugins.register(
 Always validate inputs and use `ctx.error()` for error reporting:
 
 ```typescript
-window.Bonsai.plugins.register('divide', (ctx, a: number, b: number) => {
+window.Honostar.plugins.register('divide', (ctx, a: number, b: number) => {
   if (b === 0) {
     return ctx.error('Cannot divide by zero')
   }
@@ -323,7 +323,7 @@ window.Bonsai.plugins.register('divide', (ctx, a: number, b: number) => {
 Check element existence and types before manipulating:
 
 ```typescript
-window.Bonsai.plugins.register('setText', (ctx, selector: string, text: string) => {
+window.Honostar.plugins.register('setText', (ctx, selector: string, text: string) => {
   const el = document.querySelector(selector)
   
   if (!el) {
@@ -343,7 +343,7 @@ window.Bonsai.plugins.register('setText', (ctx, selector: string, text: string) 
 Use async/await for asynchronous work and handle errors properly:
 
 ```typescript
-window.Bonsai.plugins.register('loadData', async (ctx, url: string) => {
+window.Honostar.plugins.register('loadData', async (ctx, url: string) => {
   try {
     const response = await fetch(url)
     
@@ -365,14 +365,14 @@ Use clear, descriptive names with namespacing for related plugins:
 
 ```typescript
 // Good
-window.Bonsai.plugins.register('analytics:track', ...)
-window.Bonsai.plugins.register('analytics:page', ...)
-window.Bonsai.plugins.register('ui:toast', ...)
-window.Bonsai.plugins.register('ui:modal', ...)
+window.Honostar.plugins.register('analytics:track', ...)
+window.Honostar.plugins.register('analytics:page', ...)
+window.Honostar.plugins.register('ui:toast', ...)
+window.Honostar.plugins.register('ui:modal', ...)
 
 // Avoid generic names
-window.Bonsai.plugins.register('do', ...)  // ❌ Too generic
-window.Bonsai.plugins.register('action', ...)  // ❌ Too generic
+window.Honostar.plugins.register('do', ...)  // ❌ Too generic
+window.Honostar.plugins.register('action', ...)  // ❌ Too generic
 ```
 
 ### 6. **Documentation**
@@ -388,7 +388,7 @@ Document your plugins with JSDoc comments:
  * <button data-on:click="@clipboard('Hello')">Copy</button>
  * ```
  */
-window.Bonsai.plugins.register('clipboard', async (ctx, text: string) => {
+window.Honostar.plugins.register('clipboard', async (ctx, text: string) => {
   // ...
 })
 ```
@@ -401,13 +401,13 @@ Build complex plugins by composing simpler ones:
 
 ```typescript
 // Base notification plugin
-window.Bonsai.plugins.register('notify', (ctx, message: string, type: string) => {
+window.Honostar.plugins.register('notify', (ctx, message: string, type: string) => {
   // ... notification logic
 })
 
 // Specialized success notification
-window.Bonsai.plugins.register('notifySuccess', (ctx, message: string) => {
-  window.Bonsai.plugins.register('notify', (ctx, message, 'success'))
+window.Honostar.plugins.register('notifySuccess', (ctx, message: string) => {
+  window.Honostar.plugins.register('notify', (ctx, message, 'success'))
 })
 ```
 
@@ -422,7 +422,7 @@ Plugins can interact with Datastar signals:
 </div>
 
 // Plugin that modifies signals
-window.Bonsai.plugins.register('increment', (ctx) => {
+window.Honostar.plugins.register('increment', (ctx) => {
   // Access signals via Datastar's signal system
   // Note: Direct signal access requires Datastar's signal API
 })
@@ -436,7 +436,7 @@ Wrap third-party libraries as plugins:
 // Wrap a charting library
 import Chart from 'chart.js/auto'
 
-window.Bonsai.plugins.register(
+window.Honostar.plugins.register(
   'chart',
   (ctx, data: unknown, options: unknown) => {
     if (!(ctx.el instanceof HTMLCanvasElement)) {
@@ -458,15 +458,15 @@ Enable plugin debugging by checking registration status:
 
 ```typescript
 // Check if plugin system is available
-if (window.Bonsai?.plugins) {
+if (window.Honostar?.plugins) {
   console.log('Plugin system ready')
-  console.log('Registered plugins:', window.Bonsai.plugins.getNames())
+  console.log('Registered plugins:', window.Honostar.plugins.getNames())
 } else {
   console.error('Plugin system not initialized')
 }
 
 // Verify specific plugin
-if (window.Bonsai.plugins.has('myPlugin')) {
+if (window.Honostar.plugins.has('myPlugin')) {
   console.log('myPlugin is registered')
 } else {
   console.warn('myPlugin not found')
@@ -509,4 +509,4 @@ A: Plugins are client-only and registered in the browser runtime. They're automa
 
 - [Datastar Documentation](https://data-star.dev)
 - [Custom Effects](../../../CUSTOM_EFFECTS.md)
-- [Bonsai Runtime](../../core/runtime/)
+- [Honostar Runtime](../../core/runtime/)

@@ -1,6 +1,6 @@
 import type { Handler } from 'hono'
 import { streamSSE } from 'hono/streaming'
-import type { BonsaiConfig } from '@/core/config'
+import type { HonostarConfig } from '@/core/config'
 import { createConfig } from '@/core/config'
 import type { SSEPayload } from '@/core/datastar/bus'
 import { SseFormatter } from '@/core/datastar/generator'
@@ -8,9 +8,9 @@ import { verifyTopics } from '@/core/security/topics'
 
 /**
  * Creates an SSE endpoint handler with optional configuration
- * @param userConfig - Optional partial BonsaiConfig (merged with defaults)
+ * @param userConfig - Optional partial HonostarConfig (merged with defaults)
  */
-export const createSseEndpoint = (userConfig?: Partial<BonsaiConfig>): Handler => {
+export const createSseEndpoint = (userConfig?: Partial<HonostarConfig>): Handler => {
   const config = createConfig(userConfig)
   const pingMs = config.sse?.pingIntervalMs ?? 25000
   return c =>

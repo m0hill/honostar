@@ -41,6 +41,12 @@ interface ValidatedHandlerDefinition<Schema extends StandardSchemaV1> {
 
 export type HandlerDefinition = BaseHandlerDefinition
 
+function isValidatedHandler<Schema extends StandardSchemaV1>(
+  def: ValidatedHandlerDefinition<Schema> | BaseHandlerDefinition
+): def is ValidatedHandlerDefinition<Schema> {
+  return 'schema' in def && def.schema !== undefined
+}
+
 export function createPage<T extends Record<string, unknown>>(
   definition: PageDefinition<T>
 ): PageDefinition<T> {
@@ -120,11 +126,10 @@ export function createHandler(definition: BaseHandlerDefinition): HandlerDefinit
 export function createHandler<Schema extends StandardSchemaV1>(
   definition: ValidatedHandlerDefinition<Schema> | BaseHandlerDefinition
 ): HandlerDefinition {
-  // If schema is provided, this is a validated handler
-  if ('schema' in definition && definition.schema) {
-    const validatedDef = definition as ValidatedHandlerDefinition<Schema>
+  // Use type guard to properly narrow the union type
+  if (isValidatedHandler(definition)) {
     return {
-      ...(validatedDef.use ? { use: validatedDef.use } : {}),
+      ...(definition.use ? { use: definition.use } : {}),
       async handler(c) {
         let rawData: unknown
 
@@ -147,12 +152,12 @@ export function createHandler<Schema extends StandardSchemaV1>(
         }
 
         // 2. Validate the data against the Standard Schema
-        const result = await validatedDef.schema['~standard'].validate(rawData)
+        const result = await definition.schema['~standard'].validate(rawData)
 
         // 3. Run validation hook on failure
         if (result.issues) {
-          if (validatedDef.hook) {
-            return validatedDef.hook({ success: false, error: result.issues }, c)
+          if (definition.hook) {
+            return definition.hook({ success: false, error: result.issues }, c)
           }
           // Default error response if no hook provided
           const error = result.issues[0]?.message || 'Invalid input'
@@ -160,11 +165,14 @@ export function createHandler<Schema extends StandardSchemaV1>(
         }
 
         // 4. On success, call the handler with 100% type-safe data
-        return validatedDef.handler(c, result.value)
+        return definition.handler(c, result.value)
       },
     }
   }
 
-  // Otherwise, this is a base handler - return as-is
-  return definition as BaseHandlerDefinition
+  // Type guard ensures definition is BaseHandlerDefinition here
+  return {
+    ...(definition.use ? { use: definition.use } : {}),
+    handler: definition.handler,
+  }
 }

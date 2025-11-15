@@ -1,4 +1,4 @@
-import { ensureBonsai, freeze } from '@/core/runtime/bonsai-global'
+import { ensureHonostar, freeze } from '@/core/runtime/honostar-global'
 import type { ThemePreference, ThemeRuntimeConfig, ThemeValue } from '@/core/theme'
 
 type ThemeControllerState = {
@@ -111,7 +111,7 @@ export function createThemeController(config: ThemeRuntimeConfig): ThemeControll
       } catch {}
     })
     try {
-      window.dispatchEvent(new CustomEvent('bonsai-theme-change', { detail: state }))
+      window.dispatchEvent(new CustomEvent('honostar-theme-change', { detail: state }))
     } catch {}
   }
 
@@ -172,7 +172,7 @@ export function createThemeController(config: ThemeRuntimeConfig): ThemeControll
 }
 
 export function installThemeActions(controller: ThemeController): void {
-  const bonsai = ensureBonsai()
+  const honostar = ensureHonostar()
   const actions = freeze({
     set: (p: ThemePreference) => controller.setTheme(p),
     setLight: () => controller.setLight(),
@@ -180,8 +180,8 @@ export function installThemeActions(controller: ThemeController): void {
     setSystem: () => controller.setSystem(),
     toggle: () => controller.toggle(),
   })
-  bonsai.actions = {
-    ...bonsai.actions,
+  honostar.actions = {
+    ...honostar.actions,
     theme: actions,
   }
 }

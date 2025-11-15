@@ -17,7 +17,7 @@ export type EffectHandler<TArgs extends unknown[] = unknown[]> = {
 }['bivarianceHack']
 
 /**
- * Built-in effect names that come with Bonsai.
+ * Built-in effect names that come with Honostar.
  */
 export type BuiltInEffectName =
   | 'patch-elements'
@@ -52,7 +52,7 @@ export class EffectRegistry {
    */
   register<TArgs extends unknown[] = unknown[]>(name: string, handler: EffectHandler<TArgs>): void {
     if (this.handlers.has(name)) {
-      console.warn(`[Bonsai] Effect '${name}' is being overridden`)
+      console.warn(`[Honostar] Effect '${name}' is being overridden`)
     }
     this.handlers.set(name, handler)
   }
@@ -102,7 +102,7 @@ export class EffectRegistry {
   async execute(c: Context<AppEnv>, name: string, ...args: unknown[]): Promise<void> {
     const handler = this.handlers.get(name)
     if (!handler) {
-      console.warn(`[Bonsai] Unknown effect: ${name}`)
+      console.warn(`[Honostar] Unknown effect: ${name}`)
       return
     }
     await handler(c, ...args)

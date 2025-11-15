@@ -1,5 +1,5 @@
 /**
- * Bonsai Built-in Plugins
+ * Honostar Built-in Plugins
  *
  * This file imports all built-in plugins and registers them with the runtime.
  * Users can selectively import individual plugins or import this file to get all of them.

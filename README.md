@@ -151,7 +151,7 @@ HonoStar uses Datastar's declarative attribute API:
 
 ## Configuration
 
-Zero-config works out of the box. Override via `BonsaiConfig`:
+Zero-config works out of the box. Override via `HonostarConfig`:
 
 ```typescript
 // src/index.ts
@@ -169,7 +169,7 @@ const config = {
       exceptPaths: ['/webhooks']
     },
     topics: {
-      secretEnv: 'BONSAI_SIGNING_SECRET', // Required in production
+      secretEnv: 'HONOSTAR_SIGNING_SECRET', // Required in production
       maxAgeSec: 300
     }
   }
@@ -187,13 +187,13 @@ HonoStar supports horizontal scaling via Redis or NATS for distributed SSE:
 ```bash
 # Option 1: NATS (checked first)
 export NATS_URL="nats://localhost:4222"
-# Or Bonsai-specific
-export BONSAI_NATS_URL="nats://user:pass@host:4222"
+# Or Honostar-specific
+export HONOSTAR_NATS_URL="nats://user:pass@host:4222"
 
 # Option 2: Redis (checked second)
 export REDIS_URL="redis://localhost:6379"
-# Or Bonsai-specific
-export BONSAI_REDIS_URL="redis://user:pass@host:6379"
+# Or Honostar-specific
+export HONOSTAR_REDIS_URL="redis://user:pass@host:6379"
 ```
 
 **Bus Priority**: NATS → Redis → MemoryBus (in-process fallback)
