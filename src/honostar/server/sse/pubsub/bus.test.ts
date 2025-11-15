@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import type { PatchElementsOptions } from '@/honostar/common/types'
-import { MemoryBus, type SSEPayload } from '@/honostar/server/sse/bus'
+import { MemoryBus, type SSEPayload } from '@/honostar/server/sse/pubsub/bus'
 
 const patch = (html: string): SSEPayload => ({
   event: 'datastar-patch-elements',

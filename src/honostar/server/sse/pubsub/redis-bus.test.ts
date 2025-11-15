@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'bun:test'
 import { EventEmitter } from 'node:events'
 import type { PatchElementsOptions } from '@/honostar/common/types'
-import type { SSEPayload } from '@/honostar/server/sse/bus'
-import { RedisBus, type RedisClient } from '@/honostar/server/sse/redis-bus'
+import type { SSEPayload } from '@/honostar/server/sse/pubsub/bus'
+import { RedisBus, type RedisClient } from '@/honostar/server/sse/pubsub/redis-bus'
 
 const patch = (html: string): SSEPayload => ({
   event: 'datastar-patch-elements',

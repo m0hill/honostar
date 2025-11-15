@@ -1,4 +1,4 @@
-import type { PubSubBus, Sink, SSEPayload } from '@/honostar/server/sse/bus'
+import type { PubSubBus, Sink, SSEPayload } from '@/honostar/server/sse/pubsub/bus'
 
 export interface RedisClient {
   publish(...args: unknown[]): Promise<unknown>

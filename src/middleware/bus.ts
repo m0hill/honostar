@@ -1,12 +1,12 @@
 import { factory } from '@/honostar/server/middleware'
-import { MemoryBus, type PubSubBus } from '@/honostar/server/sse/bus'
+import { MemoryBus, type PubSubBus } from '@/honostar/server/sse/pubsub/bus'
 
 const createBus = async (): Promise<PubSubBus> => {
   // Check for NATS first
   const natsUrl = process.env.HONOSTAR_NATS_URL ?? process.env.NATS_URL
   if (natsUrl) {
     try {
-      const { NatsBus } = await import('@/honostar/server/sse/nats-bus')
+      const { NatsBus } = await import('@/honostar/server/sse/pubsub/nats-bus')
       const { connect } = await import('nats')
       const nc = await connect({ servers: natsUrl })
       console.log('[bus] Connected to NATS')
@@ -21,7 +21,7 @@ const createBus = async (): Promise<PubSubBus> => {
   const redisUrl = process.env.HONOSTAR_REDIS_URL ?? process.env.REDIS_URL
   if (redisUrl) {
     try {
-      const { RedisBus } = await import('@/honostar/server/sse/redis-bus')
+      const { RedisBus } = await import('@/honostar/server/sse/pubsub/redis-bus')
       const Redis = (await import('ioredis')).default
       const publisher = new Redis(redisUrl, { lazyConnect: true })
       const subscriber = new Redis(redisUrl, { lazyConnect: true })

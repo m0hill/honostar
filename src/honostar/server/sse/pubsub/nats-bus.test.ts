@@ -1,12 +1,12 @@
 import { describe, expect, test } from 'bun:test'
 import type { PatchElementsOptions } from '@/honostar/common/types'
-import type { SSEPayload } from '@/honostar/server/sse/bus'
+import type { SSEPayload } from '@/honostar/server/sse/pubsub/bus'
 import {
   NatsBus,
   type NatsConnection,
   type NatsMsg,
   type NatsSubscription,
-} from '@/honostar/server/sse/nats-bus'
+} from '@/honostar/server/sse/pubsub/nats-bus'
 
 const patch = (html: string): SSEPayload => ({
   event: 'datastar-patch-elements',

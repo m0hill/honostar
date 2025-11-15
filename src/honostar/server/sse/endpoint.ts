@@ -3,8 +3,8 @@ import { streamSSE } from 'hono/streaming'
 import type { HonostarConfig } from '@/honostar/server/config'
 import { createConfig } from '@/honostar/server/config'
 import { verifyTopics } from '@/honostar/server/security/topics'
-import type { SSEPayload } from '@/honostar/server/sse/bus'
 import { SseFormatter } from '@/honostar/server/sse/generator'
+import type { SSEPayload } from '@/honostar/server/sse/pubsub/bus'
 
 /**
  * Creates an SSE endpoint handler with optional configuration
