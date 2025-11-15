@@ -111,4 +111,4 @@ export type {
 export { NatsBus } from './sse/pubsub/nats-bus'
 export type { RedisBusOptions, RedisClient } from './sse/pubsub/redis-bus'
 export { RedisBus } from './sse/pubsub/redis-bus'
-export { DatastarResponder, datastarResponder } from './sse/responder'
+export { FxResponder } from './sse/responder'

@@ -19,8 +19,8 @@ Decide this **before** writing code:
 
 | Use | When | API |
 | --- | --- | --- |
-| `c.var.datastar.reply()` | Feedback that should only update the initiating tab (validation errors, modal close, toast) | Tab-scoped patch via HTTP (built-in effects) with automatic SSE fallback |
-| `c.var.datastar.broadcast(topic, …)` | Shared state that all viewers must see (new issue/comment/label) | broadcast to a page topic (define topics in `src/lib/topics.ts`) |
+| `c.var.fx.reply()` | Feedback that should only update the initiating tab (validation errors, modal close, toast) | Tab-scoped patch via HTTP (built-in effects) with automatic SSE fallback |
+| `c.var.fx.broadcast(topic, …)` | Shared state that all viewers must see (new issue/comment/label) | broadcast to a page topic (define topics in `src/lib/topics.ts`) |
 
 `reply()` inspects the incoming request. If it came from a Datastar action and the response can be expressed as a single built-in effect (`patch-elements`, `patch-elements-seq`, or `patch-signals`), Honostar returns an HTTP response (`text/html` or `application/json`) with the appropriate `datastar-*` headers so the client can morph the DOM without relying on the SSE bus. When the response contains multiple effects, custom effect handlers, or scripts, it automatically falls back to the prior SSE-based delivery through the request’s `X-Tab-ID`.
 
@@ -102,12 +102,12 @@ Requirements for any modal:
 **Example (Correct)**
 ```typescript
 // Good: Default outer morph, no explicit mode
-c.var.datastar.broadcast(topic, [
+c.var.fx.broadcast(topic, [
   ['patch-elements', <IssuesList issues={allIssues} />]
 ])
 
 // Good: Selector required for append mode
-c.var.datastar.reply([
+c.var.fx.reply([
   ['patch-elements', <Modal />, { selector: '#ds-overlays', mode: 'append' }]
 ])
 
@@ -246,7 +246,7 @@ This section is now covered by Framework Configuration (section 7).
 - This keeps handlers clean and enables application-specific abstractions.
 
 **Effect Registry**
-- Every `DatastarResponder` instance has an `effectRegistry` that maps effect names to handler functions.
+- Every `FxResponder` instance has an `effectRegistry` that maps effect names to handler functions.
 - Built-in effects (`patch-elements`, `patch-signals`, etc.) are pre-registered.
 - Custom effects can be registered via middleware.
 
@@ -257,7 +257,7 @@ import { registerEffect } from '@/core'
 
 app.use('*', registerEffect('toast:show', async (c, message: string, type: 'success' | 'error') => {
   // Custom effects can compose other effects
-  await c.var.datastar.reply([
+  await c.var.fx.reply([
     ['patch-elements', <Toast message={message} type={type} />, { selector: '#toast-container', mode: 'append' }]
   ])
 }))
@@ -267,12 +267,12 @@ import { registerEffects } from '@/core'
 
 app.use('*', registerEffects({
   'toast:show': async (c, message: string, type: 'success' | 'error') => {
-    await c.var.datastar.reply([
+    await c.var.fx.reply([
       ['patch-elements', <Toast message={message} type={type} />, { selector: '#toast-container', mode: 'append' }]
     ])
   },
   'modal:close': async (c, modalId: string) => {
-    await c.var.datastar.reply([
+    await c.var.fx.reply([
       ['patch-elements', '', { selector: `#${modalId}`, mode: 'remove' }]
     ])
   },
@@ -293,7 +293,7 @@ export const POST = createHandler({
     // Validate and process...
     
     // Use custom effect instead of verbose built-in composition
-    return c.var.datastar.reply([
+    return c.var.fx.reply([
       ['toast:show', 'Issue created successfully!', 'success'],
       ['modal:close', 'create-issue-modal']
     ])
@@ -320,7 +320,7 @@ type EffectHandler<TArgs extends unknown[] = unknown[]> = (
 ```typescript
 // Good: Compose multiple patches into a semantic effect
 registerEffect('issue:created', async (c, issue: Issue) => {
-  await c.var.datastar.broadcast('issues:list', [
+  await c.var.fx.broadcast('issues:list', [
     ['patch-elements', <IssuesList issues={await fetchIssues(c)} />],
     ['patch-signals', { selectedIssueId: issue.id }]
   ])
@@ -329,14 +329,14 @@ registerEffect('issue:created', async (c, issue: Issue) => {
 // Good: Side-effect + UI update
 registerEffect('notification:send', async (c, userId: string, message: string) => {
   await sendPushNotification(userId, message)
-  await c.var.datastar.broadcast(`user:${userId}`, [
+  await c.var.fx.broadcast(`user:${userId}`, [
     ['patch-elements', <NotificationBadge count={await getUnreadCount(c, userId)} />]
   ])
 })
 
 // Bad: Effects that just wrap a single built-in effect without adding value
 registerEffect('just-patch', async (c, component) => {
-  await c.var.datastar.reply([['patch-elements', component]])
+  await c.var.fx.reply([['patch-elements', component]])
 }) // ❌ Just use patch-elements directly
 ```
 
@@ -357,16 +357,16 @@ app.use('*', registerEffect('toast:show', toastHandler))
 
 **Effect Registry API**
 ```typescript
-// Access via c.var.datastar.effectRegistry
+// Access via c.var.fx.effectRegistry
 
 // Check if effect exists
-if (c.var.datastar.effectRegistry.has('toast:show')) { /* ... */ }
+if (c.var.fx.effectRegistry.has('toast:show')) { /* ... */ }
 
 // Get all registered effects
-const effects = c.var.datastar.effectRegistry.getEffectNames()
+const effects = c.var.fx.effectRegistry.getEffectNames()
 
 // Unregister an effect (rare)
-c.var.datastar.effectRegistry.unregister('toast:show')
+c.var.fx.effectRegistry.unregister('toast:show')
 ```
 
 **Best Practices**
@@ -520,13 +520,13 @@ data-on:honostar-theme-change__window="renderChart(evt.detail.resolved)"
     hook: (result, c) => {
       // Handle validation errors
       const error = result.error[0]?.message || 'Invalid input'
-      return c.var.datastar.reply([['patch-signals', { error }]], { status: 400 })
+      return c.var.fx.reply([['patch-signals', { error }]], { status: 400 })
     },
     async handler(c, data) {
       // data is 100% type-safe! No type assertions needed.
       const { title, description } = data
       // Validate, mutate DB, broadcast updates
-      return c.var.datastar.reply([...effects])
+      return c.var.fx.reply([...effects])
     }
   })
   ```
@@ -602,7 +602,7 @@ bus.toAll(msg) // Broadcast to all connected clients
 ```
 
 **Best Practices**
-- Always use `c.var.datastar.reply()` and `c.var.datastar.broadcast()` instead of calling bus methods directly.
+- Always use `c.var.fx.reply()` and `c.var.fx.broadcast()` instead of calling bus methods directly.
 - The datastar responder handles rendering, serialization, and bus routing.
 - Define all topics in `src/lib/topics.ts` and reference them via imports - never inline topic strings.
 
@@ -678,7 +678,7 @@ Before opening a PR, confirm:
 13. **`openWhenHidden`** only where truly needed.
 14. **Routes manifest** is regenerated (`bun run routes:generate` runs automatically in dev/build).
 15. **Type-safe routes** - use `routes` object instead of hardcoded strings.
-16. **Bus usage** - use `c.var.datastar.reply()`/`broadcast()` instead of calling bus directly.
+16. **Bus usage** - use `c.var.fx.reply()`/`broadcast()` instead of calling bus directly.
 17. **Handler validation** - use `createHandler({ schema, ... })` for Datastar endpoints; validators must support Standard Schema spec.
 18. **Error handling** - validation hook errors use `result.error[0]?.message` (Standard Schema format), not `result.error.issues`.
 19. **Lint + typecheck** (`bun run lint`, `bun run typecheck`) succeed locally; include results in your summary if requested.
@@ -714,7 +714,7 @@ export const POST = createHandler({
   use: [requireAuth],
   hook: (result, c) => {
     const error = result.error[0]?.message || 'Invalid input'
-    return c.var.datastar.reply([['patch-signals', { error }]], { status: 400 })
+    return c.var.fx.reply([['patch-signals', { error }]], { status: 400 })
   },
   async handler(c, data) {
     // data.issue is 100% type-safe
@@ -724,7 +724,7 @@ export const POST = createHandler({
       authorId: c.var.user.id,
     }).returning()
     
-    return c.var.datastar.broadcast('issues:list', [
+    return c.var.fx.broadcast('issues:list', [
       ['patch-elements', <IssuesList issues={await fetchAllIssues(c)} />]
     ], { status: 201 })
   }

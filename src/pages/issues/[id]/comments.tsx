@@ -18,7 +18,7 @@ export const POST = createHandler({
   use: [requireAuth],
   hook: (result, c) => {
     const error = result.error[0]?.message || 'Invalid comment'
-    return c.var.datastar.reply([['patch-signals', { commentError: error }]], {
+    return c.var.fx.reply([['patch-signals', { commentError: error }]], {
       status: 400,
     })
   },
@@ -42,7 +42,7 @@ export const POST = createHandler({
     })
 
     // Use custom effect! Handles broadcasting + success toast
-    return c.var.datastar.reply([['comment:created-success', issueId, commentCount.length]], {
+    return c.var.fx.reply([['comment:created-success', issueId, commentCount.length]], {
       status: 201,
     })
   },

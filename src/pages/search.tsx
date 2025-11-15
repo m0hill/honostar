@@ -22,7 +22,7 @@ export const GET = createHandler({
         },
         orderBy: (issues, { desc }) => [desc(issues.createdAt)],
       })
-      return c.var.datastar.reply([
+      return c.var.fx.reply([
         ['patch-elements', <IssuesList issues={allIssues} />, { selector: '#issues-list' }],
       ])
     }
@@ -36,7 +36,7 @@ export const GET = createHandler({
       orderBy: (issues, { desc }) => [desc(issues.createdAt)],
     })
 
-    return c.var.datastar.reply([
+    return c.var.fx.reply([
       ['patch-elements', <IssuesList issues={searchResults} />, { selector: '#issues-list' }],
     ])
   },

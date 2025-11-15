@@ -59,7 +59,7 @@ export const toastShow: EffectHandler<[message: string, type: ToastType]> = asyn
   message,
   type
 ) => {
-  await c.var.datastar.reply([
+  await c.var.fx.reply([
     [
       'patch-elements',
       <Toast message={message} type={type} />,
@@ -69,11 +69,11 @@ export const toastShow: EffectHandler<[message: string, type: ToastType]> = asyn
 }
 
 export const toastSuccess: EffectHandler<[message: string]> = async (c, message) => {
-  await c.var.datastar.reply([['toast:show', message, 'success']])
+  await c.var.fx.reply([['toast:show', message, 'success']])
 }
 
 export const toastError: EffectHandler<[message: string]> = async (c, message) => {
-  await c.var.datastar.reply([['toast:show', message, 'error']])
+  await c.var.fx.reply([['toast:show', message, 'error']])
 }
 
 // ============================================================================
@@ -90,12 +90,12 @@ export const issueCreatedSuccess: EffectHandler<[issue: Issue]> = async (c, issu
   })
 
   // Broadcast updated list to all viewers on the issues:list topic
-  await c.var.datastar.fx('issues:list', [
+  await c.var.fx.fx('issues:list', [
     ['patch-elements', <IssuesList issues={allIssues} />, { selector: '#issues-list' }],
   ])
 
   // Reply to the creator with success feedback
-  await c.var.datastar.reply([
+  await c.var.fx.reply([
     ['toast:show', `Issue "${issue.title}" created successfully!`, 'success'],
     [
       'patch-elements',
@@ -139,7 +139,7 @@ export const commentCreatedSuccess: EffectHandler<[issueId: number, commentCount
 
   // Broadcast to all viewers on this issue's comments topic
   const topics = await import('@/lib/topics')
-  await c.var.datastar.broadcast(topics.topics.issue(issueId).comments(), [
+  await c.var.fx.broadcast(topics.topics.issue(issueId).comments(), [
     [
       'patch-elements',
       <CommentsSection comments={updatedComments} />,
@@ -149,7 +149,7 @@ export const commentCreatedSuccess: EffectHandler<[issueId: number, commentCount
   ])
 
   // Show success toast to commenter
-  await c.var.datastar.reply([['toast:show', `Comment posted! (${commentCount} total)`, 'success']])
+  await c.var.fx.reply([['toast:show', `Comment posted! (${commentCount} total)`, 'success']])
 }
 
 // ============================================================================

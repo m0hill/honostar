@@ -13,7 +13,7 @@ export const POST = createHandler({
   schema: labelSchema,
   hook: (result, c) => {
     const error = result.error[0]?.message || 'Invalid input'
-    return c.var.datastar.reply([['patch-signals', { error }]], { status: 400 })
+    return c.var.fx.reply([['patch-signals', { error }]], { status: 400 })
   },
 
   async handler(c, data) {
@@ -30,7 +30,7 @@ export const POST = createHandler({
 
       const currentLabels = await c.var.db.select().from(labels)
 
-      return c.var.datastar.broadcast(
+      return c.var.fx.broadcast(
         'labels:list',
         [
           [
@@ -43,7 +43,7 @@ export const POST = createHandler({
       )
     } catch (e: unknown) {
       console.error('Labels POST error:', e)
-      return c.var.datastar.reply([['patch-signals', { error: 'Failed to create label' }]], {
+      return c.var.fx.reply([['patch-signals', { error: 'Failed to create label' }]], {
         status: 500,
       })
     }

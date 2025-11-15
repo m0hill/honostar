@@ -31,7 +31,7 @@ const isExecuteScriptEffect = (
   fx: EffectDefinition
 ): fx is ['execute-script', string, ExecuteScriptOptions?] => fx[0] === 'execute-script'
 
-export class DatastarResponder {
+export class FxResponder {
   private c: Context<AppEnv>
   private isExecutingEffect = false
   public effectRegistry: EffectRegistry
@@ -468,7 +468,7 @@ export class DatastarResponder {
   }
 }
 
-export const datastarResponder = factory.createMiddleware(async (c, next) => {
-  c.set('datastar', new DatastarResponder(c))
+export const fxResponder = factory.createMiddleware(async (c, next) => {
+  c.set('fx', new FxResponder(c))
   await next()
 })

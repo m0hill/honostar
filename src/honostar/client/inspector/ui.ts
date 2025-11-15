@@ -26,24 +26,24 @@ function formatTable(obj: Record<string, unknown>): string {
     .map(([key, value]) => {
       const valueStr = typeof value === 'string' ? value : JSON.stringify(value)
       return `
-        <tr class="border-b border-border hover:bg-muted/50">
-          <td class="px-3 py-2 font-mono text-sm text-primary">${key}</td>
-          <td class="px-3 py-2 font-mono text-sm">${valueStr}</td>
+        <tr style="border-bottom: 1px solid #333;" onmouseover="this.style.background='rgba(255, 255, 255, 0.05)'" onmouseout="this.style.background='transparent'">
+          <td style="padding: 8px 12px; font-family: monospace; font-size: 13px; color: #3b82f6;">${key}</td>
+          <td style="padding: 8px 12px; font-family: monospace; font-size: 13px; color: #fafafa;">${valueStr}</td>
         </tr>
       `
     })
     .join('')
 
   return `
-    <table class="w-full border-collapse text-sm">
+    <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
       <thead>
-        <tr class="border-b border-border bg-muted/50">
-          <th class="px-3 py-2 text-left font-semibold">Signal</th>
-          <th class="px-3 py-2 text-left font-semibold">Value</th>
+        <tr style="border-bottom: 1px solid #333; background: rgba(255, 255, 255, 0.05);">
+          <th style="padding: 8px 12px; text-align: left; font-weight: 600;">Signal</th>
+          <th style="padding: 8px 12px; text-align: left; font-weight: 600;">Value</th>
         </tr>
       </thead>
       <tbody>
-        ${rows || '<tr><td colspan="2" class="px-3 py-4 text-center text-muted-foreground">No signals</td></tr>'}
+        ${rows || '<tr><td colspan="2" style="padding: 16px 12px; text-align: center; color: #a1a1aa;">No signals</td></tr>'}
       </tbody>
     </table>
   `
@@ -74,26 +74,42 @@ function renderSignalsTab(state: InspectorState): string {
   const signals = getFilteredSignals(state)
   const content =
     state.viewMode === 'json'
-      ? `<pre class="font-mono text-xs overflow-auto">${formatJSON(signals)}</pre>`
+      ? `<pre style="font-family: monospace; font-size: 12px; overflow: auto; margin: 0; white-space: pre-wrap;">${formatJSON(signals)}</pre>`
       : formatTable(signals)
 
   return `
-    <div class="p-4 flex flex-col h-full">
-      <div class="flex gap-2 mb-3">
+    <div style="padding: 16px; display: flex; flex-direction: column; height: 100%;">
+      <div style="display: flex; gap: 8px; margin-bottom: 12px;">
         <input
           type="text"
           id="inspector-filter-include"
           placeholder="Include regex (e.g., user)"
-          class="flex-1 px-3 py-1.5 text-sm rounded-md border border-input bg-background"
+          style="
+            flex: 1;
+            padding: 6px 12px;
+            font-size: 14px;
+            border-radius: 6px;
+            border: 1px solid #333;
+            background: #1a1a1a;
+            color: #fafafa;
+          "
         />
         <input
           type="text"
           id="inspector-filter-exclude"
           placeholder="Exclude regex (e.g., temp$)"
-          class="flex-1 px-3 py-1.5 text-sm rounded-md border border-input bg-background"
+          style="
+            flex: 1;
+            padding: 6px 12px;
+            font-size: 14px;
+            border-radius: 6px;
+            border: 1px solid #333;
+            background: #1a1a1a;
+            color: #fafafa;
+          "
         />
       </div>
-      <div class="flex-1 overflow-auto rounded-md border border-border">
+      <div style="flex: 1; overflow: auto; border-radius: 6px; border: 1px solid #333;">
         ${content}
       </div>
     </div>
@@ -109,21 +125,21 @@ function renderPatchesTab(events: InspectorEvent[]): string {
     .map(e => {
       const time = new Date(e.timestamp).toLocaleTimeString()
       return `
-        <div class="px-4 py-3 border-b border-border text-sm hover:bg-muted/50">
-          <div class="flex items-center gap-2 text-muted-foreground mb-2">
+        <div style="padding: 12px 16px; border-bottom: 1px solid #333; font-size: 14px;" onmouseover="this.style.background='rgba(255, 255, 255, 0.05)'" onmouseout="this.style.background='transparent'">
+          <div style="display: flex; align-items: center; gap: 8px; color: #a1a1aa; margin-bottom: 8px;">
             <span>${time}</span>
-            <span class="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs">${e.source}</span>
+            <span style="padding: 2px 8px; border-radius: 9999px; background: rgba(59, 130, 246, 0.1); color: #3b82f6; font-size: 11px;">${e.source}</span>
           </div>
-          <pre class="font-mono text-xs overflow-auto">${formatJSON(e.data)}</pre>
+          <pre style="font-family: monospace; font-size: 12px; overflow: auto; margin: 0; white-space: pre-wrap;">${formatJSON(e.data)}</pre>
         </div>
       `
     })
     .join('')
 
   return `
-    <div class="flex flex-col h-full">
-      <div class="flex-1 overflow-auto">
-        ${items || '<div class="flex items-center justify-center h-full text-muted-foreground text-sm">No signal patches recorded</div>'}
+    <div style="display: flex; flex-direction: column; height: 100%;">
+      <div style="flex: 1; overflow: auto;">
+        ${items || '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #a1a1aa; font-size: 14px;">No signal patches recorded</div>'}
       </div>
     </div>
   `
@@ -138,18 +154,18 @@ function renderSSETab(events: InspectorEvent[]): string {
     .map(e => {
       const time = new Date(e.timestamp).toLocaleTimeString()
       return `
-        <div class="px-4 py-3 border-b border-border text-sm hover:bg-muted/50">
-          <div class="text-muted-foreground mb-2">${time}</div>
-          <pre class="font-mono text-xs overflow-auto">${formatJSON(e.data)}</pre>
+        <div style="padding: 12px 16px; border-bottom: 1px solid #333; font-size: 14px;" onmouseover="this.style.background='rgba(255, 255, 255, 0.05)'" onmouseout="this.style.background='transparent'">
+          <div style="color: #a1a1aa; margin-bottom: 8px;">${time}</div>
+          <pre style="font-family: monospace; font-size: 12px; overflow: auto; margin: 0; white-space: pre-wrap;">${formatJSON(e.data)}</pre>
         </div>
       `
     })
     .join('')
 
   return `
-    <div class="flex flex-col h-full">
-      <div class="flex-1 overflow-auto">
-        ${items || '<div class="flex items-center justify-center h-full text-muted-foreground text-sm">No SSE events recorded</div>'}
+    <div style="display: flex; flex-direction: column; height: 100%;">
+      <div style="flex: 1; overflow: auto;">
+        ${items || '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #a1a1aa; font-size: 14px;">No SSE events recorded</div>'}
       </div>
     </div>
   `
@@ -162,40 +178,66 @@ function renderPersistedTab(state: InspectorState): string {
   const persisted = getPersistedSignals(state.storageType)
   const content =
     state.viewMode === 'json'
-      ? `<pre class="font-mono text-xs overflow-auto">${formatJSON(persisted)}</pre>`
+      ? `<pre style="font-family: monospace; font-size: 12px; overflow: auto; margin: 0; white-space: pre-wrap;">${formatJSON(persisted)}</pre>`
       : formatTable(persisted)
 
   return `
-    <div class="p-4 flex flex-col h-full">
-      <div class="flex gap-2 mb-3">
+    <div style="padding: 16px; display: flex; flex-direction: column; height: 100%;">
+      <div style="display: flex; gap: 8px; margin-bottom: 12px;">
         <button
           id="inspector-storage-local"
-          class="px-3 py-1.5 text-sm rounded-md border transition-colors ${
-            state.storageType === 'localStorage'
-              ? 'bg-primary text-primary-foreground border-primary'
-              : 'bg-background border-input hover:bg-muted'
-          }"
+          style="
+            padding: 6px 12px;
+            font-size: 14px;
+            border-radius: 6px;
+            border: 1px solid ${state.storageType === 'localStorage' ? '#3b82f6' : '#333'};
+            background: ${state.storageType === 'localStorage' ? '#3b82f6' : 'transparent'};
+            color: ${state.storageType === 'localStorage' ? '#ffffff' : '#fafafa'};
+            cursor: pointer;
+            transition: all 0.2s;
+          "
+          onmouseover="this.style.background='${state.storageType === 'localStorage' ? '#3b82f6' : 'rgba(255, 255, 255, 0.05)'}'"
+          onmouseout="this.style.background='${state.storageType === 'localStorage' ? '#3b82f6' : 'transparent'}'"
         >
           localStorage
         </button>
         <button
           id="inspector-storage-session"
-          class="px-3 py-1.5 text-sm rounded-md border transition-colors ${
-            state.storageType === 'sessionStorage'
-              ? 'bg-primary text-primary-foreground border-primary'
-              : 'bg-background border-input hover:bg-muted'
-          }"
+          style="
+            padding: 6px 12px;
+            font-size: 14px;
+            border-radius: 6px;
+            border: 1px solid ${state.storageType === 'sessionStorage' ? '#3b82f6' : '#333'};
+            background: ${state.storageType === 'sessionStorage' ? '#3b82f6' : 'transparent'};
+            color: ${state.storageType === 'sessionStorage' ? '#ffffff' : '#fafafa'};
+            cursor: pointer;
+            transition: all 0.2s;
+          "
+          onmouseover="this.style.background='${state.storageType === 'sessionStorage' ? '#3b82f6' : 'rgba(255, 255, 255, 0.05)'}'"
+          onmouseout="this.style.background='${state.storageType === 'sessionStorage' ? '#3b82f6' : 'transparent'}'"
         >
           sessionStorage
         </button>
         <button
           id="inspector-storage-clear"
-          class="px-3 py-1.5 text-sm rounded-md border border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors ml-auto"
+          style="
+            padding: 6px 12px;
+            font-size: 14px;
+            border-radius: 6px;
+            border: 1px solid #dc2626;
+            background: transparent;
+            color: #dc2626;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-left: auto;
+          "
+          onmouseover="this.style.background='#dc2626'; this.style.color='#ffffff'"
+          onmouseout="this.style.background='transparent'; this.style.color='#dc2626'"
         >
           Clear
         </button>
       </div>
-      <div class="flex-1 overflow-auto rounded-md border border-border">
+      <div style="flex: 1; overflow: auto; border-radius: 6px; border: 1px solid #333;">
         ${content}
       </div>
     </div>
@@ -228,11 +270,19 @@ function tabButton(tab: InspectorTab, label: string, currentTab: InspectorTab): 
   return `
     <button
       data-inspector-tab="${tab}"
-      class="px-4 py-2 text-sm font-medium transition-colors rounded-md ${
-        isActive
-          ? 'bg-background text-foreground shadow-sm'
-          : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-      }"
+      style="
+        padding: 6px 12px;
+        font-size: 13px;
+        font-weight: 500;
+        border-radius: 4px;
+        border: none;
+        background: ${isActive ? 'rgba(255, 255, 255, 0.15)' : 'transparent'};
+        color: ${isActive ? '#ffffff' : '#a1a1aa'};
+        cursor: pointer;
+        transition: all 0.2s;
+      "
+      onmouseover="this.style.background='${isActive ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.05)'}'; this.style.color='${isActive ? '#ffffff' : '#fafafa'}'"
+      onmouseout="this.style.background='${isActive ? 'rgba(255, 255, 255, 0.15)' : 'transparent'}'; this.style.color='${isActive ? '#ffffff' : '#a1a1aa'}'"
     >
       ${label}
     </button>
@@ -251,11 +301,18 @@ function viewModeButton(
   return `
     <button
       data-inspector-view="${mode}"
-      class="px-2 py-1 text-xs rounded transition-colors ${
-        isActive
-          ? 'bg-primary text-primary-foreground'
-          : 'bg-background border border-input hover:bg-muted'
-      }"
+      style="
+        padding: 4px 6px;
+        font-size: 11px;
+        border-radius: 3px;
+        border: 1px solid ${isActive ? 'transparent' : '#333'};
+        background: ${isActive ? '#3b82f6' : 'transparent'};
+        color: ${isActive ? '#ffffff' : '#fafafa'};
+        cursor: pointer;
+        transition: all 0.2s;
+      "
+      onmouseover="this.style.background='${isActive ? '#3b82f6' : 'rgba(255, 255, 255, 0.05)'}'"
+      onmouseout="this.style.background='${isActive ? '#3b82f6' : 'transparent'}'"
     >
       ${label}
     </button>
@@ -274,9 +331,18 @@ function positionButton(
   return `
     <button
       data-inspector-position="${pos}"
-      class="p-1.5 rounded transition-colors ${
-        isActive ? 'bg-primary text-primary-foreground' : 'hover:bg-muted'
-      }"
+      style="
+        padding: 6px;
+        border-radius: 4px;
+        border: none;
+        background: ${isActive ? '#3b82f6' : 'transparent'};
+        color: ${isActive ? '#ffffff' : '#fafafa'};
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 12px;
+      "
+      onmouseover="this.style.background='${isActive ? '#3b82f6' : 'rgba(255, 255, 255, 0.05)'}'"
+      onmouseout="this.style.background='${isActive ? '#3b82f6' : 'transparent'}'"
       title="Position: ${pos}"
     >
       ${icon}
@@ -382,61 +448,91 @@ export function createOverlayHTML(state: InspectorState): string {
         height: 100%;
         display: flex;
         flex-direction: column;
-        background: #000;
-        color: hsl(var(--foreground, 222.2 84% 4.9%));
+        background: #0a0a0a;
+        color: #fafafa;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+        font-size: 14px;
+        line-height: 1.5;
       "
     >
       <div
-        class="flex items-center justify-between px-4 py-2 border-b border-border bg-muted/30"
-        style="flex-shrink: 0;"
+        style="
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 8px 16px;
+          border-bottom: 1px solid #333;
+          background: rgba(255, 255, 255, 0.05);
+          flex-shrink: 0;
+        "
       >
-        <div class="flex items-center gap-3">
-          <div class="flex items-center gap-2">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
               <path d="M2 17l10 5 10-5"></path>
               <path d="M2 12l10 5 10-5"></path>
             </svg>
-            <span class="font-semibold text-sm">Datastar Inspector</span>
+            <span style="font-weight: 600; font-size: 14px;">Honostar Devtools</span>
           </div>
-          <div class="flex gap-1 bg-muted rounded-lg p-1">
+          <div style="display: flex; gap: 4px; background: rgba(255, 255, 255, 0.1); border-radius: 6px; padding: 2px;">
             ${tabButton('signals', 'Signals', state.currentTab)}
             ${tabButton('patches', 'Patches', state.currentTab)}
             ${tabButton('sse', 'SSE', state.currentTab)}
             ${tabButton('persisted', 'Persisted', state.currentTab)}
           </div>
         </div>
-        <div class="flex items-center gap-2">
+        <div style="display: flex; align-items: center; gap: 8px;">
           ${
             state.currentTab === 'signals' || state.currentTab === 'persisted'
               ? `
-            <div class="flex gap-1">
+            <div style="display: flex; gap: 4px;">
               ${viewModeButton('json', 'JSON', state.viewMode)}
               ${viewModeButton('table', 'Table', state.viewMode)}
             </div>
-            <div class="w-px h-4 bg-border"></div>
-          `
+            <div style="width: 1px; height: 16px; background: #333;"></div>
+            `
               : ''
           }
-          <div class="flex gap-0.5">
+          <div style="display: flex; gap: 2px;">
             ${positionButton('left', '⬅', state.position)}
             ${positionButton('bottom', '⬇', state.position)}
             ${positionButton('right', '➡', state.position)}
             ${positionButton('top', '⬆', state.position)}
           </div>
-          <div class="w-px h-4 bg-border"></div>
+          <div style="width: 1px; height: 16px; background: #333;"></div>
           <button
             id="inspector-clear"
-            class="px-2 py-1 text-xs rounded hover:bg-muted transition-colors"
+            style="
+              padding: 4px 8px;
+              font-size: 12px;
+              border-radius: 4px;
+              border: none;
+              background: transparent;
+              color: #fafafa;
+              cursor: pointer;
+              transition: background-color 0.2s;
+            "
+            onmouseover="this.style.background='rgba(255, 255, 255, 0.1)'"
+            onmouseout="this.style.background='transparent'"
             title="Clear Events"
           >
             Clear
           </button>
           <button
             id="inspector-close"
-            class="p-1 rounded hover:bg-destructive hover:text-destructive-foreground transition-colors"
-            title="Close (Ctrl+Shift+D)"
+            style="
+              padding: 4px;
+              border-radius: 4px;
+              border: none;
+              background: transparent;
+              color: #fafafa;
+              cursor: pointer;
+              transition: all 0.2s;
+            "
+            onmouseover="this.style.background='#dc2626'; this.style.color='#ffffff'"
+            onmouseout="this.style.background='transparent'; this.style.color='#fafafa'"
+            title="Close"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M18 6L6 18M6 6l12 12"></path>
@@ -461,26 +557,28 @@ export function createToggleButton(): string {
       bottom: 20px;
       right: 20px;
       z-index: 999998;
-      background: #000;
-      border: 1px solid hsl(var(--border, 214.3 31.8% 91.4%));
+      background: #0a0a0a;
+      border: 1px solid #333;
       border-radius: 9999px;
       padding: 12px;
       cursor: pointer;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
       transition: all 0.2s ease;
       display: flex;
       align-items: center;
       gap: 8px;
     "
     id="inspector-toggle-btn"
-    title="Toggle Inspector (Ctrl+Shift+D)"
+    title="Toggle Devtools"
+    onmouseover="this.style.background='#1a1a1a'; this.style.borderColor='#555'"
+    onmouseout="this.style.background='#0a0a0a'; this.style.borderColor='#333'"
     >
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
         <path d="M2 17l10 5 10-5"></path>
         <path d="M2 12l10 5 10-5"></path>
       </svg>
-      <span style="font-size: 12px; font-weight: 500;">Datastar</span>
+
     </div>
   `
 }

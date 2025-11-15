@@ -1,5 +1,5 @@
 /**
- * Type definitions for the Datastar Inspector
+ * Type definitions for the Honostar Devtools
  */
 
 export type InspectorTab = 'signals' | 'patches' | 'sse' | 'persisted'
@@ -21,7 +21,6 @@ export type InspectorEvent = {
 
 export type InspectorConfig = {
   enabled: boolean
-  keyboardShortcut: string
   maxEvents: number
   defaultTab: InspectorTab
   defaultViewMode: InspectorViewMode

@@ -21,8 +21,8 @@ HonoStar embraces **server-rendered HTML as the source of truth**. Every navigat
 - Built-in CSRF protection and CSP with nonce support
 
 ### 🔄 Declarative Real-Time Updates
-- **Replies** (`c.var.datastar.reply()`) - Tab-scoped updates for validation errors, toasts, modal state
-- **Broadcasts** (`c.var.datastar.broadcast(topic, ...)`) - Shared state updates to all viewers via topics
+- **Replies** (`c.var.fx.reply()`) - Tab-scoped updates for validation errors, toasts, modal state
+- **Broadcasts** (`c.var.fx.broadcast(topic, ...)`) - Shared state updates to all viewers via topics
 - **Fat patches** - Re-render entire regions to avoid fragile incremental updates
 
 ### 🎨 Modern DX
@@ -79,11 +79,11 @@ export const POST = createHandler({
     
     // Broadcast updated list to all viewers
     const allIssues = await fetchIssues()
-    c.var.datastar.broadcast('issues:list', [
+    c.var.fx.broadcast('issues:list', [
       ['patch-elements', <IssuesList issues={allIssues} />]
     ])
     
-    return c.var.datastar.reply([
+    return c.var.fx.reply([
       ['patch-signals', { modal: { open: false } }]
     ])
   }
@@ -105,12 +105,12 @@ export const POST = createHandler({
 
 ```typescript
 // ✅ Good: Default outer morph with fat patch
-c.var.datastar.broadcast('issues:list', [
+c.var.fx.broadcast('issues:list', [
   ['patch-elements', <IssuesList issues={allIssues} />]
 ])
 
 // ✅ Good: Append modal to overlay container
-c.var.datastar.reply([
+c.var.fx.reply([
   ['patch-elements', <Modal />, { selector: '#ds-overlays', mode: 'append' }]
 ])
 

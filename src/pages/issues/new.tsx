@@ -12,7 +12,7 @@ export const GET = createHandler({
   use: [requireAuth],
   async handler(c) {
     const allLabels = await c.var.db.select().from(labels)
-    return c.var.datastar.reply(
+    return c.var.fx.reply(
       [
         [
           'patch-elements',

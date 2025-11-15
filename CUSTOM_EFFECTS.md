@@ -13,7 +13,7 @@ export const POST = createHandler({
     const issue = await createIssue(c)
     
     // Every time you create an issue, you repeat this pattern:
-    return c.var.datastar.respond({
+    return c.var.fx.respond({
       effects: [
         ['patch-elements', <IssuesList issues={await fetchIssues(c)} />],
         ['patch-elements', <Toast message="Success!" type="success" />, { selector: '#toast-container', mode: 'append' }],
@@ -35,7 +35,7 @@ export const POST = createHandler({
   async handler(c) {
     const issue = await createIssue(c)
     
-    return c.var.datastar.reply([
+    return c.var.fx.reply([
       ['issue:created', issue]
     ])
   }
@@ -51,7 +51,7 @@ import type { EffectHandler, TypedEffectHandler } from '@/core'
 
 // Option 1: Using EffectHandler with explicit types
 const toastShow: EffectHandler<[message: string, type: 'success' | 'error']> = async (c, message, type) => {
-  await c.var.datastar.reply([
+  await c.var.fx.reply([
     ['patch-elements', <Toast message={message} type={type} />, { selector: '#toast-container', mode: 'append' }]
   ])
 }
@@ -60,7 +60,7 @@ const toastShow: EffectHandler<[message: string, type: 'success' | 'error']> = a
 type ToastShowEffect = ['toast:show', message: string, type: 'success' | 'error']
 const toastShowTyped: TypedEffectHandler<ToastShowEffect> = async (c, message, type) => {
   // TypeScript enforces correct argument types
-  await c.var.datastar.reply([
+  await c.var.fx.reply([
     ['patch-elements', <Toast message={message} type={type} />, { selector: '#toast-container', mode: 'append' }]
   ])
 }
@@ -94,7 +94,7 @@ Now you can use your custom effects in any handler:
 export const POST = createHandler({
   async handler(c) {
     // Use your custom effects
-    return c.var.datastar.reply([
+    return c.var.fx.reply([
       ['toast:show', 'Success!', 'success'],
       ['modal:close', 'my-modal'],
       ['analytics:track', 'user:action', { action: 'submit-form' }]
@@ -111,7 +111,7 @@ Most custom effects compose built-in effects:
 
 ```typescript
 const modalClose: EffectHandler<[modalId: string]> = async (c, modalId) => {
-  await c.var.datastar.reply([
+  await c.var.fx.reply([
     ['patch-elements', '', { selector: `#${modalId}`, mode: 'remove' }],
     ['patch-signals', { [`${modalId}.open`]: false }]
   ])
@@ -138,12 +138,12 @@ Create effects that encapsulate complex domain logic:
 ```typescript
 const issueCreated: EffectHandler<[issue: Issue]> = async (c, issue) => {
   // Broadcast update to all viewers
-  await c.var.datastar.broadcast('issues:list', [
+  await c.var.fx.broadcast('issues:list', [
     ['patch-elements', <IssuesList issues={await fetchIssues(c)} />]
   ])
   
   // Show success toast to creator
-  await c.var.datastar.reply([
+  await c.var.fx.reply([
     ['toast:show', `Issue "${issue.title}" created!`, 'success'],
     ['modal:close', 'create-issue-modal']
   ])
@@ -160,7 +160,7 @@ Effects can call other custom effects:
 ```typescript
 const issueDeleted: EffectHandler<[issueId: number]> = async (c, issueId) => {
   // Update UI
-  await c.var.datastar.broadcast('issues:list', [
+  await c.var.fx.broadcast('issues:list', [
     ['patch-elements', <IssuesList issues={await fetchIssues(c)} />]
   ])
   
@@ -215,23 +215,23 @@ const myEffect: TypedEffectHandler<MyEffect> = async (c, arg1, arg2, arg3) => {
 
 ## Advanced: Effect Registry API
 
-You can access the effect registry directly via `c.var.datastar.effectRegistry`:
+You can access the effect registry directly via `c.var.fx.effectRegistry`:
 
 ```typescript
 // Check if effect exists
-if (c.var.datastar.effectRegistry.has('toast:show')) {
+if (c.var.fx.effectRegistry.has('toast:show')) {
   console.log('Toast effect is registered')
 }
 
 // Get all registered effects
-const effects = c.var.datastar.effectRegistry.getEffectNames()
+const effects = c.var.fx.effectRegistry.getEffectNames()
 console.log('Available effects:', effects)
 
 // Unregister an effect (rare)
-c.var.datastar.effectRegistry.unregister('toast:show')
+c.var.fx.effectRegistry.unregister('toast:show')
 
 // Clone the registry (useful for testing)
-const cloned = c.var.datastar.effectRegistry.clone()
+const cloned = c.var.fx.effectRegistry.clone()
 ```
 
 ## Examples

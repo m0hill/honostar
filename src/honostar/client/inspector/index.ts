@@ -1,5 +1,5 @@
 /**
- * Main orchestrator for the Datastar Inspector
+ * Main orchestrator for the Honostar Devtools
  */
 
 import { freeze } from '@/honostar/client/runtime/global'
@@ -8,7 +8,6 @@ import {
   attachEventListeners,
   attachToggleButtonListeners,
   setupGlobalMouseHandlers,
-  setupKeyboardShortcut,
 } from './handlers'
 import { createInitialState, getDatastarSignals, saveState } from './state'
 import type {
@@ -23,7 +22,7 @@ import type {
 import { createOverlayHTML, createToggleButton, getPositionStyles } from './ui'
 
 /**
- * Creates the Datastar Inspector
+ * Creates the Honostar Devtools
  *
  * Monitors:
  * - Current signals via Datastar's signal store
@@ -54,10 +53,11 @@ export function createInspector(config: InspectorConfig): InspectorApi {
     position: fixed;
     ${getPositionStyles(state)}
     z-index: 999999;
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
-    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+    background: rgba(10, 10, 10, 0.95);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+    border: 1px solid #333;
   `
 
   const applyOverlayStyles = () => {
@@ -209,9 +209,6 @@ export function createInspector(config: InspectorConfig): InspectorApi {
     )
   }
 
-  // Setup keyboard shortcut
-  listeners.set('keyboard', setupKeyboardShortcut(config.keyboardShortcut, toggle))
-
   // Setup global mouse handlers for resize
   const { startResize: startResizeHandler, cleanup: cleanupMouseHandlers } =
     setupGlobalMouseHandlers(
@@ -241,7 +238,7 @@ export function createInspector(config: InspectorConfig): InspectorApi {
         open()
       }
 
-      console.log('[Inspector] Initialized - Press Ctrl+Shift+D to toggle')
+      console.log('[Inspector] Initialized')
     }
 
     if (document.readyState === 'loading') {

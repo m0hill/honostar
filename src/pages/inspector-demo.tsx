@@ -210,10 +210,10 @@ function InspectorDemoPage() {
       <div class="max-w-6xl mx-auto space-y-8">
         {/* Header */}
         <div>
-          <h1 class="text-4xl font-bold mb-2">Datastar Inspector Demo</h1>
+          <h1 class="text-4xl font-bold mb-2">Honostar Devtools Demo</h1>
           <p class="text-muted-foreground">
-            Press <kbd class="px-2 py-1 bg-muted rounded text-xs">Ctrl+Shift+D</kbd> to open the
-            inspector and test different signal behaviors.
+            Click the devtools button in the bottom-right corner to open the devtools and test
+            different signal behaviors.
           </p>
         </div>
 
@@ -227,9 +227,7 @@ function InspectorDemoPage() {
           </CardHeader>
           <CardContent class="space-y-4">
             <ol class="list-decimal list-inside space-y-2 text-sm">
-              <li>
-                Open the inspector with <strong>Ctrl+Shift+D</strong> (or Cmd+Shift+D on Mac)
-              </li>
+              <li>Click the devtools button in the bottom-right corner to open the devtools</li>
               <li>
                 <strong>Signals Tab</strong>: See current values of all signals in real-time
               </li>
@@ -243,12 +241,6 @@ function InspectorDemoPage() {
                 <strong>Persisted Tab</strong>: View signals stored in localStorage/sessionStorage
               </li>
             </ol>
-            <div class="mt-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-md text-sm">
-              <strong>Note on Computed Signals:</strong> Signals created with{' '}
-              <code>data-computed</code> (like <code>charCount</code> and <code>fullName</code>) may
-              show as empty strings (<code>""</code>) in the inspector, but they work correctly in
-              the UI. This is a limitation of how Datastar serializes computed values.
-            </div>
           </CardContent>
         </Card>
 
@@ -588,7 +580,7 @@ export const POST = createHandler({
     // Simulate processing
     await new Promise(resolve => setTimeout(resolve, 500))
 
-    return c.var.datastar.reply([
+    return c.var.fx.reply([
       [
         'patch-signals',
         {

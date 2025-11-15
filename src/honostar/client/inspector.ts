@@ -1,6 +1,6 @@
 /**
- * Datastar Inspector - Main entry point
- * Re-exports modular inspector implementation
+ * Honostar Devtools - Main entry point
+ * Re-exports modular devtools implementation
  */
 
 export { createInspector } from './inspector/index'

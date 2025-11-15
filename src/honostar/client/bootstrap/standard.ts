@@ -71,7 +71,6 @@ void (async function bootstrap() {
   if (inspectorEnabled) {
     const inspectorConfig: InspectorConfig = {
       enabled: true,
-      keyboardShortcut: 'Ctrl+Shift+D',
       maxEvents: 100,
       defaultTab: 'signals',
       defaultViewMode: 'json',

@@ -14,7 +14,7 @@ export const POST = createHandler({
   schema: authPayloadSchema,
   hook: (result, c) => {
     const error = result.error[0]?.message || 'Validation failed'
-    return c.var.datastar.reply([['patch-signals', { error }]], { status: 400 })
+    return c.var.fx.reply([['patch-signals', { error }]], { status: 400 })
   },
 
   async handler(c, data) {
@@ -30,7 +30,7 @@ export const POST = createHandler({
       return c.redirect(routes.auth.profile.href(), 303) // let the browser navigate
     }
 
-    return c.var.datastar.reply([['patch-signals', { error: result.error }]], {
+    return c.var.fx.reply([['patch-signals', { error: result.error }]], {
       status: result.status,
     })
   },

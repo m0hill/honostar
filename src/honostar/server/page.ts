@@ -86,7 +86,7 @@ export function createPage<T extends Record<string, unknown>>(
  *   use: [requireAuth],
  *   hook: (result, c) => {
  *     const error = result.error[0]?.message || 'Invalid input'
- *     return c.var.datastar.reply([['patch-signals', { error }]], { status: 400 })
+ *     return c.var.fx.reply([['patch-signals', { error }]], { status: 400 })
  *   },
  *   async handler(c, data) {
  *     // data is 100% type-safe!
@@ -161,7 +161,7 @@ export function createHandler<Schema extends StandardSchemaV1>(
           }
           // Default error response if no hook provided
           const error = result.issues[0]?.message || 'Invalid input'
-          return c.var.datastar.reply([['patch-signals', { error }]], { status: 400 })
+          return c.var.fx.reply([['patch-signals', { error }]], { status: 400 })
         }
 
         // 4. On success, call the handler with 100% type-safe data

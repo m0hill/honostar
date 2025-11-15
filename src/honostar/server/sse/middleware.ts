@@ -1,10 +1,9 @@
 import type { StatusCode } from 'hono/utils/http-status'
 import { factory } from '@/honostar/server/middleware'
-import type { EffectHandler } from '@/honostar/server/sse/effect-registry'
-import type { DatastarResponder } from '@/honostar/server/sse/responder'
+import type { EffectDefinition, EffectHandler } from '@/honostar/server/sse/effect-registry'
 
 export type FxResponse = {
-  fx: Parameters<DatastarResponder['fx']>[1]
+  fx: EffectDefinition[]
   close?: boolean
   status?: StatusCode
   topics?: string[]
@@ -25,7 +24,7 @@ export const fxResponder = factory.createMiddleware(async (c, next) => {
 
   const fxResponse = c.var.fxResponse
   if (isFxResponse(fxResponse)) {
-    c.res = await c.var.datastar.respond({
+    c.res = await c.var.fx.respond({
       effects: fxResponse.fx,
       ...(fxResponse.close !== undefined && { close: fxResponse.close }),
       ...(fxResponse.status !== undefined && { status: fxResponse.status }),
@@ -44,7 +43,7 @@ export const fxResponder = factory.createMiddleware(async (c, next) => {
  * ```typescript
  * app.use('*', registerEffect('toast:show', async (c, message: string, type: 'success' | 'error') => {
  *   // Call other effects to compose behavior
- *   await c.var.datastar.reply([
+ *   await c.var.fx.reply([
  *     ['patch-elements', <Toast message={message} type={type} />, { selector: '#toast-container', mode: 'append' }]
  *   ])
  * }))
@@ -52,7 +51,7 @@ export const fxResponder = factory.createMiddleware(async (c, next) => {
  * // Now use it in handlers:
  * export const POST = createHandler({
  *   async handler(c) {
- *     return c.var.datastar.reply([
+ *     return c.var.fx.reply([
  *       ['toast:show', 'Success!', 'success']
  *     ])
  *   }
@@ -64,7 +63,7 @@ export function registerEffect<TArgs extends unknown[] = unknown[]>(
   handler: EffectHandler<TArgs>
 ) {
   return factory.createMiddleware(async (c, next) => {
-    c.var.datastar.effectRegistry.register(name, handler)
+    c.var.fx.effectRegistry.register(name, handler)
     await next()
   })
 }
@@ -90,7 +89,7 @@ export function registerEffect<TArgs extends unknown[] = unknown[]>(
 export function registerEffects(effects: { [K: string]: EffectHandler<never> }) {
   return factory.createMiddleware(async (c, next) => {
     for (const [name, handler] of Object.entries(effects)) {
-      c.var.datastar.effectRegistry.register(name, handler)
+      c.var.fx.effectRegistry.register(name, handler)
     }
     await next()
   })

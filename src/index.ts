@@ -8,7 +8,6 @@ import {
   createConfig,
   createSseEndpoint,
   csrf,
-  datastarResponder,
   fxResponder,
   initContext,
   mountRoutes,
@@ -49,10 +48,10 @@ app.use('*', csrf(config))
 app.use('*', renderer(config))
 app.use('*', initContext)
 app.use('*', attachBus)
-app.use('*', datastarResponder)
+
 app.use('*', fxResponder)
 
-// Register custom effects (must be after datastarResponder/fxResponder)
+// Register custom effects (must be after fxResponder)
 app.use('*', registerEffects(customEffects))
 
 app.use('*', attachDb)

@@ -23,7 +23,7 @@ export const POST = createHandler({
   use: [requireAuth],
   hook: (result, c) => {
     const error = result.error[0]?.message || 'Invalid input'
-    return c.var.datastar.reply([['patch-signals', { createIssueModal: { error } }]], {
+    return c.var.fx.reply([['patch-signals', { createIssueModal: { error } }]], {
       status: 400,
     })
   },
@@ -82,6 +82,6 @@ export const POST = createHandler({
     // - Broadcasting updated list to all viewers
     // - Showing success toast to creator
     // - Closing modal and resetting form
-    return c.var.datastar.reply([['issue:created-success', created]], { status: 201 })
+    return c.var.fx.reply([['issue:created-success', created]], { status: 201 })
   },
 })

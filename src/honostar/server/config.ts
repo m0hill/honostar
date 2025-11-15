@@ -106,16 +106,11 @@ export type HonostarConfig = {
    */
   devtools?: {
     /**
-     * Enable the Datastar Inspector for debugging signals and SSE events
+     * Enable the Honostar Devtools for debugging signals and SSE events
      * (default: false in production, true in development)
      */
     inspector?: {
       enabled?: boolean
-      /**
-       * Keyboard shortcut to toggle inspector
-       * (default: 'Ctrl+Shift+D' or 'Cmd+Shift+D')
-       */
-      keyboardShortcut?: string
       /**
        * Maximum number of events to store in history
        * (default: 100)
@@ -174,7 +169,6 @@ export const DEFAULT_CONFIG: HonostarConfig = {
   devtools: {
     inspector: {
       enabled: false, // Disabled by default, enable per environment
-      keyboardShortcut: 'Ctrl+Shift+D',
       maxEvents: 100,
       defaultTab: 'signals',
       defaultViewMode: 'json',

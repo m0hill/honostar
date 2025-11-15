@@ -10,7 +10,7 @@ export interface AppVariablesBase {
   renderToString: (jsx: JSX.Element) => Promise<string>
   renderFragmentToString: (jsx: JSX.Element) => Promise<string>
   sseTopics?: string[]
-  datastar: import('@/honostar/server/sse/responder').DatastarResponder
+  fx: import('@/honostar/server/sse/responder').FxResponder
   fxResponse?: FxResponse
   csrfToken?: string
   theme?: ThemeOptions
