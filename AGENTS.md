@@ -503,16 +503,58 @@ data-on:bonsai-theme-change__window="renderChart(evt.detail.resolved)"
     topics: ['issues:list'], // SSE topics to subscribe
   })
   ```
-- Use `createHandler()` for POST/PUT/PATCH/DELETE routes:
+- Use `createHandler()` for all action endpoints (POST/PUT/PATCH/DELETE/GET):
+  
+  **Validated Handler (with schema - recommended for Datastar endpoints):**
   ```typescript
+  import { z } from 'zod'
+  
+  const schema = z.object({
+    title: z.string().min(1, 'Title is required'),
+    description: z.string().optional(),
+  })
+  
   export const POST = createHandler({
+    schema,
     use: [requireAuth],
-    async handler(c) {
+    hook: (result, c) => {
+      // Handle validation errors
+      const error = result.error[0]?.message || 'Invalid input'
+      return c.var.datastar.reply([['patch-signals', { error }]], { status: 400 })
+    },
+    async handler(c, data) {
+      // data is 100% type-safe! No type assertions needed.
+      const { title, description } = data
       // Validate, mutate DB, broadcast updates
       return c.var.datastar.reply([...effects])
     }
   })
   ```
+  
+  **Base Handler (without schema - for traditional endpoints):**
+  ```typescript
+  export const POST = createHandler({
+    async handler(c) {
+      deleteCookie(c, 'token')
+      return c.redirect('/login', 303)
+    }
+  })
+  ```
+
+- **Validator-Agnostic**: `createHandler` supports any [Standard Schema](https://standardschema.dev/) compliant validator:
+  - ✅ **Zod** - `import { z } from 'zod'`
+  - ✅ **Valibot** - `import * as v from 'valibot'`
+  - ✅ **ArkType** - `import { type } from 'arktype'`
+  - ✅ Any future Standard Schema validator
+
+- **Automatic Data Extraction**: The handler automatically extracts data based on HTTP method:
+  - **GET requests**: Parses JSON from `?datastar=` query parameter
+  - **POST/PUT/PATCH/DELETE**: Parses JSON from request body
+
+- **Type Safety**: When a schema is provided, the handler's `data` parameter is 100% type-safe based on the schema's output type. No manual type assertions needed.
+
+- **Validation Hook**: Optional hook for custom error handling. If omitted, returns a sensible default error response.
+
 - **Never export a page and a handler with the same HTTP method** - the router will register only the first match.
 
 ---
@@ -637,7 +679,9 @@ Before opening a PR, confirm:
 14. **Routes manifest** is regenerated (`bun run routes:generate` runs automatically in dev/build).
 15. **Type-safe routes** - use `routes` object instead of hardcoded strings.
 16. **Bus usage** - use `c.var.datastar.reply()`/`broadcast()` instead of calling bus directly.
-17. **Lint + typecheck** (`bun run lint`, `bun run typecheck`) succeed locally; include results in your summary if requested.
+17. **Handler validation** - use `createHandler({ schema, ... })` for Datastar endpoints; validators must support Standard Schema spec.
+18. **Error handling** - validation hook errors use `result.error[0]?.message` (Standard Schema format), not `result.error.issues`.
+19. **Lint + typecheck** (`bun run lint`, `bun run typecheck`) succeed locally; include results in your summary if requested.
 
 ---
 
@@ -648,10 +692,44 @@ Before opening a PR, confirm:
 3. **Update loader** to fetch initial data and subscribe to the relevant topics.
 4. **Build UI component** with stable IDs and Datastar-friendly attributes.
 5. **Write handler**:
-   - Validate input (Zod).
-   - On failure, `reply()` with targeted feedback.
+   - Define schema with your preferred validator (Zod, Valibot, ArkType).
+   - Use `createHandler({ schema, hook, handler })` for automatic validation and type safety.
+   - On validation failure, the hook provides detailed errors to return to the client.
    - On success, mutate DB, re-fetch canonical state, and `broadcast()` the new markup.
 6. **Test** by running through the real workflow: navigation (anchors), SSE updates, opening/closing modals, relaunching actions after backgrounding the tab.
+
+**Example Handler Pattern:**
+```typescript
+import { z } from 'zod' // or valibot, arktype, etc.
+
+const schema = z.object({
+  issue: z.object({
+    title: z.string().min(1, 'Title is required'),
+    description: z.string().optional(),
+  })
+})
+
+export const POST = createHandler({
+  schema,
+  use: [requireAuth],
+  hook: (result, c) => {
+    const error = result.error[0]?.message || 'Invalid input'
+    return c.var.datastar.reply([['patch-signals', { error }]], { status: 400 })
+  },
+  async handler(c, data) {
+    // data.issue is 100% type-safe
+    const created = await c.var.db.insert(issues).values({
+      title: data.issue.title,
+      description: data.issue.description,
+      authorId: c.var.user.id,
+    }).returning()
+    
+    return c.var.datastar.broadcast('issues:list', [
+      ['patch-elements', <IssuesList issues={await fetchAllIssues(c)} />]
+    ], { status: 201 })
+  }
+})
+```
 
 If in doubt, search the repo for an existing pattern (`LabelsSection`, `IssueModal`, comments handler) and follow it exactly.
 
