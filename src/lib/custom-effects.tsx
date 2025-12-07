@@ -42,7 +42,7 @@ function Toast({ message, type }: { message: string; type: ToastType }) {
     <div
       id={`toast-${timestamp}`}
       class={`${bgColor} text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 mb-2 animate-slide-in`}
-      data-init="setTimeout(() => this.remove(), 4000)"
+      data-init="setTimeout(() => el.remove(), 4000)"
     >
       <span class="text-lg font-bold">{icon}</span>
       <span>{message}</span>
