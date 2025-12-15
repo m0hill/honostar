@@ -98,7 +98,7 @@ async function registerModule(app: Hono<AppEnv>, routePath: string, mod: Record<
 
       let pageComponent = pageDef.component(loaderResult)
       const layouts = resolvePageLayouts(pageDef.layout)
-      for (const layout of [...layouts].reverse()) {
+      for (const layout of [...layouts].toReversed()) {
         pageComponent = layout(c, loaderResult, pageComponent)
       }
 

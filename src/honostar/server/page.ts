@@ -129,6 +129,83 @@ function isValidatedHandler<Schema extends StandardSchemaV1>(
   return 'schema' in def && def.schema !== undefined
 }
 
+async function safeParseJson(c: Context<AppEnv>): Promise<unknown> {
+  try {
+    return await c.req.json()
+  } catch {
+    return {}
+  }
+}
+
+function urlSearchParamsToObject(params: URLSearchParams): Record<string, unknown> {
+  const data: Record<string, unknown> = {}
+
+  for (const [key, value] of params.entries()) {
+    const existing = data[key]
+    if (existing === undefined) data[key] = value
+    else if (Array.isArray(existing)) existing.push(value)
+    else data[key] = [existing, value]
+  }
+
+  return data
+}
+
+async function safeParseFormBody(c: Context<AppEnv>): Promise<unknown> {
+  try {
+    return await c.req.parseBody({ all: true })
+  } catch {
+    return {}
+  }
+}
+
+async function safeParseUnknownBody(c: Context<AppEnv>): Promise<unknown> {
+  try {
+    const bodyText = await c.req.text()
+    if (!bodyText) return {}
+
+    const trimmed = bodyText.trim()
+    if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+      try {
+        return JSON.parse(trimmed)
+      } catch {
+        return {}
+      }
+    }
+
+    if (trimmed.includes('=') || trimmed.includes('&')) {
+      const params = new URLSearchParams(trimmed)
+      return urlSearchParamsToObject(params)
+    }
+
+    return {}
+  } catch {
+    return {}
+  }
+}
+
+async function extractHandlerData(c: Context<AppEnv>): Promise<unknown> {
+  if (c.req.method === 'GET') {
+    const datastarParam = c.req.query('datastar')
+    if (!datastarParam) return {}
+    try {
+      return JSON.parse(datastarParam)
+    } catch {
+      return {}
+    }
+  }
+
+  const contentType = (c.req.header('content-type') ?? '').toLowerCase()
+  const isJson = contentType.includes('application/json') || contentType.includes('+json')
+  if (isJson) return safeParseJson(c)
+
+  const isForm =
+    contentType.includes('application/x-www-form-urlencoded') ||
+    contentType.includes('multipart/form-data')
+  if (isForm) return safeParseFormBody(c)
+
+  return safeParseUnknownBody(c)
+}
+
 export function createPage<T extends Record<string, unknown>>(
   definition: PageDefinition<T>
 ): PageDefinition<T> {
@@ -142,7 +219,7 @@ export function createPage<T extends Record<string, unknown>>(
  * It automatically detects whether a schema is provided and adjusts behavior accordingly.
  *
  * **Validated Handler (with schema):**
- * - Automatically extracts data from JSON body (POST/PUT/PATCH/DELETE) or query param (GET)
+ * - Automatically extracts data from JSON/form body (POST/PUT/PATCH/DELETE) or query param (GET)
  * - Validates data against any Standard Schema compliant validator (Zod, Valibot, ArkType, etc.)
  * - Provides 100% type-safe data to your handler
  * - Handles validation errors via optional hook or sensible default
@@ -213,25 +290,7 @@ export function createHandler<Schema extends StandardSchemaV1>(
     return {
       ...(definition.use ? { use: definition.use } : {}),
       async handler(c) {
-        let rawData: unknown
-
-        // 1. Automatically find the data based on request method
-        if (c.req.method === 'GET') {
-          // GET requests: data is in the 'datastar' query parameter as a JSON string
-          const datastarParam = c.req.query('datastar')
-          try {
-            rawData = datastarParam ? JSON.parse(datastarParam) : {}
-          } catch {
-            rawData = {}
-          }
-        } else {
-          // POST/PUT/PATCH/DELETE requests: data is in the JSON body
-          try {
-            rawData = await c.req.json()
-          } catch {
-            rawData = {}
-          }
-        }
+        const rawData = await extractHandlerData(c)
 
         // 2. Validate the data against the Standard Schema
         const result = await definition.schema['~standard'].validate(rawData)
