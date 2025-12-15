@@ -79,6 +79,9 @@ function LoginPage() {
 
 export default createPage({
   use: [requireGuest],
+  head: {
+    title: 'Login • Honostar',
+  },
 
   loader() {
     return Promise.resolve({})

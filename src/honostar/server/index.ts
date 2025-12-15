@@ -5,7 +5,14 @@ export { createConfig, DEFAULT_CONFIG } from './config'
 // Context & Middleware
 export type { AppEnv, AppVariables, AppVariablesBase } from './context'
 export { factory, initContext } from './middleware'
-
+export type {
+  PageHead,
+  PageHeadDefinition,
+  PageHeadElements,
+  PageHeadResolver,
+  PageLayout,
+  PageLayoutDefinition,
+} from './page'
 // Pages & Handlers
 export { createHandler, createPage } from './page'
 // Rendering

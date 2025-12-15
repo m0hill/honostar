@@ -1,6 +1,11 @@
 import type { Context, Hono, MiddlewareHandler } from 'hono'
 import type { AppEnv } from '@/honostar/server/context'
-import type { HandlerDefinition, PageDefinition } from '@/honostar/server/page'
+import {
+  type HandlerDefinition,
+  type PageDefinition,
+  resolvePageHead,
+  resolvePageLayouts,
+} from '@/honostar/server/page'
 import type { RouteLoader } from '@/honostar/server/router/types'
 import type { FxResponse } from '@/honostar/server/sse/middleware'
 
@@ -87,7 +92,16 @@ async function registerModule(app: Hono<AppEnv>, routePath: string, mod: Record<
         return loaderResult
       }
 
-      const pageComponent = pageDef.component(loaderResult)
+      if (pageDef.head) {
+        c.set('pageHead', await resolvePageHead(pageDef.head, loaderResult, c))
+      }
+
+      let pageComponent = pageDef.component(loaderResult)
+      const layouts = resolvePageLayouts(pageDef.layout)
+      for (const layout of [...layouts].reverse()) {
+        pageComponent = layout(c, loaderResult, pageComponent)
+      }
+
       return c.render(pageComponent)
     }
 

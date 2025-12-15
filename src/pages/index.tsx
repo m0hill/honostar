@@ -108,6 +108,15 @@ function IndexPage({
 
 export default createPage({
   topics: [topics.issues.list(), topics.labels.list()],
+  head: {
+    title: 'Issues • Honostar',
+    elements: [
+      <meta
+        name="description"
+        content="A reactive issue tracker built with Honostar and Datastar."
+      />,
+    ],
+  },
 
   async loader(c) {
     const user = c.var.user

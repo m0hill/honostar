@@ -7,6 +7,15 @@
 
 export type HonostarConfig = {
   /**
+   * Document-level defaults for server-rendered pages.
+   */
+  document?: {
+    /** Default <title> when a page doesn't provide one (default: 'Honostar') */
+    title?: string
+    /** Default <html lang="..."> when a page doesn't provide one (default: 'en') */
+    lang?: string
+  }
+  /**
    * Asset paths for CSS and client-side scripts
    */
   assets: {
@@ -143,6 +152,10 @@ export type HonostarConfig = {
  * Ensures zero-config backwards compatibility
  */
 export const DEFAULT_CONFIG: HonostarConfig = {
+  document: {
+    title: 'Honostar',
+    lang: 'en',
+  },
   assets: {
     css: '/styles.css',
     runtime: '/runtime.js',
@@ -189,6 +202,7 @@ export function createConfig(user?: Partial<HonostarConfig>): HonostarConfig {
   const merged = {
     ...DEFAULT_CONFIG,
     ...user,
+    document: { ...DEFAULT_CONFIG.document, ...user?.document },
     assets: { ...DEFAULT_CONFIG.assets, ...user?.assets },
     endpoints: { ...DEFAULT_CONFIG.endpoints, ...user?.endpoints },
     security: {

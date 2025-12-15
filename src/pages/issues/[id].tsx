@@ -155,6 +155,13 @@ function IssueDetailPage({ issue, user }: { issue: IssueWithDetails; user: User 
 
 export default createPage({
   topics: c => [topics.issue(c.req.param('id')).comments()],
+  head: ({ issue }) => ({
+    title: `${issue.title} • Honostar`,
+    elements: [
+      <meta property="og:title" content={issue.title} />,
+      <meta property="og:type" content="article" />,
+    ],
+  }),
 
   async loader(c) {
     const paramValidation = paramSchema.safeParse(c.req.param())

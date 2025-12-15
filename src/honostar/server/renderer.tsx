@@ -44,6 +44,7 @@ export const renderer = (userConfig?: Partial<HonostarConfig>) => {
     const topics = c.var.sseTopics ?? []
     const topicsToken = await signTopics(c, topics, config)
     const base = jsxRenderer(({ children }) => {
+      const pageHead = c.var.pageHead
       const topics = c.var.sseTopics ?? []
       const params = new URLSearchParams()
       if (topics.length > 0) params.set('topics', topics.join(','))
@@ -59,9 +60,11 @@ export const renderer = (userConfig?: Partial<HonostarConfig>) => {
       }
       const runtimeDataJson = JSON.stringify(runtimeData).replace(/</g, '\\u003c')
       const csp = config.security.csp.replace('${nonce}', scriptNonce)
+      const title = pageHead?.title ?? config.document?.title ?? 'Honostar'
+      const lang = pageHead?.lang ?? config.document?.lang ?? 'en'
       return (
         <html
-          lang="en"
+          lang={lang}
           class={theme.initialClass}
           data-theme-default={theme.config.defaultTheme}
           data-theme-provider="honostar"
@@ -86,7 +89,8 @@ export const renderer = (userConfig?: Partial<HonostarConfig>) => {
               nonce={scriptNonce}
               dangerouslySetInnerHTML={{ __html: theme.bootstrapScript }}
             />
-            <title>Honostar</title>
+            <title>{title}</title>
+            {pageHead?.elements}
             <link rel="stylesheet" href={config.assets.css} />
             <link rel="modulepreload" href={config.assets.datastar} />
             <link rel="modulepreload" href={config.assets.runtime} />

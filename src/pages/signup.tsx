@@ -79,6 +79,9 @@ function SignupPage() {
 
 export default createPage({
   use: [requireGuest],
+  head: {
+    title: 'Sign Up • Honostar',
+  },
 
   loader() {
     return Promise.resolve({})

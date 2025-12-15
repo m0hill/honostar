@@ -12,11 +12,93 @@ type PageComponent<T extends Record<string, unknown> = {}> = (props: T) => JSX.E
 
 type PageTopics = string[] | ((c: Context<AppEnv>) => string[] | Promise<string[]>)
 
+export type PageHeadElements = JSX.Element | JSX.Element[] | null | undefined
+
+export type PageHead = {
+  /**
+   * Per-page document title.
+   * Prefer this over providing a <title> element in `elements`.
+   */
+  title?: string
+  /**
+   * Per-page document language (e.g. "en", "fr-CA").
+   */
+  lang?: string
+  /**
+   * Additional <head> elements (meta/link/script/style, etc).
+   */
+  elements?: PageHeadElements
+}
+
+export type PageHeadResolver<T extends Record<string, unknown> = {}> = (
+  props: T,
+  c: Context<AppEnv>
+) => PageHead | Promise<PageHead>
+
+export type PageHeadDefinition<T extends Record<string, unknown> = {}> =
+  | PageHead
+  | PageHeadResolver<T>
+  | Array<PageHead | PageHeadResolver<T>>
+
+export type ResolvedPageHead = {
+  title?: string
+  lang?: string
+  elements: JSX.Element[]
+}
+
+export async function resolvePageHead<T extends Record<string, unknown>>(
+  head: PageHeadDefinition<T>,
+  props: T,
+  c: Context<AppEnv>
+): Promise<ResolvedPageHead> {
+  const definitions = Array.isArray(head) ? head : [head]
+
+  let title: string | undefined
+  let lang: string | undefined
+  const elements: JSX.Element[] = []
+
+  for (const def of definitions) {
+    const resolved = typeof def === 'function' ? await def(props, c) : def
+    if (resolved.title !== undefined) title = resolved.title
+    if (resolved.lang !== undefined) lang = resolved.lang
+    if (resolved.elements) {
+      elements.push(...(Array.isArray(resolved.elements) ? resolved.elements : [resolved.elements]))
+    }
+  }
+
+  const result: ResolvedPageHead = { elements }
+  if (title !== undefined) result.title = title
+  if (lang !== undefined) result.lang = lang
+  return result
+}
+
+export type PageLayout<T extends Record<string, unknown> = {}> = (
+  c: Context<AppEnv>,
+  props: T,
+  children: JSX.Element
+) => JSX.Element
+
+/**
+ * Layouts are applied "outer -> inner" (i.e. `[Outer, Inner]` becomes `Outer(Inner(Page))`).
+ */
+export type PageLayoutDefinition<T extends Record<string, unknown> = {}> =
+  | PageLayout<T>
+  | PageLayout<T>[]
+
+export function resolvePageLayouts<T extends Record<string, unknown>>(
+  layouts: PageLayoutDefinition<T> | undefined
+): PageLayout<T>[] {
+  if (!layouts) return []
+  return Array.isArray(layouts) ? layouts : [layouts]
+}
+
 export interface PageDefinition<T extends Record<string, unknown> = {}> {
   use?: MiddlewareHandler<AppEnv>[]
   loader?: PageLoader<T>
   component: PageComponent<T>
   topics?: PageTopics
+  head?: PageHeadDefinition<T>
+  layout?: PageLayoutDefinition<T>
 }
 
 type ValidationHook = (

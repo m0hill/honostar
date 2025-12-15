@@ -566,6 +566,9 @@ function InspectorDemoPage() {
 }
 
 export default createPage({
+  head: {
+    title: 'Inspector Demo • Honostar',
+  },
   component: InspectorDemoPage,
 })
 

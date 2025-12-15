@@ -44,6 +44,9 @@ function ProfilePage({ user }: { user: User }) {
 
 export default createPage<{ user: import('@/types').User }>({
   use: [requireAuth],
+  head: ({ user }) => ({
+    title: `${user.username} • Honostar`,
+  }),
 
   async loader(c) {
     const user = c.var.user!
