@@ -42,10 +42,13 @@ export const renderer = (userConfig?: Partial<HonostarConfig>) => {
 
     // Sign and set topic allowlist cookie before rendering
     const topics = c.var.sseTopics ?? []
-    await signTopics(c, topics, config)
+    const topicsToken = await signTopics(c, topics, config)
     const base = jsxRenderer(({ children }) => {
       const topics = c.var.sseTopics ?? []
-      const topicsQuery = topics.length > 0 ? `?topics=${topics.join(',')}` : ''
+      const params = new URLSearchParams()
+      if (topics.length > 0) params.set('topics', topics.join(','))
+      if (topicsToken) params.set('topicsToken', topicsToken)
+      const topicsQuery = params.size > 0 ? `?${params.toString()}` : ''
       const runtimeData = {
         csrfToken: c.var.csrfToken ?? null,
         theme: theme.config,

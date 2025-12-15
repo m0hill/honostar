@@ -86,7 +86,10 @@ export type HonostarConfig = {
       /**
        * Bind topic tokens to client/tab ID
        * Prevents token reuse across tabs
-       * (default: true)
+       *
+       * Note: For normal MPA navigations, the server does not receive `X-Tab-ID`,
+       * so binding only works for Datastar/fetch-initiated requests.
+       * (default: false)
        */
       bindToClientId?: boolean
     }
@@ -160,7 +163,7 @@ export const DEFAULT_CONFIG: HonostarConfig = {
       cookieName: 'honostar_topics',
       maxAgeSec: 300,
       secretEnv: 'HONOSTAR_SIGNING_SECRET',
-      bindToClientId: true,
+      bindToClientId: false,
     },
   },
   sse: {

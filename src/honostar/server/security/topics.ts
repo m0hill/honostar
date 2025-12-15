@@ -20,6 +20,9 @@ import type { Context } from 'hono'
 import { getCookie, setCookie } from 'hono/cookie'
 import type { HonostarConfig } from '@/honostar/server/config'
 
+const TOPICS_TOKEN_QUERY_PARAM = 'topicsToken'
+const TOPICS_TOKEN_HEADER = 'X-Honostar-Topics'
+
 /**
  * Topic token payload structure (versioned for future compatibility)
  */
@@ -145,7 +148,7 @@ export async function signTopics(
   const topicsCfg = cfg.security.topics ?? {}
   const cookieName = topicsCfg.cookieName ?? 'honostar_topics'
   const maxAgeSec = topicsCfg.maxAgeSec ?? 300
-  const bindToClientId = topicsCfg.bindToClientId ?? true
+  const bindToClientId = topicsCfg.bindToClientId ?? false
 
   // Build payload
   const payload: TopicTokenPayload = {
@@ -212,12 +215,16 @@ export async function verifyTopics(
 
   const topicsCfg = cfg.security.topics ?? {}
   const cookieName = topicsCfg.cookieName ?? 'honostar_topics'
-  const bindToClientId = topicsCfg.bindToClientId ?? true
+  const bindToClientId = topicsCfg.bindToClientId ?? false
 
-  // Read token from cookie
-  const token = getCookie(c, cookieName)
+  // Prefer a per-request token (query/header) to avoid multi-tab cookie clobbering.
+  // Falls back to the signed cookie for backwards compatibility.
+  const token =
+    c.req.header(TOPICS_TOKEN_HEADER) ??
+    c.req.query(TOPICS_TOKEN_QUERY_PARAM) ??
+    getCookie(c, cookieName)
   if (!token) {
-    console.warn('[Topic Security] No topic token found in cookie')
+    console.warn('[Topic Security] No topic token found in request')
     return null
   }
 

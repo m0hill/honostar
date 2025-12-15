@@ -129,18 +129,20 @@ describe('Topic security integration', () => {
   test('verify returns null when clientId mismatch', async () => {
     const app = new Hono<AppEnv>()
     let cookieValue: string | null = null
+    const boundConfig = createConfig()
+    boundConfig.security.topics = { ...(boundConfig.security.topics ?? {}), bindToClientId: true }
 
     // Sign with client-A
     app.get('/sign', async c => {
       c.set('clientId', 'client-A')
-      await signTopics(c, ['test:topic'], config)
+      await signTopics(c, ['test:topic'], boundConfig)
       return c.text('signed')
     })
 
     // Verify with client-B
     app.get('/verify', async c => {
       c.set('clientId', 'client-B')
-      const allowed = await verifyTopics(c, ['test:topic'], config)
+      const allowed = await verifyTopics(c, ['test:topic'], boundConfig)
       return c.json({ allowed })
     })
 
@@ -153,6 +155,34 @@ describe('Topic security integration', () => {
 
     const body = await verifyRes.json()
     expect(body.allowed).toBeNull()
+  })
+
+  test('verify accepts token from query param (no cookie)', async () => {
+    const app = new Hono<AppEnv>()
+    let signedToken: string | null = null
+
+    app.use('*', async (c, next) => {
+      c.set('clientId', 'test-client-123')
+      await next()
+    })
+
+    app.get('/sign', async c => {
+      signedToken = await signTopics(c, ['issues:list', 'users:123'], config)
+      return c.text('signed')
+    })
+
+    app.get('/verify', async c => {
+      const allowed = await verifyTopics(c, ['issues:list'], config)
+      return c.json({ allowed })
+    })
+
+    const signRes = await app.request('/sign')
+    expect(signRes.status).toBe(200)
+    expect(signedToken).toBeTruthy()
+
+    const verifyRes = await app.request(`/verify?topicsToken=${encodeURIComponent(signedToken!)}`)
+    const body = await verifyRes.json()
+    expect(body.allowed).toEqual(['issues:list'])
   })
 
   test('allows all topics in development when no secret', async () => {
