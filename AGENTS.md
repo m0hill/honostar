@@ -25,8 +25,33 @@ Decide this **before** writing code:
 `reply()` inspects the incoming request. If it came from a Datastar action and the response can be expressed as a single built-in effect (`patch-elements`, `patch-elements-seq`, or `patch-signals`), Honostar returns an HTTP response (`text/html` or `application/json`) with the appropriate `datastar-*` headers so the client can morph the DOM without relying on the SSE bus. When the response contains multiple effects, custom effect handlers, or scripts, it automatically falls back to the prior SSE-based delivery through the request’s `X-Tab-ID`.
 
 Rules:
-1. Every shared state change must “fan out” through a **topic** defined in `src/lib/topics.ts`. Never inline topic strings.
-2. Use “fat patches”: re-render the entire region you’re updating so missed events can self-heal.
+1. Every shared state change must "fan out" through a **topic** defined in `src/lib/topics.ts`. Never inline topic strings.
+2. Use "fat patches": re-render the entire region you're updating so missed events can self-heal.
+
+**CQRS & Event-Driven Architecture**
+
+Honostar follows **Command Query Responsibility Segregation (CQRS)** for optimal real-time updates:
+
+- **Commands** (POST/PUT/PATCH/DELETE): Change data but don't directly update views
+  - Mutate the database and publish events to topics
+  - Use `c.var.fx.reply()` only for validation errors or confirmation signals
+  - Don't re-render and broadcast in the same handler—let queries handle that
+- **Queries** (GET + SSE): Read data and watch for changes via topics
+  - Subscribe to topics declared in `createPage({ topics: [...] })`
+  - Re-fetch canonical state and re-render entire regions when events arrive
+  - Each page typically has one long-lived SSE connection
+
+**Why CQRS?**
+- **Self-healing**: Queries always render the full current state, so missed events don't corrupt the UI
+- **Multiplayer by default**: All clients subscribe to the same topics and see the same canonical state
+- **Separation of concerns**: Commands focus on business logic; queries focus on presentation
+
+**Event-Driven Flow**
+1. User submits form → Command handler validates and mutates DB
+2. Command publishes event to topic: `c.var.fx.broadcast('issues:list', [...])`
+3. All connected clients listening to `issues:list` receive the event
+4. Queries re-fetch data and re-render their regions
+5. Clients self-heal even if they missed intermediate events
 
 ---
 
@@ -34,7 +59,30 @@ Rules:
 
 1. **Pages** (`createPage`) declare their topics. The renderer automatically subscribes via `<body data-init="@get('<sse-endpoint>?topics=…')">` (endpoint defaults to `/_/events`, configurable via `HonostarConfig`).
 2. Components that will be patched must expose a **stable root ID** (`id="issues-list"`).
-3. SSE responses should target those IDs and use default `outer` morphing unless you’re intentionally appending/prepending list items.
+3. SSE responses should target those IDs and use default `outer` morphing unless you're intentionally appending/prepending list items.
+
+**Initial Page Load Strategies**
+
+Choose one approach for your initial page render:
+
+**Option A: Stub + SSE Warmup**
+- Send minimal HTML stub on initial GET
+- Send full content immediately via SSE on `data-init`
+- **Pros**: Warms Brotli compression before first interaction
+- **Cons**: Slower time to first contentful paint
+
+**Option B: Full Page + SSE Subscription**
+- Send complete page on initial GET
+- Open SSE connection for subsequent updates
+- **Pros**: Faster initial render, works without JavaScript
+- **Cons**: SSE compression not pre-warmed
+
+**Option C: Full Page + Immediate SSE Patch (Recommended)**
+- Send complete page on initial GET
+- Immediately re-send same content via SSE on connection
+- **Pros**: No flash, warms compression, prevents stale state
+- **Cons**: Slight duplication (but compressed)
+- **Why**: Prevents race condition where events occur between page load and SSE connection
 
 ---
 
@@ -47,8 +95,24 @@ Rules:
 **Signals & Expressions**
 - `data-signals` overwrites values immediately. `data-signals__ifmissing` only seeds absent signals.
 - Keys defined via kebab case become camelCase in expressions (e.g., `data-signals:new-comment` ⇒ `$newComment`).
-- Never store secrets/tokens/passwords in signals. They’re user-editable.
+- Never store secrets/tokens/passwords in signals. They're user-editable.
 - `data-persist` is banned unless you add `include`/`exclude` filters to avoid persisting sensitive keys.
+
+**Signals Philosophy: Start with Zero**
+- Default to **zero signals** for most CRUD apps
+- Use signals only for:
+  - Ephemeral UI state (modal visibility, dropdowns, toggles)
+  - Form input binding when posting to backend (signals auto-include in requests)
+  - Client-side interactivity that doesn't need server persistence
+- Avoid signals for:
+  - Form validation (do server-side)
+  - Tracking dirty state (use server-side state)
+  - Data that should persist (use database + broadcast)
+
+**When Signals Make Sense**
+- You're building highly interactive visualizations (3D globes, charts, maps)
+- You need instant client-side feedback before server round-trip
+- You're binding form inputs and want automatic inclusion in @post requests
 
 **`data-computed`**
 - Pure only (math/formatting). Move side-effects to `data-effect`.
@@ -65,6 +129,33 @@ Rules:
 **Indicators & Requests**
 - If an element has `data-indicator:*` and `data-init`, order must be `data-indicator` first so the signal exists before the request starts.
 - Keep `openWhenHidden: true` for dashboards only—background tabs otherwise pause SSE to preserve battery.
+
+**Loading Indicators with CQRS**
+- For request/response: `data-indicator:_fetching` + reset on response works as expected
+- For CQRS + SSE: Indicator resets when *command completes*, not when *query renders*
+- Solution: Manually control loading state via signal patches:
+  ```typescript
+  // Command endpoint sets loading=true before processing
+  c.var.fx.reply([['patch-signals', { loading: true }]])
+  
+  // Query endpoint sets loading=false after re-rendering
+  c.var.fx.broadcast(topic, [
+    ['patch-elements', <UpdatedView />],
+    ['patch-signals', { loading: false }]
+  ])
+  ```
+
+**`openWhenHidden` Best Practices**
+- **GET requests**: Default (`false`) is correct—pause SSE on hidden tabs to save battery
+- **POST/PUT/PATCH/DELETE**: Consider `openWhenHidden: true` to prevent request cancellation
+  - User switches tabs mid-request → request cancels and restarts on return
+  - Critical for file uploads, slow database operations, or non-idempotent mutations
+- **Exception**: Dashboard pages with real-time data should use `openWhenHidden: true` for GET
+
+**Rationale**
+- GET requests are safe to retry (idempotent, cacheable per HTTP spec)
+- Mutation requests may cause duplicate processing if interrupted and retried
+- Browser doesn't reload POST pages without confirmation; Datastar should follow suit
 
 ---
 
@@ -559,7 +650,44 @@ data-on:honostar-theme-change__window="renderChart(evt.detail.resolved)"
 
 ---
 
-## 14. Pub/Sub Bus & Multi-Instance Scaling
+## 14. Performance: Brotli Streaming Compression
+
+**Why Brotli Matters**
+- Brotli compresses the **entire SSE stream**, not individual messages
+- Achieves 50-400x compression over long-lived connections (typical: 26MB → 190KB over 1-2 minutes)
+- Tunable context window (increase from default 32kB to 64kB+ for better compression)
+- Requires HTTP/2 or HTTP/3 (avoids 6-connection limit of HTTP/1.1)
+
+**How It Works**
+- Brotli maintains a shared context window between server and client
+- As the stream continues, compression ratio improves due to forward/backward referencing
+- Repeated HTML structures (common in fat patches) compress extremely well
+- Each subsequent patch leverages patterns from previous patches in the stream
+
+**Configuration**
+- Ensure your server supports Brotli compression (`Accept-Encoding: br` headers)
+- Configure larger context windows on your reverse proxy/CDN (128kB-256kB recommended)
+- Use HTTP/2 or HTTP/3 to allow multiple concurrent SSE connections
+- Monitor compression ratios in production (should see >100x on long-lived connections)
+
+**Comparison with gzip**
+- gzip can't look ahead effectively and has limited look-back
+- Non-adjustable 32kB context window
+- Not built with streaming support in mind
+- Brotli compresses 2-6x better than gzip over streams
+
+**Real-World Stats**
+- Stream duration: 1-2 minutes typical for active sessions
+- Compression ratios: 100-400x on highly structured HTML
+- Network savings: 99%+ reduction in bytes transferred
+- CPU impact: Minimal on modern servers
+
+**References**
+- [Why You Should Use Brotli SSE](https://andersmurphy.com/2025/04/15/why-you-should-use-brotli-sse.html)
+
+---
+
+## 15. Pub/Sub Bus & Multi-Instance Scaling
 
 **Bus Abstraction**
 - Honostar uses a `PubSubBus` interface to decouple SSE distribution from implementation.
@@ -613,7 +741,42 @@ bus.toAll(msg) // Broadcast to all connected clients
 
 ---
 
-## 15. Type-Safe Routes
+## 16. URL Design Philosophy
+
+**URLs Identify Resources, Not State**
+- Use URLs for **resource identification**, not for storing UI state
+- Store user-specific state in:
+  - **Backend**: Database, session storage (keyed by cookie)
+  - **Client**: Signals (ephemeral, not persisted)
+- Path parameters enforce hierarchy; prefer query parameters for flexibility
+- Never store secrets or sensitive data in URLs
+
+**Resource vs State**
+- A URL points to a "game" (resource); state represents your position within that game
+- Refreshing (F5) returns you to the resource's current state (as stored server-side)
+- Query params can identify resource variants, but shouldn't encode complex UI state
+
+**Examples**
+- ✅ Good: `/products` (resource) + backend session stores filter preferences
+- ✅ Good: `/products?category=electronics` (resource variant)
+- ✅ Good: `/product/12` (specific resource identification)
+- ❌ Bad: `/products?filters={"price":{"min":20}}` (encoding state in URL)
+- ❌ Bad: `/products?color=red` if color is meant to be ephemeral UI state (use signals instead)
+
+**State Persistence**
+- **Stateless pages**: No backend storage; refresh starts fresh
+- **Stateful pages**: Backend stores user state (keyed by session cookie)
+- **Shared state**: All users see the same state (multiplayer default)
+- **User-specific state**: Backend differentiates by session/user ID
+
+**Query Parameters**
+- Use for resource identification and cache keys, not state containers
+- Queries can be cache-friendly: `GET /products?category=electronics` can be cached at proxy level
+- Avoid dumping complex state into query strings; prefer server-side session storage
+
+---
+
+## 17. Type-Safe Routes
 
 **Route Definition**
 - Routes are auto-generated from `src/pages/` file structure.
@@ -659,7 +822,7 @@ return c.redirect(routes.issues.id.href({ id: created.id }))
 
 ---
 
-## 16. Workflow Checklist
+## 18. Workflow Checklist
 
 Before opening a PR, confirm:
 
@@ -685,7 +848,7 @@ Before opening a PR, confirm:
 
 ---
 
-## 17. Quick Start for New Features
+## 19. Quick Start for New Features
 
 1. **Model shared vs tab-specific** state to determine reply/broadcast.
 2. **Add/extend topic** in `src/lib/topics.ts`.

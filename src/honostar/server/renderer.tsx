@@ -1,4 +1,5 @@
 import type { JSX } from 'hono/jsx/jsx-runtime'
+import { renderToString } from 'hono/jsx/dom/server'
 import { jsxRenderer } from 'hono/jsx-renderer'
 import { resolveThemeProvider } from '@/honostar/common/theme'
 import type { HonostarConfig } from '@/honostar/server/config'
@@ -8,12 +9,6 @@ import { signTopics } from '@/honostar/server/security/topics'
 
 function stripDoctype(html: string): string {
   return html.replace(/^\s*<!DOCTYPE html>\s*/i, '')
-}
-
-function extractBodyInner(html: string): string {
-  const m = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i)
-  if (m && m[1]) return m[1].trim()
-  return html.trim()
 }
 
 function generateNonce(): string {
@@ -171,9 +166,7 @@ export const renderer = (userConfig?: Partial<HonostarConfig>) => {
         return stripDoctype(html)
       })
       c.set('renderFragmentToString', async (node: JSX.Element) => {
-        const res = await c.render(node)
-        const html = await res.text()
-        return extractBodyInner(stripDoctype(html))
+        return renderToString(node)
       })
       await next()
     })
