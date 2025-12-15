@@ -1,9 +1,11 @@
+import IssuesList from '@/components/IssuesList'
 import { ModeToggle } from '@/components/ModeToggle'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { labels } from '@/db/schema'
 import { createPage } from '@/honostar/server'
+import { topics } from '@/lib/topics'
 import { routes } from '@/routes'
 import type { IssueWithAuthor, Label, User } from '@/types'
 
@@ -96,54 +98,14 @@ function IndexPage({
           </div>
           {user && <Button data-on:click="@get('/issues/new')">Create Issue</Button>}
         </div>
-        <Card id="issues-list" class="gap-0 py-0">
-          <ul class="divide-y divide-border">
-            {issues.length > 0 ? (
-              issues.map(issue => (
-                <li key={issue.id}>
-                  <a
-                    href={routes.issues.show.href({ id: String(issue.id) })}
-                    class="block p-4 hover:bg-accent/50 transition-colors"
-                  >
-                    <div class="flex items-center space-x-4">
-                      <div class="text-primary">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          class="h-6 w-6"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                          />
-                        </svg>
-                      </div>
-                      <div>
-                        <p class="font-semibold text-lg">{issue.title}</p>
-                        <p class="text-sm text-muted-foreground">
-                          #{issue.id} opened by {issue.author.username}
-                        </p>
-                      </div>
-                    </div>
-                  </a>
-                </li>
-              ))
-            ) : (
-              <li class="p-4 text-center text-muted-foreground">No issues found.</li>
-            )}
-          </ul>
-        </Card>
+        <IssuesList issues={issues} />
       </div>
     </div>
   )
 }
 
 export default createPage({
-  topics: ['issues:list', 'labels:list'],
+  topics: [topics.issues.list(), topics.labels.list()],
 
   async loader(c) {
     const user = c.var.user

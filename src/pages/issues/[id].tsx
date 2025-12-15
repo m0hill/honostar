@@ -37,7 +37,7 @@ function CommentForm({ issueId, user }: { issueId: number; user: User | null }) 
   return (
     <form
       class="mt-6"
-      data-on:submit__prevent={`$commentError = ''; @post('${routes.issues.comments.href({ id: String(issueId) })}');
+      data-on:submit__prevent={`$commentError = ''; @post('${routes.issues.comments.href({ id: String(issueId) })}', {openWhenHidden: true});
          $comment = ''`}
       data-signals={`{ "comment": "", "commentError": "" }`}
     >

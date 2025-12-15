@@ -8,8 +8,11 @@ import type { SQL } from 'drizzle-orm'
 import type { SQLiteColumn } from 'drizzle-orm/sqlite-core'
 import { CommentsSection } from '@/components/CommentsSection'
 import IssuesList from '@/components/IssuesList'
+import LabelsSection from '@/components/LabelsSection'
 import type { comments as commentsTable, issues as issuesTable } from '@/db/schema'
+import { labels as labelsTable } from '@/db/schema'
 import type { EffectHandler } from '@/honostar/server'
+import { topics } from '@/lib/topics'
 import type { Issue } from '@/types'
 
 // Drizzle ORM query builder types for proper type safety
@@ -90,8 +93,8 @@ export const issueCreatedSuccess: EffectHandler<[issue: Issue]> = async (c, issu
   })
 
   // Broadcast updated list to all viewers on the issues:list topic
-  await c.var.fx.fx('issues:list', [
-    ['patch-elements', <IssuesList issues={allIssues} />, { selector: '#issues-list' }],
+  await c.var.fx.broadcast(topics.issues.list(), [
+    ['patch-elements', <IssuesList issues={allIssues} />],
   ])
 
   // Reply to the creator with success feedback
@@ -138,18 +141,31 @@ export const commentCreatedSuccess: EffectHandler<[issueId: number, commentCount
   })
 
   // Broadcast to all viewers on this issue's comments topic
-  const topics = await import('@/lib/topics')
-  await c.var.fx.broadcast(topics.topics.issue(issueId).comments(), [
-    [
-      'patch-elements',
-      <CommentsSection comments={updatedComments} />,
-      { selector: '#comments-section' },
-    ],
-    ['patch-signals', { commentError: '', comment: '' }],
+  await c.var.fx.broadcast(topics.issue(issueId).comments(), [
+    ['patch-elements', <CommentsSection comments={updatedComments} />],
   ])
 
-  // Show success toast to commenter
-  await c.var.fx.reply([['toast:show', `Comment posted! (${commentCount} total)`, 'success']])
+  // Tab-scoped feedback for the commenter
+  await c.var.fx.reply([
+    ['patch-signals', { commentError: '', comment: '' }],
+    ['toast:show', `Comment posted! (${commentCount} total)`, 'success'],
+  ])
+}
+
+// ============================================================================
+// Label Effects
+// ============================================================================
+
+export const labelCreatedSuccess: EffectHandler<[labelName: string]> = async (c, labelName) => {
+  const allLabels = await c.var.db.select().from(labelsTable)
+
+  // Broadcast updated list to all viewers on the labels:list topic
+  await c.var.fx.broadcast(topics.labels.list(), [
+    ['patch-elements', <LabelsSection labels={allLabels} />],
+  ])
+
+  // Reply to the creator with success feedback
+  await c.var.fx.reply([['toast:show', `Label "${labelName}" created successfully!`, 'success']])
 }
 
 // ============================================================================
@@ -165,4 +181,5 @@ export const customEffects = {
   // Domain-specific issue effects
   'issue:created-success': issueCreatedSuccess,
   'comment:created-success': commentCreatedSuccess,
+  'label:created-success': labelCreatedSuccess,
 }

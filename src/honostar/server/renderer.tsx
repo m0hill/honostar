@@ -1,5 +1,5 @@
-import type { JSX } from 'hono/jsx/jsx-runtime'
 import { renderToString } from 'hono/jsx/dom/server'
+import type { JSX } from 'hono/jsx/jsx-runtime'
 import { jsxRenderer } from 'hono/jsx-renderer'
 import { resolveThemeProvider } from '@/honostar/common/theme'
 import type { HonostarConfig } from '@/honostar/server/config'

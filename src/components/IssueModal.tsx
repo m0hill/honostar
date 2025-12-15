@@ -62,7 +62,7 @@ export default function IssueModal({ labels }: { labels: Label[] }) {
 
           <form
             class="space-y-4"
-            data-on:submit__prevent="$createIssueModal.error = ''; @post('/issues')"
+            data-on:submit__prevent="$createIssueModal.error = ''; @post('/issues', {openWhenHidden: true})"
             data-indicator="creating"
           >
             {/* Error message display */}

@@ -1,5 +1,4 @@
 import { z } from 'zod'
-import LabelsSection from '@/components/LabelsSection'
 import { labels } from '@/db/schema'
 import { createHandler } from '@/honostar/server'
 
@@ -13,7 +12,7 @@ export const POST = createHandler({
   schema: labelSchema,
   hook: (result, c) => {
     const error = result.error[0]?.message || 'Invalid input'
-    return c.var.fx.reply([['patch-signals', { error }]], { status: 400 })
+    return c.var.fx.reply([['toast:show', error, 'error']], { status: 400 })
   },
 
   async handler(c, data) {
@@ -27,28 +26,14 @@ export const POST = createHandler({
       if (!already) {
         await c.var.db.insert(labels).values({ name: newLabel, color: '#999999' })
 
-        const currentLabels = await c.var.db.select().from(labels)
-
-        await c.var.fx.broadcast('labels:list', [
-          [
-            'patch-elements',
-            <LabelsSection labels={currentLabels} />,
-            { selector: '#labels-section' },
-          ],
-        ])
-
-        return c.var.fx.reply(
-          [['toast:show', `Label "${newLabel}" created successfully!`, 'success']],
-          { status: 201 }
-        )
+        // Use custom effect to handle broadcast + success toast
+        return c.var.fx.reply([['label:created-success', newLabel]], { status: 201 })
       } else {
         return c.var.fx.reply([['toast:show', 'Label already exists', 'error']], { status: 409 })
       }
     } catch (e: unknown) {
       console.error('Labels POST error:', e)
-      return c.var.fx.reply([['patch-signals', { error: 'Failed to create label' }]], {
-        status: 500,
-      })
+      return c.var.fx.reply([['toast:show', 'Failed to create label', 'error']], { status: 500 })
     }
   },
 })

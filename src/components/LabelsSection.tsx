@@ -23,7 +23,7 @@ export default function LabelsSection({ labels }: { labels: Label[] }) {
         <Button
           type="button"
           variant="secondary"
-          data-on:click="$issue.newLabel && @post('/labels'); $issue.newLabel = ''"
+          data-on:click="$issue.newLabel && @post('/labels', {openWhenHidden: true}); $issue.newLabel = ''"
         >
           Add
         </Button>
