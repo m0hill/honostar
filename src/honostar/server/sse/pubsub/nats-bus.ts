@@ -37,6 +37,11 @@ function isSsePayload(value: unknown): value is SSEPayload {
       const script = (value as { script?: unknown }).script
       return typeof script === 'string'
     }
+    case 'honostar-event': {
+      const name = (value as { name?: unknown }).name
+      const payload = (value as { payload?: unknown }).payload
+      return typeof name === 'string' && typeof payload === 'string'
+    }
     case 'close':
       return true
     default:

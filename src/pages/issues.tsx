@@ -77,9 +77,9 @@ export const POST = createHandler({
         .values(labelIds.map(labelId => ({ issueId: created.id, labelId })))
     }
 
-    // Use custom effect instead of manual composition!
-    // This single effect handles:
-    // - Broadcasting updated list to all viewers
+    // CQRS: command publishes an event; queries re-render subscribed regions.
+    // This custom effect handles:
+    // - Publishing the domain event to the shared topic
     // - Showing success toast to creator
     // - Closing modal and resetting form
     return c.var.fx.reply([['issue:created-success', created]], { status: 201 })

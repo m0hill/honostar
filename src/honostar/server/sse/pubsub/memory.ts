@@ -8,6 +8,7 @@ export type SSEPayload =
   | { event: 'datastar-patch-elements'; html: string; options: PatchElementsOptions }
   | { event: 'datastar-patch-signals'; signals: string; options: PatchSignalsOptions }
   | { event: 'execute-script'; script: string; options?: ExecuteScriptOptions }
+  | { event: 'honostar-event'; name: string; payload: string }
   | { event: 'close' }
 
 export type Sink = (msg: SSEPayload) => void

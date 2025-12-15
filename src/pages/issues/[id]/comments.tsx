@@ -41,7 +41,7 @@ export const POST = createHandler({
       ) => eq(comments.issueId, issueId),
     })
 
-    // Use custom effect! Handles broadcasting + success toast
+    // CQRS: publish event for query re-render + success toast
     return c.var.fx.reply([['comment:created-success', issueId, commentCount.length]], {
       status: 201,
     })

@@ -26,7 +26,7 @@ export const POST = createHandler({
       if (!already) {
         await c.var.db.insert(labels).values({ name: newLabel, color: '#999999' })
 
-        // Use custom effect to handle broadcast + success toast
+        // CQRS: publish event for queries; show success toast to creator.
         return c.var.fx.reply([['label:created-success', newLabel]], { status: 201 })
       } else {
         return c.var.fx.reply([['toast:show', 'Label already exists', 'error']], { status: 409 })

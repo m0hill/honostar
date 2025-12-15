@@ -23,7 +23,7 @@ export type { EffectHandler } from './sse/effect-registry'
 // SSE
 export { createSseEndpoint } from './sse/endpoint'
 export type { FxResponse } from './sse/middleware'
-export { registerEffect, registerEffects } from './sse/middleware'
+export { registerEffect, registerEffects, registerQueries, registerQuery } from './sse/middleware'
 // Bus Implementations
 export type { PubSubBus } from './sse/pubsub/memory'
 export { MemoryBus } from './sse/pubsub/memory'
@@ -36,4 +36,5 @@ export type {
 export { NatsBus } from './sse/pubsub/nats-bus'
 export type { RedisBusOptions, RedisClient } from './sse/pubsub/redis-bus'
 export { RedisBus } from './sse/pubsub/redis-bus'
+export type { QueryHandler, QueryRegistration } from './sse/queries'
 export { fxResponder } from './sse/responder'

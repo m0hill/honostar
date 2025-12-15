@@ -12,6 +12,7 @@ import {
   initContext,
   mountRoutes,
   registerEffects,
+  registerQueries,
   renderer,
 } from '@/honostar/server'
 
@@ -32,6 +33,7 @@ import { createManifestRouteLoader } from '@/honostar/server/router/manifest-rou
 import { auth } from '@/middleware/auth'
 import { attachBus } from '@/middleware/bus'
 import { attachDb } from '@/middleware/db'
+import { customQueries } from '@/queries'
 import { routesManifest } from '@/routes.manifest'
 
 const app = new Hono<AppEnv>()
@@ -53,6 +55,7 @@ app.use('*', fxResponder)
 
 // Register custom effects (must be after fxResponder)
 app.use('*', registerEffects(customEffects))
+app.use('*', registerQueries(customQueries))
 
 app.use('*', attachDb)
 app.use('*', auth)

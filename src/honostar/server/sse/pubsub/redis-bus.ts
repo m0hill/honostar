@@ -1,14 +1,14 @@
 import type { PubSubBus, Sink, SSEPayload } from '@/honostar/server/sse/pubsub/memory'
 
 export interface RedisClient {
-  publish(...args: unknown[]): Promise<unknown>
-  subscribe(...args: unknown[]): Promise<unknown>
-  unsubscribe(...args: unknown[]): Promise<unknown>
-  on(event: string, listener: (...args: unknown[]) => void): unknown
+  publish(...args: any[]): Promise<any>
+  subscribe(...args: any[]): Promise<any>
+  unsubscribe(...args: any[]): Promise<any>
+  on(event: string, listener: (...args: any[]) => void): any
   duplicate?: () => RedisClient
-  connect?: () => Promise<unknown>
+  connect?: () => Promise<any>
   get?: (key: string) => Promise<string | null>
-  set?: (...args: unknown[]) => Promise<unknown>
+  set?: (...args: any[]) => Promise<any>
 }
 
 export type RedisBusOptions = {
@@ -34,6 +34,11 @@ function isSsePayload(value: unknown): value is SSEPayload {
     case 'execute-script': {
       const script = (value as { script?: unknown }).script
       return typeof script === 'string'
+    }
+    case 'honostar-event': {
+      const name = (value as { name?: unknown }).name
+      const payload = (value as { payload?: unknown }).payload
+      return typeof name === 'string' && typeof payload === 'string'
     }
     case 'close':
       return true

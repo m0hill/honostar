@@ -1,6 +1,8 @@
 import type { StatusCode } from 'hono/utils/http-status'
 import { factory } from '@/honostar/server/middleware'
 import type { EffectDefinition, EffectHandler } from '@/honostar/server/sse/effect-registry'
+import type { QueryHandler } from '@/honostar/server/sse/queries'
+import { TopicQueryRegistry } from '@/honostar/server/sse/queries'
 
 export type FxResponse = {
   fx: EffectDefinition[]
@@ -90,6 +92,41 @@ export function registerEffects(effects: Record<string, EffectHandler>) {
   return factory.createMiddleware(async (c, next) => {
     for (const [name, handler] of Object.entries(effects)) {
       c.var.fx.effectRegistry.register(name, handler)
+    }
+    await next()
+  })
+}
+
+/**
+ * Register a topic query handler (CQRS).
+ *
+ * Query handlers run on the SSE connection when a topic receives a domain event,
+ * and should return fat patches (built-in effects like patch-elements / patch-signals).
+ */
+export function registerQuery(topicOrPattern: string | RegExp, handler: QueryHandler) {
+  return factory.createMiddleware(async (c, next) => {
+    const queries = c.var.queries ?? new TopicQueryRegistry()
+    if (!c.var.queries) c.set('queries', queries)
+
+    if (typeof topicOrPattern === 'string') queries.register(topicOrPattern, handler)
+    else queries.register(topicOrPattern, handler)
+    await next()
+  })
+}
+
+/**
+ * Register multiple topic query handlers at once.
+ */
+export function registerQueries(
+  queries: Array<[topicOrPattern: string | RegExp, handler: QueryHandler]>
+) {
+  return factory.createMiddleware(async (c, next) => {
+    const registry = c.var.queries ?? new TopicQueryRegistry()
+    if (!c.var.queries) c.set('queries', registry)
+
+    for (const [topicOrPattern, handler] of queries) {
+      if (typeof topicOrPattern === 'string') registry.register(topicOrPattern, handler)
+      else registry.register(topicOrPattern, handler)
     }
     await next()
   })

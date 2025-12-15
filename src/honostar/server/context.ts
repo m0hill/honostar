@@ -11,6 +11,7 @@ export interface AppVariablesBase {
   renderFragmentToString: (jsx: JSX.Element) => Promise<string>
   sseTopics?: string[]
   fx: import('@/honostar/server/sse/responder').FxResponder
+  queries?: import('@/honostar/server/sse/queries').TopicQueryRegistry
   fxResponse?: FxResponse
   csrfToken?: string
   theme?: ThemeOptions

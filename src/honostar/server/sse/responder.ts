@@ -466,6 +466,20 @@ export class FxResponder {
       ...options,
     })
   }
+
+  /**
+   * Publish a domain event to one or more topics.
+   *
+   * Intended for CQRS: commands publish events, and queries re-render on the SSE connection.
+   * This does not directly patch any DOM.
+   */
+  public publish(topic: string | string[], name: string, payload?: Jsonifiable | null): void {
+    const topics = Array.isArray(topic) ? topic : [topic]
+    const encoded = JSON.stringify(payload ?? null)
+    for (const t of topics) {
+      this.c.var.bus.toTopic(t, { event: 'honostar-event', name, payload: encoded })
+    }
+  }
 }
 
 export const fxResponder = factory.createMiddleware(async (c, next) => {
