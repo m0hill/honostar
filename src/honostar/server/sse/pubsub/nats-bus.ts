@@ -62,6 +62,10 @@ export class NatsBus implements PubSubBus {
   private subjectSinks = new Map<string, Set<Sink>>()
   private sinkRefCount = new Map<Sink, number>()
   private subscriptions = new Map<string, NatsSubscription>()
+  private retainedTopics = new Map<
+    string,
+    Extract<SSEPayload, { event: 'datastar-patch-elements' }>
+  >()
 
   constructor(options: NatsBusOptions) {
     this.connection = options.connection
@@ -89,6 +93,7 @@ export class NatsBus implements PubSubBus {
 
   toTopic(topic: string, msg: SSEPayload) {
     const subject = this.subjectName('topic', topic)
+    this.maybeRetainTopic(topic, msg)
     this.publish(subject, msg)
   }
 
@@ -98,6 +103,19 @@ export class NatsBus implements PubSubBus {
 
   private subjectName(kind: 'client' | 'topic' | 'broadcast', id: string) {
     return `${this.subjectPrefix}.${kind}.${id}`
+  }
+
+  private canRetain(
+    msg: SSEPayload
+  ): msg is Extract<SSEPayload, { event: 'datastar-patch-elements' }> {
+    if (msg.event !== 'datastar-patch-elements') return false
+    const mode = msg.options?.mode ?? 'outer'
+    return mode === 'outer' || mode === 'inner' || mode === 'replace'
+  }
+
+  private maybeRetainTopic(topic: string, msg: SSEPayload) {
+    if (!this.canRetain(msg)) return
+    this.retainedTopics.set(topic, msg)
   }
 
   private registerSink(subject: string, sink: Sink) {
@@ -202,6 +220,12 @@ export class NatsBus implements PubSubBus {
     const parsed = safeJsonParse(payload)
     if (!parsed) return
 
+    const topicPrefix = `${this.subjectPrefix}.topic.`
+    if (subject.startsWith(topicPrefix)) {
+      const topic = subject.slice(topicPrefix.length)
+      this.maybeRetainTopic(topic, parsed)
+    }
+
     const sinks = this.subjectSinks.get(subject)
     if (!sinks || sinks.size === 0) return
     for (const sink of sinks) {
@@ -230,5 +254,9 @@ export class NatsBus implements PubSubBus {
         console.error('[NatsBus] Sink handler failed', err)
       }
     }
+  }
+
+  async getRetainedTopic(topic: string): Promise<SSEPayload | null> {
+    return this.retainedTopics.get(topic) ?? null
   }
 }

@@ -63,7 +63,24 @@ export const createSseEndpoint = (userConfig?: Partial<HonostarConfig>): Handler
         if (allowedTopics) {
           // Subscribe only to allowed topics
           for (const topic of allowedTopics) {
-            unsubscribes.push(bus.subscribeTopic(topic, handleMessage))
+            let hasLiveMessage = false
+            const sink = (msg: SSEPayload) => {
+              hasLiveMessage = true
+              handleMessage(msg)
+            }
+            unsubscribes.push(bus.subscribeTopic(topic, sink))
+
+            // Immediately self-heal by replaying the last retained fat patch for this topic.
+            // This prevents stale state after reconnects (sleep/offline/background) even when no new
+            // mutations occur after the client reconnects.
+            try {
+              const retained = await bus.getRetainedTopic?.(topic)
+              if (retained && !hasLiveMessage) {
+                handleMessage(retained)
+              }
+            } catch (err) {
+              console.error(`[SSE] Failed to replay retained topic patch for "${topic}"`, err)
+            }
           }
         } else {
           // Verification failed - log warning and skip topic subscriptions

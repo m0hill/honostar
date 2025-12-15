@@ -260,4 +260,29 @@ describe('NatsBus', () => {
     // Should not receive after all subscriptions are removed
     expect(received.length).toBe(0)
   })
+
+  test('retains last idempotent topic patch for SSE reconnect self-heal (best-effort)', async () => {
+    const { bus } = createNatsBus()
+    bus.toTopic('issues:list', patch('<div id="issues-list">A</div>'))
+    await tick()
+
+    const retained = await bus.getRetainedTopic?.('issues:list')
+    expect(retained).toBeTruthy()
+    expect(retained?.event).toBe('datastar-patch-elements')
+    if (retained?.event === 'datastar-patch-elements') {
+      expect(retained.html).toContain('issues-list')
+    }
+  })
+
+  test('does not retain order-dependent append patches', async () => {
+    const { bus } = createNatsBus()
+    bus.toTopic('chat', {
+      event: 'datastar-patch-elements',
+      html: '<li id="m1">hello</li>',
+      options: { mode: 'append', selector: '#chat' },
+    })
+    await tick()
+    const retained = await bus.getRetainedTopic?.('chat')
+    expect(retained).toBeNull()
+  })
 })

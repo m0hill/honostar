@@ -2,10 +2,13 @@ import { describe, expect, test } from 'bun:test'
 import type { PatchElementsOptions } from '@/honostar/common/types'
 import { MemoryBus, type SSEPayload } from '@/honostar/server/sse/pubsub/memory'
 
-const patch = (html: string): SSEPayload => ({
+const patch = (
+  html: string,
+  options: PatchElementsOptions = {} as PatchElementsOptions
+): SSEPayload => ({
   event: 'datastar-patch-elements',
   html,
-  options: {} as PatchElementsOptions,
+  options,
 })
 
 const isPatchElements = (
@@ -73,5 +76,23 @@ describe('MemoryBus', () => {
     bus.toAll(patch('<span>ping</span>'))
     expect(clientHits).toBe(1)
     expect(topicHits).toBe(1)
+  })
+
+  test('retains last idempotent topic patch for SSE reconnect self-heal', async () => {
+    const bus = new MemoryBus()
+    bus.toTopic('issues:list', patch('<div id="issues-list">A</div>'))
+    const retained = await bus.getRetainedTopic?.('issues:list')
+    expect(retained).toBeTruthy()
+    expect(retained?.event).toBe('datastar-patch-elements')
+    if (retained?.event === 'datastar-patch-elements') {
+      expect(retained.html).toContain('issues-list')
+    }
+  })
+
+  test('does not retain order-dependent append patches', async () => {
+    const bus = new MemoryBus()
+    bus.toTopic('chat', patch('<li id="m1">hello</li>', { mode: 'append', selector: '#chat' }))
+    const retained = await bus.getRetainedTopic?.('chat')
+    expect(retained).toBeNull()
   })
 })

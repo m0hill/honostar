@@ -18,14 +18,16 @@ const isPatchElements = (
 class StubRedis extends EventEmitter implements RedisClient {
   private dispatcher: EventEmitter
   private subscriptions = new Map<string, (...args: unknown[]) => void>()
+  private kv: Map<string, string>
 
-  constructor(dispatcher?: EventEmitter) {
+  constructor(dispatcher?: EventEmitter, kv?: Map<string, string>) {
     super()
     this.dispatcher = dispatcher ?? new EventEmitter()
+    this.kv = kv ?? new Map()
   }
 
   duplicate(): RedisClient {
-    return new StubRedis(this.dispatcher)
+    return new StubRedis(this.dispatcher, this.kv)
   }
 
   async publish(...args: unknown[]) {
@@ -62,6 +64,17 @@ class StubRedis extends EventEmitter implements RedisClient {
 
   async connect() {
     return this
+  }
+
+  async get(key: string) {
+    return this.kv.get(key) ?? null
+  }
+
+  async set(...args: unknown[]) {
+    const key = typeof args[0] === 'string' ? args[0] : ''
+    const value = typeof args[1] === 'string' ? args[1] : ''
+    this.kv.set(key, value)
+    return 'OK'
   }
 }
 
@@ -136,5 +149,30 @@ describe('RedisBus', () => {
 
     expect(clientHits).toBe(1)
     expect(topicHits).toBe(1)
+  })
+
+  test('retains last idempotent topic patch for SSE reconnect self-heal', async () => {
+    const { bus } = createRedisBus()
+    bus.toTopic('issues:list', patch('<div id="issues-list">A</div>'))
+    await tick()
+
+    const retained = await bus.getRetainedTopic?.('issues:list')
+    expect(retained).toBeTruthy()
+    expect(retained?.event).toBe('datastar-patch-elements')
+    if (retained?.event === 'datastar-patch-elements') {
+      expect(retained.html).toContain('issues-list')
+    }
+  })
+
+  test('does not retain order-dependent append patches', async () => {
+    const { bus } = createRedisBus()
+    bus.toTopic('chat', {
+      event: 'datastar-patch-elements',
+      html: '<li id="m1">hello</li>',
+      options: { mode: 'append', selector: '#chat' },
+    })
+    await tick()
+    const retained = await bus.getRetainedTopic?.('chat')
+    expect(retained).toBeNull()
   })
 })

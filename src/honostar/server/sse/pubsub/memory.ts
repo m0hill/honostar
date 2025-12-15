@@ -18,6 +18,14 @@ export interface PubSubBus {
   toClient(clientId: string, msg: SSEPayload): void
   toTopic(topic: string, msg: SSEPayload): void
   toAll(msg: SSEPayload): void
+  /**
+   * Return a retained "last known good" patch for a topic.
+   * Used by the SSE endpoint to immediately self-heal state on (re)connect.
+   *
+   * Implementations SHOULD only retain idempotent "fat patches" (e.g. patch-elements outer/inner/replace),
+   * and MUST NOT retain side-effectful events like execute-script.
+   */
+  getRetainedTopic?: (topic: string) => Promise<SSEPayload | null>
 }
 
 class Channel {
@@ -37,9 +45,24 @@ class Channel {
   }
 }
 
+function canRetain(
+  msg: SSEPayload
+): msg is Extract<SSEPayload, { event: 'datastar-patch-elements' }> {
+  if (msg.event !== 'datastar-patch-elements') return false
+  const mode = msg.options?.mode ?? 'outer'
+  // Only retain idempotent modes; append/prepend/before/after are order-dependent.
+  return mode === 'outer' || mode === 'inner' || mode === 'replace'
+}
+
 export class MemoryBus implements PubSubBus {
   private clients = new Map<string, Channel>()
   private topics = new Map<string, Channel>()
+  private retainedTopics = new Map<
+    string,
+    Extract<SSEPayload, { event: 'datastar-patch-elements' }>
+  >()
+  private retainedOrder: string[] = []
+  private maxRetainedTopics = 1000
 
   private getClientChannel(clientId: string) {
     let c = this.clients.get(clientId)
@@ -92,11 +115,30 @@ export class MemoryBus implements PubSubBus {
   }
 
   toTopic(topic: string, msg: SSEPayload) {
+    if (canRetain(msg)) {
+      const existingIndex = this.retainedOrder.indexOf(topic)
+      if (existingIndex !== -1) {
+        this.retainedOrder.splice(existingIndex, 1)
+      }
+      this.retainedOrder.push(topic)
+      this.retainedTopics.set(topic, msg)
+      // Simple FIFO pruning to bound memory usage.
+      while (this.retainedOrder.length > this.maxRetainedTopics) {
+        const oldest = this.retainedOrder.shift()
+        if (oldest) {
+          this.retainedTopics.delete(oldest)
+        }
+      }
+    }
     this.getTopicChannel(topic).publish(msg)
   }
 
   toAll(msg: SSEPayload) {
     for (const ch of this.clients.values()) ch.publish(msg)
     for (const ch of this.topics.values()) ch.publish(msg)
+  }
+
+  async getRetainedTopic(topic: string): Promise<SSEPayload | null> {
+    return this.retainedTopics.get(topic) ?? null
   }
 }

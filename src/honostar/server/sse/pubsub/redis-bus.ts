@@ -7,12 +7,19 @@ export interface RedisClient {
   on(event: string, listener: (...args: unknown[]) => void): unknown
   duplicate?: () => RedisClient
   connect?: () => Promise<unknown>
+  get?: (key: string) => Promise<string | null>
+  set?: (...args: unknown[]) => Promise<unknown>
 }
 
 export type RedisBusOptions = {
   publisher: RedisClient
   subscriber?: RedisClient
   channelPrefix?: string
+  /**
+   * TTL (in seconds) for retained topic patches stored in Redis.
+   * Default: 3600 (1 hour).
+   */
+  retainTtlSec?: number
 }
 
 function isSsePayload(value: unknown): value is SSEPayload {
@@ -51,8 +58,10 @@ export class RedisBus implements PubSubBus {
   private subscriber: RedisClient
   private channelPrefix: string
   private broadcastChannel: string
+  private retainTtlSec: number
   private channelSinks = new Map<string, Set<Sink>>()
   private sinkRefCount = new Map<Sink, number>()
+  private retainedTopicCache = new Map<string, SSEPayload>()
 
   constructor(options: RedisBusOptions) {
     this.publisher = options.publisher
@@ -63,6 +72,7 @@ export class RedisBus implements PubSubBus {
     this.subscriber = subscriber
     this.channelPrefix = options.channelPrefix ?? 'honostar:bus'
     this.broadcastChannel = this.channelName('broadcast', 'all')
+    this.retainTtlSec = options.retainTtlSec ?? 3600
 
     this.subscriber.on('message', (...args: unknown[]) => {
       const channel = typeof args[0] === 'string' ? args[0] : null
@@ -94,6 +104,7 @@ export class RedisBus implements PubSubBus {
 
   toTopic(topic: string, msg: SSEPayload) {
     const channel = this.channelName('topic', topic)
+    this.maybeRetainTopic(topic, msg)
     this.publish(channel, msg)
   }
 
@@ -103,6 +114,35 @@ export class RedisBus implements PubSubBus {
 
   private channelName(kind: 'client' | 'topic' | 'broadcast', id: string) {
     return `${this.channelPrefix}:${kind}:${id}`
+  }
+
+  private retainKey(kind: 'topic', id: string) {
+    return `${this.channelPrefix}:retain:${kind}:${id}`
+  }
+
+  private canRetain(
+    msg: SSEPayload
+  ): msg is Extract<SSEPayload, { event: 'datastar-patch-elements' }> {
+    if (msg.event !== 'datastar-patch-elements') return false
+    const mode = msg.options?.mode ?? 'outer'
+    return mode === 'outer' || mode === 'inner' || mode === 'replace'
+  }
+
+  private maybeRetainTopic(topic: string, msg: SSEPayload) {
+    if (!this.canRetain(msg)) return
+
+    // Best-effort in-process cache.
+    this.retainedTopicCache.set(topic, msg)
+
+    // Best-effort cross-instance retention in Redis, when supported by the client.
+    const key = this.retainKey('topic', topic)
+    const payload = JSON.stringify(msg)
+    if (typeof this.publisher.set === 'function') {
+      // ioredis supports: set(key, value, 'EX', seconds)
+      this.publisher
+        .set(key, payload, 'EX', this.retainTtlSec)
+        .catch(err => console.error(`[RedisBus] Failed to retain topic ${topic}`, err))
+    }
   }
 
   private registerSink(channel: string, sink: Sink) {
@@ -160,6 +200,15 @@ export class RedisBus implements PubSubBus {
     const parsed = safeJsonParse(payload)
     if (!parsed) return
 
+    // Update in-process cache for retained topic patches.
+    const topicPrefix = `${this.channelPrefix}:topic:`
+    if (channel.startsWith(topicPrefix)) {
+      const topic = channel.slice(topicPrefix.length)
+      if (this.canRetain(parsed)) {
+        this.retainedTopicCache.set(topic, parsed)
+      }
+    }
+
     if (channel === this.broadcastChannel) {
       this.emitToAll(parsed)
       return
@@ -184,5 +233,20 @@ export class RedisBus implements PubSubBus {
         console.error('[RedisBus] Sink handler failed', err)
       }
     }
+  }
+
+  async getRetainedTopic(topic: string): Promise<SSEPayload | null> {
+    // Prefer Redis as the source of truth when available (cross-instance).
+    const key = this.retainKey('topic', topic)
+    if (typeof this.publisher.get === 'function') {
+      try {
+        const payload = await this.publisher.get(key)
+        if (!payload) return null
+        return safeJsonParse(payload)
+      } catch (err) {
+        console.error(`[RedisBus] Failed to read retained topic ${topic}`, err)
+      }
+    }
+    return this.retainedTopicCache.get(topic) ?? null
   }
 }
