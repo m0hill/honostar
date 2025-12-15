@@ -39,6 +39,7 @@ function CommentForm({ issueId, user }: { issueId: number; user: User | null }) 
       class="mt-6"
       data-on:submit__prevent={`$commentError = ''; @post('${routes.issues.comments.href({ id: String(issueId) })}', {openWhenHidden: true});
          $comment = ''`}
+      data-indicator="commenting"
       data-signals={`{ "comment": "", "commentError": "" }`}
     >
       {/* Error message display */}
@@ -53,7 +54,14 @@ function CommentForm({ issueId, user }: { issueId: number; user: User | null }) 
 
       <Textarea data-bind="comment" placeholder="Leave a comment..." rows={4} required />
       <div class="flex justify-end mt-2">
-        <Button type="submit">Comment</Button>
+        <Button type="submit" data-attr:disabled="$commenting">
+          <span data-show="!$commenting" style="display:none">
+            Comment
+          </span>
+          <span data-show="$commenting" style="display:none">
+            Commenting...
+          </span>
+        </Button>
       </div>
     </form>
   )
@@ -77,7 +85,9 @@ function IssueDetailPage({ issue, user }: { issue: IssueWithDetails; user: User 
             data-signals={JSON.stringify({ copied: false })}
             data-on:click={`@clipboard('${issueUrl}'); $copied = true; setTimeout(() => $copied = false, 2000)`}
           >
-            <span data-show="!$copied">Share Link</span>
+            <span data-show="!$copied" style="display:none">
+              Share Link
+            </span>
             <span data-show="$copied" style="display:none">
               ✓ Copied!
             </span>

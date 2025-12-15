@@ -26,7 +26,8 @@ function LoginPage() {
 
           <form
             class="space-y-4"
-            data-on:submit__prevent="@post('/auth/login')"
+            data-on:submit__prevent={`@post('${routes.auth.action.href({ action: 'login' })}', {openWhenHidden: true})`}
+            data-indicator="loggingIn"
             data-signals__ifmissing='{"error":"","form":{"username":"","password":""}}'
           >
             <div class="space-y-2">
@@ -51,8 +52,13 @@ function LoginPage() {
               />
             </div>
 
-            <Button type="submit" class="w-full">
-              Login
+            <Button type="submit" class="w-full" data-attr:disabled="$loggingIn">
+              <span data-show="!$loggingIn" style="display:none">
+                Login
+              </span>
+              <span data-show="$loggingIn" style="display:none">
+                Logging in...
+              </span>
             </Button>
           </form>
 

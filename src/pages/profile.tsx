@@ -17,9 +17,23 @@ function ProfilePage({ user }: { user: User }) {
           <Button asChild variant="default" size="lg" class="w-full">
             <a href={routes.home.href()}>View Issues</a>
           </Button>
-          <form data-on:submit__prevent="@post('/logout')">
-            <Button type="submit" variant="destructive" size="lg" class="w-full">
-              Logout
+          <form
+            data-on:submit__prevent={`@post('${routes.auth.logout.href()}', {openWhenHidden: true})`}
+            data-indicator="loggingOut"
+          >
+            <Button
+              type="submit"
+              variant="destructive"
+              size="lg"
+              class="w-full"
+              data-attr:disabled="$loggingOut"
+            >
+              <span data-show="!$loggingOut" style="display:none">
+                Logout
+              </span>
+              <span data-show="$loggingOut" style="display:none">
+                Logging out...
+              </span>
             </Button>
           </form>
         </CardContent>

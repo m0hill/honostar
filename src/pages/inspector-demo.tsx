@@ -359,7 +359,7 @@ function InspectorDemoPage() {
             <CardContent>
               <form
                 data-signals="{email: '', submitStatus: ''}"
-                data-on:submit__prevent={`$submitStatus = 'Submitting...'; @post('/inspector-demo', {contentType: 'json'})`}
+                data-on:submit__prevent={`$submitStatus = 'Submitting...'; @post('${routes.inspectorDemo.href()}', {contentType: 'json'})`}
                 class="space-y-4"
               >
                 <div class="space-y-2">

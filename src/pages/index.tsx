@@ -52,7 +52,7 @@ function IndexPage({
           )}
           <div class="pt-4 border-t">
             <Button asChild variant="outline" size="sm">
-              <a href="/inspector-demo">🔍 Inspector Demo (Test Signals)</a>
+              <a href={routes.inspectorDemo.href()}>🔍 Inspector Demo (Test Signals)</a>
             </Button>
           </div>
         </CardContent>
@@ -96,7 +96,9 @@ function IndexPage({
               </svg>
             </div>
           </div>
-          {user && <Button data-on:click="@get('/issues/new')">Create Issue</Button>}
+          {user && (
+            <Button data-on:click={`@get('${routes.issues.new.href()}')`}>Create Issue</Button>
+          )}
         </div>
         <IssuesList issues={issues} />
       </div>

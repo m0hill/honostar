@@ -26,7 +26,8 @@ function SignupPage() {
 
           <form
             class="space-y-4"
-            data-on:submit__prevent="@post('/auth/signup')"
+            data-on:submit__prevent={`@post('${routes.auth.action.href({ action: 'signup' })}', {openWhenHidden: true})`}
+            data-indicator="signingUp"
             data-signals__ifmissing='{"error":"","form":{"username":"","password":""}}'
           >
             <div class="space-y-2">
@@ -51,8 +52,13 @@ function SignupPage() {
               />
             </div>
 
-            <Button type="submit" class="w-full">
-              Sign Up
+            <Button type="submit" class="w-full" data-attr:disabled="$signingUp">
+              <span data-show="!$signingUp" style="display:none">
+                Sign Up
+              </span>
+              <span data-show="$signingUp" style="display:none">
+                Signing up...
+              </span>
             </Button>
           </form>
 

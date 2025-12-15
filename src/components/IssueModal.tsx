@@ -1,3 +1,4 @@
+import { routes } from '@/routes'
 import type { Label } from '@/types'
 import LabelsSection from './LabelsSection'
 import { Button } from './ui/button'
@@ -62,7 +63,7 @@ export default function IssueModal({ labels }: { labels: Label[] }) {
 
           <form
             class="space-y-4"
-            data-on:submit__prevent="$createIssueModal.error = ''; @post('/issues', {openWhenHidden: true})"
+            data-on:submit__prevent={`$createIssueModal.error = ''; @post('${routes.issues.create.href()}', {openWhenHidden: true})`}
             data-indicator="creating"
           >
             {/* Error message display */}
@@ -104,7 +105,9 @@ export default function IssueModal({ labels }: { labels: Label[] }) {
                 Cancel
               </Button>
               <Button type="submit" data-attr:disabled="$creating" data-auto-focus>
-                <span data-show="!$creating">Create Issue</span>
+                <span data-show="!$creating" style="display:none">
+                  Create Issue
+                </span>
                 <span data-show="$creating" style="display:none">
                   Creating...
                 </span>
