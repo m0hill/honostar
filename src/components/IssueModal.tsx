@@ -36,16 +36,18 @@ export default function IssueModal({ labels }: { labels: Label[] }) {
       <div
         data-show="$createIssueModal.open"
         style="display:none"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="create-issue-title"
-        tabindex={-1}
         class="fixed inset-0 z-50 flex items-center justify-center px-4 py-8"
-        data-ref="modalEl"
-        data-init="$createIssueModal.open && $modalEl.focus()"
-        data-on:click__outside="$createIssueModal.open = false"
       >
-        <div class="w-[min(100vw,40rem)] mx-4 sm:mx-0 bg-card text-card-foreground rounded-xl border shadow-lg p-6">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="create-issue-title"
+          tabindex={-1}
+          class="w-[min(100vw,40rem)] mx-4 sm:mx-0 bg-card text-card-foreground rounded-xl border shadow-lg p-6"
+          data-ref="modalEl"
+          data-init="$createIssueModal.open && $modalEl.focus()"
+          data-on:click__outside="$createIssueModal.open = false"
+        >
           <div class="flex items-center justify-between mb-6">
             <h2 id="create-issue-title" class="text-xl font-semibold">
               Create Issue
