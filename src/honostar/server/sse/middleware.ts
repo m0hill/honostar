@@ -86,7 +86,7 @@ export function registerEffect<TArgs extends unknown[] = unknown[]>(
  * }))
  * ```
  */
-export function registerEffects(effects: { [K: string]: EffectHandler<never> }) {
+export function registerEffects(effects: Record<string, EffectHandler>) {
   return factory.createMiddleware(async (c, next) => {
     for (const [name, handler] of Object.entries(effects)) {
       c.var.fx.effectRegistry.register(name, handler)

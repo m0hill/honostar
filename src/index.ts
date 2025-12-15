@@ -27,8 +27,8 @@ const config = createConfig({
   },
 })
 
+import { customEffects } from '@/effects'
 import { createManifestRouteLoader } from '@/honostar/server/router/manifest-route-loader'
-import { customEffects } from '@/lib/custom-effects'
 import { auth } from '@/middleware/auth'
 import { attachBus } from '@/middleware/bus'
 import { attachDb } from '@/middleware/db'
