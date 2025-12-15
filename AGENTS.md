@@ -137,7 +137,7 @@ Choose one approach for your initial page render:
   ```typescript
   // Command endpoint sets loading=true before processing
   c.var.fx.reply([['patch-signals', { loading: true }]])
-  
+
   // Query endpoint sets loading=false after re-rendering
   c.var.fx.broadcast(topic, [
     ['patch-elements', <UpdatedView />],
@@ -382,7 +382,7 @@ app.use('*', registerEffects({
 export const POST = createHandler({
   async handler(c) {
     // Validate and process...
-    
+
     // Use custom effect instead of verbose built-in composition
     return c.var.fx.reply([
       ['toast:show', 'Issue created successfully!', 'success'],
@@ -530,7 +530,7 @@ data-on:honostar-theme-change__window="renderChart(evt.detail.resolved)"
 
 ## 12. shadcn/ui + Hono JSX
 
-- **Design System**: shadcn/ui components live under `src/components/ui`. Styling depends on `class-variance-authority`, `clsx`, `tailwind-merge`, and `lucide-react`, with tokens defined in `styles.css` and the `cn()` helper in `src/lib/utils.ts`.
+- **Design System**: shadcn/ui components live under `src/components/ui`. Styling depends on `class-variance-authority`, `clsx`, and `tailwind-merge`, with tokens defined in `styles.css` and the `cn()` helper in `src/lib/utils.ts`.
 - **Adding Components**: run `bunx --bun shadcn@latest add <component>` to scaffold, then convert from React to Hono JSX—drop React/Radix imports, replace `className` with `class`, remove `Slot`/`asChild`, and keep markup in native HTML elements.
 - **Typing Requirements**: define props via `type Props = JSX.IntrinsicElements['tag'] & { customVariantProps }`; never fall back to `[key: string]: any`. Variant-driven styling stays in `cva` definitions so types line up with `VariantProps<typeof componentVariants>`.
 - **Available Building Blocks**: `Button`, `Card` (+Header/Title/Description/Content/Action/Footer), `Input`, `Label`, `Badge`, and `Textarea` are pre-converted and Datastar-safe. Import them from `@/components/ui/*` and freely add `data-*` attributes for signals, indicators, and bindings.
@@ -578,7 +578,7 @@ data-on:honostar-theme-change__window="renderChart(evt.detail.resolved)"
 - **Type-safe routing**:
   ```typescript
   import { routes } from '@/routes'
-  
+
   routes.issues.href() // → '/issues'
   routes.issues.id.href({ id: 123 }) // → '/issues/123'
   routes.issues.id.pattern // → '/issues/:id'
@@ -595,16 +595,16 @@ data-on:honostar-theme-change__window="renderChart(evt.detail.resolved)"
   })
   ```
 - Use `createHandler()` for all action endpoints (POST/PUT/PATCH/DELETE/GET):
-  
+
   **Validated Handler (with schema - recommended for Datastar endpoints):**
   ```typescript
   import { z } from 'zod'
-  
+
   const schema = z.object({
     title: z.string().min(1, 'Title is required'),
     description: z.string().optional(),
   })
-  
+
   export const POST = createHandler({
     schema,
     use: [requireAuth],
@@ -621,7 +621,7 @@ data-on:honostar-theme-change__window="renderChart(evt.detail.resolved)"
     }
   })
   ```
-  
+
   **Base Handler (without schema - for traditional endpoints):**
   ```typescript
   export const POST = createHandler({
@@ -886,7 +886,7 @@ export const POST = createHandler({
       description: data.issue.description,
       authorId: c.var.user.id,
     }).returning()
-    
+
     return c.var.fx.broadcast('issues:list', [
       ['patch-elements', <IssuesList issues={await fetchAllIssues(c)} />]
     ], { status: 201 })
