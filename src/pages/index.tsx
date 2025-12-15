@@ -97,7 +97,14 @@ function IndexPage({
             </div>
           </div>
           {user && (
-            <Button data-on:click={`@get('${routes.issues.new.href()}')`}>Create Issue</Button>
+            <Button asChild>
+              <a
+                href={routes.issues.new.href()}
+                data-on:click__prevent={`@get('${routes.issues.newModal.href()}')`}
+              >
+                Create Issue
+              </a>
+            </Button>
           )}
         </div>
         <IssuesList issues={issues} />

@@ -18,6 +18,8 @@ function ProfilePage({ user }: { user: User }) {
             <a href={routes.home.href()}>View Issues</a>
           </Button>
           <form
+            action={routes.auth.logout.href()}
+            method="post"
             data-on:submit__prevent={`@post('${routes.auth.logout.href()}', {openWhenHidden: true})`}
             data-indicator="loggingOut"
           >

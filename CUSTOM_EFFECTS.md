@@ -251,5 +251,5 @@ Honostar's extensible effect system is inspired by [datastar.wow](https://github
 ## Further Reading
 
 - See `AGENTS.md` section 10 for the canonical guide
-- See `src/core/datastar/effect-registry.ts` for implementation details
-- See `src/core/datastar/effect-registry.test.ts` for test examples
+- See `src/honostar/server/sse/effect-registry.ts` for implementation details
+- See `src/honostar/server/sse/effect-registry.test.ts` for test examples

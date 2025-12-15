@@ -14,7 +14,12 @@ export const POST = createHandler({
   schema: authPayloadSchema,
   hook: (result, c) => {
     const error = result.error[0]?.message || 'Validation failed'
-    return c.var.fx.reply([['patch-signals', { error }]], { status: 400 })
+    if (c.req.header('datastar-request') !== null) {
+      return c.var.fx.reply([['patch-signals', { error }]], { status: 400 })
+    }
+    const { action } = c.req.param()
+    const target = action === 'signup' ? routes.signup.href() : routes.auth.login.href()
+    return c.redirect(`${target}?error=${encodeURIComponent(error)}`, 303)
   },
 
   async handler(c, data) {
@@ -30,8 +35,12 @@ export const POST = createHandler({
       return c.redirect(routes.auth.profile.href(), 303) // let the browser navigate
     }
 
-    return c.var.fx.reply([['patch-signals', { error: result.error }]], {
-      status: result.status,
-    })
+    if (c.req.header('datastar-request') !== null) {
+      return c.var.fx.reply([['patch-signals', { error: result.error }]], {
+        status: result.status,
+      })
+    }
+    const target = action === 'signup' ? routes.signup.href() : routes.auth.login.href()
+    return c.redirect(`${target}?error=${encodeURIComponent(result.error)}`, 303)
   },
 })

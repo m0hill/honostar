@@ -215,7 +215,7 @@ c.var.fx.reply([
 - The `renderer()` and `createSseEndpoint()` factories accept optional config overrides.
 - Zero-config usage works out of the box—defaults match previous hardcoded behavior.
 
-**Configuration Structure** (`src/core/config.ts`)
+**Configuration Structure** (`src/honostar/server/config.ts`)
 ```typescript
 type HonostarConfig = {
   assets: {
@@ -548,7 +548,7 @@ data-on:honostar-theme-change__window="renderChart(evt.detail.resolved)"
 - Core philosophy: server-rendered HTML is the source of truth, enhanced with reactive signals and live patches.
 - **Works with**: Node.js, Bun, Deno, Cloudflare Workers, and any runtime supported by Hono.
 
-**Core Framework Structure** (`src/core/`)
+**Core Framework Structure** (`src/honostar/`)
 - `router/` - File-based routing with compile-time manifest generation (runtime-agnostic)
 - `datastar/` - SSE event bus, responders, formatters, and middleware
 - `page.ts` - Type-safe page and handler definitions
@@ -565,7 +565,7 @@ data-on:honostar-theme-change__window="renderChart(evt.detail.resolved)"
   - `issues/[id].tsx` → `/issues/:id`
   - `issues/[id]/comments.tsx` → `/issues/:id/comments`
   - Files starting with `_` are ignored (e.g., `_components/`)
-- **Build-time manifest generation** (`src/core/router/generator.ts`):
+- **Build-time manifest generation** (`src/honostar/server/router/generator.ts`):
   - Runtime-agnostic implementation using standard Node.js APIs
   - Scans `src/pages/` and generates `src/routes.manifest.ts` with lazy imports
   - Generates `src/routes.ts` with type-safe route helpers
@@ -783,7 +783,7 @@ bus.toAll(msg) // Broadcast to all connected clients
 - `scripts/generate-route-manifest.ts` runs before every build/dev to update `src/routes.ts` and `src/routes.manifest.ts`.
 - **Never manually edit** `src/routes.ts` or `src/routes.manifest.ts` - they are overwritten on every build.
 
-**Route Helpers** (`src/core/route.ts`)
+**Route Helpers** (`src/honostar/server/route.ts`)
 - `route()` - Builds a nested object tree of route definitions with type-safe `.href()` methods.
 - Parameter extraction: `:param` in route paths becomes required parameter in `.href({ param: value })`.
 - Type safety: TypeScript enforces parameter presence and types at compile time.

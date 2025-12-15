@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { comments as commentsTable } from '@/db/schema'
 import { createHandler } from '@/honostar/server'
 import { requireAuth } from '@/lib/auth-middleware'
+import { routes } from '@/routes'
 
 // Drizzle ORM query builder types
 type CommentsTable = typeof commentsTable
@@ -18,9 +19,16 @@ export const POST = createHandler({
   use: [requireAuth],
   hook: (result, c) => {
     const error = result.error[0]?.message || 'Invalid comment'
-    return c.var.fx.reply([['patch-signals', { commentError: error }]], {
-      status: 400,
-    })
+    if (c.req.header('datastar-request') !== null) {
+      return c.var.fx.reply([['patch-signals', { commentError: error }]], {
+        status: 400,
+      })
+    }
+    const { id } = c.req.param()
+    return c.redirect(
+      `${routes.issues.show.href({ id: Number(id) })}?commentError=${encodeURIComponent(error)}#comment-form`,
+      303
+    )
   },
 
   async handler(c, data) {
@@ -42,8 +50,11 @@ export const POST = createHandler({
     })
 
     // CQRS: publish event for query re-render + success toast
-    return c.var.fx.reply([['comment:created-success', issueId, commentCount.length]], {
-      status: 201,
-    })
+    if (c.req.header('datastar-request') !== null) {
+      return c.var.fx.reply([['comment:created-success', issueId, commentCount.length]], {
+        status: 201,
+      })
+    }
+    return c.redirect(`${routes.issues.show.href({ id: issueId })}#comments`, 303)
   },
 })

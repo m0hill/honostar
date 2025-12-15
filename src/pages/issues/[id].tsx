@@ -37,6 +37,8 @@ function CommentForm({ issueId, user }: { issueId: number; user: User | null }) 
   return (
     <form
       class="mt-6"
+      action={routes.issues.comments.href({ id: String(issueId) })}
+      method="post"
       data-on:submit__prevent={`$commentError = ''; @post('${routes.issues.comments.href({ id: String(issueId) })}', {openWhenHidden: true});
          $comment = ''`}
       data-indicator="commenting"
@@ -52,7 +54,13 @@ function CommentForm({ issueId, user }: { issueId: number; user: User | null }) 
         <span data-text="$commentError"></span>
       </div>
 
-      <Textarea data-bind="comment" placeholder="Leave a comment..." rows={4} required />
+      <Textarea
+        data-bind="comment"
+        name="comment"
+        placeholder="Leave a comment..."
+        rows={4}
+        required
+      />
       <div class="flex justify-end mt-2">
         <Button type="submit" data-attr:disabled="$commenting">
           <span data-show="!$commenting" style="display:none">
@@ -67,7 +75,15 @@ function CommentForm({ issueId, user }: { issueId: number; user: User | null }) 
   )
 }
 
-function IssueDetailPage({ issue, user }: { issue: IssueWithDetails; user: User | null }) {
+function IssueDetailPage({
+  issue,
+  user,
+  commentError,
+}: {
+  issue: IssueWithDetails
+  user: User | null
+  commentError?: string
+}) {
   const issueUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}${routes.issues.show.href({ id: issue.id })}`
 
   return (
@@ -146,6 +162,14 @@ function IssueDetailPage({ issue, user }: { issue: IssueWithDetails; user: User 
         </div>
 
         <div id="comment-form">
+          {commentError ? (
+            <div
+              class="mt-6 p-3 bg-destructive/10 border border-destructive rounded-md text-destructive text-sm"
+              role="alert"
+            >
+              {commentError}
+            </div>
+          ) : null}
           <CommentForm issueId={issue.id} user={user} />
         </div>
       </div>
@@ -197,7 +221,8 @@ export default createPage({
       labels: issueData.issuesToLabels.map(itl => itl.label),
       comments: issueData.comments,
     }
-    return { issue, user: c.var.user }
+    const commentError = c.req.query('commentError')
+    return commentError ? { issue, user: c.var.user, commentError } : { issue, user: c.var.user }
   },
 
   component: IssueDetailPage,

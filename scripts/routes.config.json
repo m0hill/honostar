@@ -5,6 +5,7 @@
   "/issues/:id": [["issues", "show"]],
   "/issues/:id/comments": [["issues", "comments"]],
   "/issues/new": [["issues", "new"]],
+  "/issues/new-modal": [["issues", "newModal"]],
   "/labels": [["labels"]],
   "/login": [["auth", "login"]],
   "/logout": [["auth", "logout"]],

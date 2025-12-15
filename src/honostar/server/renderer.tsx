@@ -11,6 +11,15 @@ function stripDoctype(html: string): string {
   return html.replace(/^\s*<!DOCTYPE html>\s*/i, '')
 }
 
+function withAssetVersion(path: string, version: string | undefined): string {
+  if (!version) return path
+  const trimmed = version.trim()
+  if (!trimmed) return path
+  return path.includes('?')
+    ? `${path}&v=${encodeURIComponent(trimmed)}`
+    : `${path}?v=${encodeURIComponent(trimmed)}`
+}
+
 function generateNonce(): string {
   const bytes = new Uint8Array(16)
   crypto.getRandomValues(bytes)
@@ -54,8 +63,15 @@ export const renderer = (userConfig?: Partial<HonostarConfig>) => {
         csrfToken: c.var.csrfToken ?? null,
         theme: theme.config,
         assets: {
-          datastar: config.assets.datastar,
-          plugins: config.assets.plugins ?? [],
+          css: withAssetVersion(config.assets.css, config.assets.version),
+          runtime: withAssetVersion(config.assets.runtime, config.assets.version),
+          datastar: withAssetVersion(config.assets.datastar, config.assets.version),
+          plugins: (config.assets.plugins ?? []).map(p =>
+            withAssetVersion(p, config.assets.version)
+          ),
+        },
+        devtools: {
+          inspector: config.devtools?.inspector ?? null,
         },
       }
       const runtimeDataJson = JSON.stringify(runtimeData).replace(/</g, '\\u003c')
@@ -91,12 +107,27 @@ export const renderer = (userConfig?: Partial<HonostarConfig>) => {
             />
             <title>{title}</title>
             {pageHead?.elements}
-            <link rel="stylesheet" href={config.assets.css} />
-            <link rel="modulepreload" href={config.assets.datastar} />
-            <link rel="modulepreload" href={config.assets.runtime} />
+            <link
+              rel="stylesheet"
+              href={withAssetVersion(config.assets.css, config.assets.version)}
+            />
+            <link
+              rel="modulepreload"
+              href={withAssetVersion(config.assets.datastar, config.assets.version)}
+            />
+            <link
+              rel="modulepreload"
+              href={withAssetVersion(config.assets.runtime, config.assets.version)}
+            />
             {/* Load Datastar first so plugins can register with it */}
-            <script type="module" src={config.assets.datastar} />
-            <script type="module" src={config.assets.runtime} />
+            <script
+              type="module"
+              src={withAssetVersion(config.assets.datastar, config.assets.version)}
+            />
+            <script
+              type="module"
+              src={withAssetVersion(config.assets.runtime, config.assets.version)}
+            />
 
             {/* Opt-in to native MPA view transitions and set subtle, fast defaults */}
             <style

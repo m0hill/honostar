@@ -1,11 +1,12 @@
 import { Hono } from 'hono'
 import { serveStatic } from 'hono/bun'
-import { except } from 'hono/combine'
 import { compress } from 'hono/compress'
 import { logger } from 'hono/logger'
 import {
   type AppEnv,
   createConfig,
+  createNotFoundHandler,
+  createOnErrorHandler,
   createSseEndpoint,
   csrf,
   fxResponder,
@@ -38,12 +39,20 @@ import { routesManifest } from '@/routes.manifest'
 
 const app = new Hono<AppEnv>()
 
+app.notFound(createNotFoundHandler())
+app.onError(
+  createOnErrorHandler({
+    showStack: process.env.NODE_ENV !== 'production',
+  })
+)
+
 app.use('/*', serveStatic({ root: './public' }))
 app.use('/images/*', serveStatic({ root: './' }))
 
 app.use('*', logger())
 
-app.use('*', except('/_/events', compress()))
+// Include SSE in compression so long-lived streams benefit from Brotli/gzip context reuse.
+app.use('*', compress())
 
 // Pass config to framework middleware
 app.use('*', csrf(config))

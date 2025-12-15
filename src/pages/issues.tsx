@@ -3,6 +3,7 @@ import { issues, issuesToLabels, labels as labelsTable } from '@/db/schema'
 import { createHandler } from '@/honostar/server'
 import { requireAuth } from '@/lib/auth-middleware'
 import { saveBase64Image } from '@/lib/images'
+import { routes } from '@/routes'
 
 /**
  * Define the schema for the incoming JSON payload from Datastar.
@@ -12,7 +13,10 @@ const issueSchema = z.object({
   issue: z.object({
     title: z.string().trim().min(1, 'Title is required'),
     description: z.string().optional(),
-    labels: z.array(z.string()).default([]),
+    labels: z.preprocess(
+      v => (v === undefined ? [] : Array.isArray(v) ? v : [v]),
+      z.array(z.string())
+    ),
     newLabel: z.string().trim().optional(),
     image: z.any().optional(), // `saveBase64Image` handles null or the file object
   }),
@@ -23,9 +27,21 @@ export const POST = createHandler({
   use: [requireAuth],
   hook: (result, c) => {
     const error = result.error[0]?.message || 'Invalid input'
-    return c.var.fx.reply([['patch-signals', { createIssueModal: { error } }]], {
-      status: 400,
-    })
+    if (c.req.header('datastar-request') !== null) {
+      return c.var.fx.reply(
+        [
+          [
+            'patch-signals',
+            {
+              createIssueModal: { error },
+              issueForm: { error },
+            },
+          ],
+        ],
+        { status: 400 }
+      )
+    }
+    return c.redirect(`${routes.issues.new.href()}?error=${encodeURIComponent(error)}`, 303)
   },
 
   async handler(c, data) {
@@ -71,6 +87,25 @@ export const POST = createHandler({
       })
       .returning()
 
+    if (!created) {
+      const error = 'Failed to create issue'
+      if (c.req.header('datastar-request') !== null) {
+        return c.var.fx.reply(
+          [
+            [
+              'patch-signals',
+              {
+                createIssueModal: { error },
+                issueForm: { error },
+              },
+            ],
+          ],
+          { status: 500 }
+        )
+      }
+      return c.redirect(`${routes.issues.new.href()}?error=${encodeURIComponent(error)}`, 303)
+    }
+
     if (created && labelIds.length) {
       await c.var.db
         .insert(issuesToLabels)
@@ -82,6 +117,9 @@ export const POST = createHandler({
     // - Publishing the domain event to the shared topic
     // - Showing success toast to creator
     // - Closing modal and resetting form
-    return c.var.fx.reply([['issue:created-success', created]], { status: 201 })
+    if (c.req.header('datastar-request') !== null) {
+      return c.var.fx.reply([['issue:created-success', created]], { status: 201 })
+    }
+    return c.redirect(routes.issues.show.href({ id: created.id }), 303)
   },
 })

@@ -63,21 +63,9 @@ void (async function bootstrap() {
   onPageRevealFocusApp()
   honostar.modals = createModalHost()
 
-  // Initialize inspector if enabled (check both env and explicit config)
-  // In development, enable by default; in production, require explicit opt-in
-  const isDev = location.hostname === 'localhost' || location.hostname.startsWith('127.')
-  const inspectorEnabled = isDev // Enable in dev by default
-
-  if (inspectorEnabled) {
-    const inspectorConfig: InspectorConfig = {
-      enabled: true,
-      maxEvents: 100,
-      defaultTab: 'signals',
-      defaultViewMode: 'json',
-      defaultPosition: 'bottom',
-    }
-
-    const inspector = createInspector(inspectorConfig)
+  const inspectorConfig = data.devtools?.inspector
+  if (inspectorConfig?.enabled) {
+    const inspector = createInspector(inspectorConfig satisfies InspectorConfig)
     honostar.inspector = inspector
 
     // Expose actions for programmatic control

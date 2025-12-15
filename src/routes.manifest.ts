@@ -4,6 +4,10 @@ import type { RouteManifestEntry } from '@/honostar/server'
 
 export const routesManifest: RouteManifestEntry[] = [
   {
+    routePath: '/issues/new-modal',
+    load: () => import('./pages/issues/new-modal'),
+  },
+  {
     routePath: '/inspector-demo',
     load: () => import('./pages/inspector-demo'),
   },

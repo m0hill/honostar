@@ -359,12 +359,20 @@ function InspectorDemoPage() {
             <CardContent>
               <form
                 data-signals="{email: '', submitStatus: ''}"
+                action={routes.inspectorDemo.href()}
+                method="post"
                 data-on:submit__prevent={`$submitStatus = 'Submitting...'; @post('${routes.inspectorDemo.href()}', {contentType: 'json'})`}
                 class="space-y-4"
               >
                 <div class="space-y-2">
                   <Label>Email:</Label>
-                  <Input data-bind="email" type="email" placeholder="test@example.com" required />
+                  <Input
+                    data-bind="email"
+                    name="email"
+                    type="email"
+                    placeholder="test@example.com"
+                    required
+                  />
                 </div>
                 <Button type="submit" class="w-full">
                   Submit
@@ -583,14 +591,18 @@ export const POST = createHandler({
     // Simulate processing
     await new Promise(resolve => setTimeout(resolve, 500))
 
-    return c.var.fx.reply([
-      [
-        'patch-signals',
-        {
-          submitStatus: `Success! Submitted ${data.email}`,
-          email: '',
-        },
-      ],
-    ])
+    if (c.req.header('datastar-request') !== null) {
+      return c.var.fx.reply([
+        [
+          'patch-signals',
+          {
+            submitStatus: `Success! Submitted ${data.email}`,
+            email: '',
+          },
+        ],
+      ])
+    }
+
+    return c.text(`Success! Submitted ${data.email}`, 200)
   },
 })

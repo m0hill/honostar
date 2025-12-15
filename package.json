@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "routes:generate": "tsx scripts/generate-routes.ts",
+    "routes:generate": "bun scripts/generate-routes.ts",
     "build:plugins": "bun build src/lib/plugins/index.ts --outfile public/plugins.js --target browser --format esm --minify",
     "dev:plugins": "bun build src/lib/plugins/index.ts --outfile public/plugins.js --target browser --format esm --watch",
     "build:assets": "bun run build:css && bun run build:runtime && bun run build:plugins",

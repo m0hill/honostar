@@ -6,14 +6,14 @@ Honostar is designed to be **runtime-agnostic** and work with any JavaScript run
 
 ### ✅ Fully Runtime-Agnostic (Core Framework)
 
-The entire `src/core/` directory uses only:
+The entire `src/honostar/` directory uses only:
 - **Standard Web APIs** (`crypto`, `Response`, `ReadableStream`, etc.)
 - **Node.js built-ins** (`node:fs`, `node:path`, `node:url`) - available in Node.js, Bun, and Deno
 - **Hono** - officially supports Node.js, Bun, Deno, Cloudflare Workers, and more
 
 **Key runtime-agnostic components:**
-- Router system (`src/core/router/`)
-- Route manifest generator (`src/core/router/generator.ts`)
+- Router system (`src/honostar/server/router/`)
+- Route manifest generator (`src/honostar/server/router/generator.ts`)
 - SSE bus abstraction (`MemoryBus` and `RedisBus`)
 - Datastar responder and SSE streaming
 - Theme system

@@ -4,6 +4,8 @@ export { createConfig, DEFAULT_CONFIG } from './config'
 
 // Context & Middleware
 export type { AppEnv, AppVariables, AppVariablesBase } from './context'
+// Errors
+export { createNotFoundHandler, createOnErrorHandler } from './errors'
 export { factory, initContext } from './middleware'
 export type {
   PageHead,

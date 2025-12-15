@@ -6,7 +6,7 @@ import { createPage } from '@/honostar/server'
 import { requireGuest } from '@/lib/auth-middleware'
 import { routes } from '@/routes'
 
-function LoginPage() {
+function LoginPage(props: { error?: string }) {
   return (
     <div class="flex items-center justify-center min-h-screen bg-background text-foreground px-4">
       <Card class="w-full max-w-md">
@@ -16,6 +16,15 @@ function LoginPage() {
         </CardHeader>
 
         <CardContent class="space-y-6">
+          {props.error ? (
+            <div
+              class="p-3 text-center bg-destructive/10 border border-destructive text-destructive rounded-md text-sm"
+              role="alert"
+            >
+              {props.error}
+            </div>
+          ) : null}
+
           <div
             data-show="$error"
             style="display:none"
@@ -26,9 +35,12 @@ function LoginPage() {
 
           <form
             class="space-y-4"
+            action={routes.auth.action.href({ action: 'login' })}
+            method="post"
             data-on:submit__prevent={`@post('${routes.auth.action.href({ action: 'login' })}', {openWhenHidden: true})`}
             data-indicator="loggingIn"
-            data-signals__ifmissing='{"error":"","form":{"username":"","password":""}}'
+            data-signals={JSON.stringify({ error: props.error ?? '' })}
+            data-signals__ifmissing='{"form":{"username":"","password":""}}'
           >
             <div class="space-y-2">
               <Label for="username">Username</Label>
@@ -37,6 +49,7 @@ function LoginPage() {
                 type="text"
                 placeholder="your_username"
                 data-bind="form.username"
+                name="form.username"
                 required
               />
             </div>
@@ -48,6 +61,7 @@ function LoginPage() {
                 type="password"
                 placeholder="••••••••"
                 data-bind="form.password"
+                name="form.password"
                 required
               />
             </div>
@@ -83,8 +97,9 @@ export default createPage({
     title: 'Login • Honostar',
   },
 
-  loader() {
-    return Promise.resolve({})
+  loader(c) {
+    const error = c.req.query('error')
+    return Promise.resolve(error ? { error } : {})
   },
 
   component: LoginPage,

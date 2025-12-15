@@ -1,19 +1,39 @@
+import type {
+  InspectorPosition,
+  InspectorTab,
+  InspectorViewMode,
+} from '@/honostar/client/inspector'
 import type { ThemePreference, ThemeRuntimeConfig, ThemeValue } from '@/honostar/common/theme'
 import { resolveThemeProvider } from '@/honostar/common/theme'
 
 type RuntimeAssets = {
+  css: string
+  runtime: string
   datastar: string
   plugins: string[]
+}
+
+type RuntimeInspectorConfig = {
+  enabled: boolean
+  maxEvents: number
+  defaultTab: InspectorTab
+  defaultViewMode: InspectorViewMode
+  defaultPosition: InspectorPosition
 }
 
 type RuntimeData = {
   csrfToken: string | null
   theme: ThemeRuntimeConfig
   assets: RuntimeAssets
+  devtools: {
+    inspector: RuntimeInspectorConfig | null
+  }
 }
 
 const FALLBACK_THEME_CONFIG = resolveThemeProvider().config
 const FALLBACK_ASSETS: RuntimeAssets = {
+  css: '/styles.css',
+  runtime: '/runtime.js',
   datastar: '/datastar.js',
   plugins: [],
 }
@@ -21,6 +41,7 @@ const FALLBACK_RUNTIME_DATA: RuntimeData = {
   csrfToken: null,
   theme: FALLBACK_THEME_CONFIG,
   assets: FALLBACK_ASSETS,
+  devtools: { inspector: null },
 }
 
 function isThemeValue(candidate: unknown): candidate is ThemeValue {
@@ -72,6 +93,11 @@ function normalizeAssets(candidate: unknown): RuntimeAssets {
   }
   const raw = candidate as Partial<RuntimeAssets>
   return {
+    css: typeof raw.css === 'string' && raw.css.length > 0 ? raw.css : FALLBACK_ASSETS.css,
+    runtime:
+      typeof raw.runtime === 'string' && raw.runtime.length > 0
+        ? raw.runtime
+        : FALLBACK_ASSETS.runtime,
     datastar:
       typeof raw.datastar === 'string' && raw.datastar.length > 0
         ? raw.datastar
@@ -80,6 +106,36 @@ function normalizeAssets(candidate: unknown): RuntimeAssets {
       Array.isArray(raw.plugins) && raw.plugins.every(p => typeof p === 'string')
         ? raw.plugins
         : FALLBACK_ASSETS.plugins,
+  }
+}
+
+function normalizeInspectorConfig(candidate: unknown): RuntimeInspectorConfig | null {
+  if (!candidate || typeof candidate !== 'object') return null
+  const raw = candidate as Partial<RuntimeInspectorConfig>
+
+  if (raw.enabled !== true) return null
+
+  return {
+    enabled: true,
+    maxEvents: typeof raw.maxEvents === 'number' ? raw.maxEvents : 100,
+    defaultTab:
+      raw.defaultTab === 'signals' ||
+      raw.defaultTab === 'patches' ||
+      raw.defaultTab === 'sse' ||
+      raw.defaultTab === 'persisted'
+        ? raw.defaultTab
+        : 'signals',
+    defaultViewMode:
+      raw.defaultViewMode === 'table' || raw.defaultViewMode === 'json'
+        ? raw.defaultViewMode
+        : 'json',
+    defaultPosition:
+      raw.defaultPosition === 'bottom' ||
+      raw.defaultPosition === 'right' ||
+      raw.defaultPosition === 'left' ||
+      raw.defaultPosition === 'top'
+        ? raw.defaultPosition
+        : 'bottom',
   }
 }
 
@@ -92,6 +148,11 @@ function parseRuntimeData(raw: string): RuntimeData {
         csrfToken: typeof token === 'string' ? token : null,
         theme: normalizeThemeConfig((parsed as { theme?: unknown }).theme),
         assets: normalizeAssets((parsed as { assets?: unknown }).assets),
+        devtools: {
+          inspector: normalizeInspectorConfig(
+            (parsed as { devtools?: { inspector?: unknown } }).devtools?.inspector
+          ),
+        },
       }
     }
     return FALLBACK_RUNTIME_DATA

@@ -1,6 +1,6 @@
 # Prefetch Client Guide
 
-The Prefetch Client lives entirely inside `src/core/` and powers all navigation prefetching logic for Honostar apps. It keeps the app server-rendered while giving you fine-grained control over when and how URLs are preloaded. This document explains how it works, how to configure it globally, how to opt individual links in or out, and how to use the programmatic APIs.
+The Prefetch Client lives in `src/honostar/client/prefetch/` and powers navigation prefetching for Honostar apps. It keeps the app server-rendered while giving you fine-grained control over when and how URLs are preloaded. This document explains how it works, how to configure it globally, how to opt individual links in or out, and how to use the programmatic APIs.
 
 ---
 
@@ -14,7 +14,7 @@ The Prefetch Client lives entirely inside `src/core/` and powers all navigation 
 
 ## 2. Default Behavior
 
-During bootstrap (`src/core/client-runtime.ts`) we instantiate the client with the legacy defaults:
+During bootstrap (`src/honostar/client/bootstrap/standard.ts`) we instantiate the client with the legacy defaults:
 
 ```ts
 const prefetch = createPrefetchClient({

@@ -27,6 +27,13 @@ export type HonostarConfig = {
     datastar: string
     /** Paths to client-side plugin entry files (default: []) */
     plugins?: string[]
+    /**
+     * Optional cache-busting token appended to asset URLs as `?v=...`.
+     * Recommended to set to a deploy/build identifier (e.g. git SHA).
+     *
+     * (default: process.env.HONOSTAR_ASSET_VERSION ?? undefined)
+     */
+    version?: string
   }
   /**
    * Framework endpoint paths
@@ -161,6 +168,9 @@ export const DEFAULT_CONFIG: HonostarConfig = {
     runtime: '/runtime.js',
     datastar: '/datastar.js',
     plugins: [],
+    // Use empty string instead of `undefined` to satisfy `exactOptionalPropertyTypes`.
+    // `withAssetVersion()` treats empty/whitespace as "disabled".
+    version: process.env.HONOSTAR_ASSET_VERSION ?? '',
   },
   endpoints: {
     sse: '/_/events',
@@ -184,7 +194,7 @@ export const DEFAULT_CONFIG: HonostarConfig = {
   },
   devtools: {
     inspector: {
-      enabled: false, // Disabled by default, enable per environment
+      enabled: process.env.NODE_ENV !== 'production',
       maxEvents: 100,
       defaultTab: 'signals',
       defaultViewMode: 'json',

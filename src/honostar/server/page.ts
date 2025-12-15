@@ -129,6 +129,10 @@ function isValidatedHandler<Schema extends StandardSchemaV1>(
   return 'schema' in def && def.schema !== undefined
 }
 
+function isDatastarRequest(c: Context<AppEnv>): boolean {
+  return c.req.header('datastar-request') !== null
+}
+
 async function safeParseJson(c: Context<AppEnv>): Promise<unknown> {
   try {
     return await c.req.json()
@@ -150,9 +154,84 @@ function urlSearchParamsToObject(params: URLSearchParams): Record<string, unknow
   return data
 }
 
+function parseKeyPath(key: string): string[] {
+  const parts: string[] = []
+
+  const bracketIndex = key.indexOf('[')
+  const base = bracketIndex === -1 ? key : key.slice(0, bracketIndex)
+  if (base) {
+    parts.push(...base.split('.').filter(Boolean))
+  }
+
+  if (bracketIndex !== -1) {
+    const bracketMatches = key.slice(bracketIndex).matchAll(/\[([^\]]*)\]/g)
+    for (const match of bracketMatches) {
+      const value = match[1] ?? ''
+      if (value) parts.push(value)
+    }
+  }
+
+  return parts.length > 0 ? parts : [key]
+}
+
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function mergeIntoExisting(existing: unknown, value: unknown): unknown {
+  if (existing === undefined) return value
+  if (Array.isArray(existing)) {
+    if (Array.isArray(value)) return [...existing, ...value]
+    return [...existing, value]
+  }
+  if (Array.isArray(value)) return [existing, ...value]
+  return [existing, value]
+}
+
+function setDeep(target: Record<string, unknown>, path: string[], value: unknown): void {
+  let cursor: Record<string, unknown> = target
+
+  for (let i = 0; i < path.length; i++) {
+    const segment = path[i] ?? ''
+    const isLast = i === path.length - 1
+
+    if (isLast) {
+      cursor[segment] = mergeIntoExisting(cursor[segment], value)
+      return
+    }
+
+    const existing = cursor[segment]
+    if (isPlainRecord(existing)) {
+      cursor = existing
+      continue
+    }
+
+    const created: Record<string, unknown> = {}
+    cursor[segment] = created
+    cursor = created
+  }
+}
+
+function expandObjectKeys(input: unknown): unknown {
+  if (!isPlainRecord(input)) return input
+  const raw = input
+  const out: Record<string, unknown> = {}
+
+  for (const [key, value] of Object.entries(raw)) {
+    if (key.includes('.') || key.includes('[')) {
+      setDeep(out, parseKeyPath(key), value)
+    } else {
+      out[key] = value
+    }
+  }
+
+  return out
+}
+
 async function safeParseFormBody(c: Context<AppEnv>): Promise<unknown> {
   try {
-    return await c.req.parseBody({ all: true })
+    const parsed = await c.req.parseBody({ all: true })
+    return expandObjectKeys(parsed)
   } catch {
     return {}
   }
@@ -174,7 +253,7 @@ async function safeParseUnknownBody(c: Context<AppEnv>): Promise<unknown> {
 
     if (trimmed.includes('=') || trimmed.includes('&')) {
       const params = new URLSearchParams(trimmed)
-      return urlSearchParamsToObject(params)
+      return expandObjectKeys(urlSearchParamsToObject(params))
     }
 
     return {}
@@ -302,7 +381,10 @@ export function createHandler<Schema extends StandardSchemaV1>(
           }
           // Default error response if no hook provided
           const error = result.issues[0]?.message || 'Invalid input'
-          return c.var.fx.reply([['patch-signals', { error }]], { status: 400 })
+          if (isDatastarRequest(c)) {
+            return c.var.fx.reply([['patch-signals', { error }]], { status: 400 })
+          }
+          return c.text(error, 400)
         }
 
         // 4. On success, call the handler with 100% type-safe data
