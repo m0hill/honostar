@@ -84,7 +84,7 @@ function IssueDetailPage({
   user: User | null
   commentError?: string
 }) {
-  const issueUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}${routes.issues.show.href({ id: issue.id })}`
+  const issueUrl = routes.issues.show.href({ id: issue.id })
 
   return (
     <div class="min-h-screen bg-background text-foreground flex flex-col items-center pt-10 px-4">
@@ -99,7 +99,7 @@ function IssueDetailPage({
             variant="outline"
             size="sm"
             data-signals={JSON.stringify({ copied: false })}
-            data-on:click={`@clipboard('${issueUrl}'); $copied = true; setTimeout(() => $copied = false, 2000)`}
+            data-on:click={`@clipboard(window.location.origin + '${issueUrl}'); $copied = true; setTimeout(() => $copied = false, 2000)`}
           >
             <span data-show="!$copied" style="display:none">
               Share Link
