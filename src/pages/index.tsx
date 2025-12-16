@@ -50,11 +50,6 @@ function IndexPage({
               </Button>
             </div>
           )}
-          <div class="pt-4 border-t">
-            <Button asChild variant="outline" size="sm">
-              <a href={routes.inspectorDemo.href()}>🔍 Inspector Demo (Test Signals)</a>
-            </Button>
-          </div>
         </CardContent>
       </Card>
 

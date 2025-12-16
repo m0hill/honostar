@@ -8,10 +8,6 @@ export const routesManifest: RouteManifestEntry[] = [
     load: () => import('./pages/issues/new-modal'),
   },
   {
-    routePath: '/inspector-demo',
-    load: () => import('./pages/inspector-demo'),
-  },
-  {
     routePath: '/issues/new',
     load: () => import('./pages/issues/new'),
   },
