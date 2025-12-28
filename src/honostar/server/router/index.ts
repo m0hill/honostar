@@ -95,6 +95,26 @@ function collectQueries(
   }
 }
 
+function inferTopicsFromQueries(registrations: QueryRegistration[] | undefined): {
+  topics: string[]
+  hasPattern: boolean
+} {
+  if (!registrations || registrations.length === 0) return { topics: [], hasPattern: false }
+
+  const topics: string[] = []
+  let hasPattern = false
+
+  for (const [topicOrPattern] of registrations) {
+    if (typeof topicOrPattern === 'string') {
+      topics.push(topicOrPattern)
+    } else {
+      hasPattern = true
+    }
+  }
+
+  return { topics: [...new Set(topics)], hasPattern }
+}
+
 async function registerModule(
   app: Hono<AppEnv>,
   routePath: string,
@@ -131,6 +151,16 @@ async function registerModule(
         const topics =
           typeof pageDef.topics === 'function' ? await pageDef.topics(c) : pageDef.topics
         c.set('sseTopics', topics)
+      } else if (pageDef.queries && pageDef.queries.length > 0) {
+        const inferred = inferTopicsFromQueries(pageDef.queries)
+        if (inferred.topics.length > 0) {
+          c.set('sseTopics', inferred.topics)
+        } else if (inferred.hasPattern) {
+          console.warn(
+            `[CQRS] Page "${routePath}" declares pattern-based queries but no explicit topics; ` +
+              'SSE will not subscribe to any topics. Add `topics: [...]` to the page definition.'
+          )
+        }
       }
       if (pageDef.sseParams) {
         const sseParams =

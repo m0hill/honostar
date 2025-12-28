@@ -191,7 +191,6 @@ function IndexPage({
 }
 
 export default defineQueryPage({
-  topics: [topics.issues.list(), topics.labels.list()],
   queries: [
     [topics.issues.list(), issuesListQuery],
     [topics.labels.list(), labelsListQuery],

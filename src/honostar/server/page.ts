@@ -100,6 +100,13 @@ export interface PageDefinition<T extends Record<string, unknown> = {}> {
   component: PageComponent<T>
   topics?: PageTopics
   /**
+   * Convenience: if `topics` is omitted and `queries` contains string topic registrations,
+   * Honostar will infer the page's `topics` list from those query registrations.
+   *
+   * If you register any pattern-based queries (RegExp), you must still provide `topics`
+   * explicitly, since SSE subscriptions require concrete topic names.
+   */
+  /**
    * Extra query params to include when opening the page's SSE connection.
    *
    * Use this for per-page query context (e.g. list filters) so CQRS query handlers
