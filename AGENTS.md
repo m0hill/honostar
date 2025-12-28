@@ -546,7 +546,7 @@ data-on:honostar-theme-change__window="renderChart(evt.detail.resolved)"
 - Honostar is a **runtime-agnostic** meta-framework built on Hono (web server) and Datastar (hypermedia reactivity).
 - It provides a batteries-included foundation for building hypermedia-driven MPAs with real-time SSE updates.
 - Core philosophy: server-rendered HTML is the source of truth, enhanced with reactive signals and live patches.
-- **Works with**: Node.js, Bun, Deno, Cloudflare Workers, and any runtime supported by Hono.
+- **Works with**: Node.js, Bun, Deno
 
 **Core Framework Structure** (`src/honostar/`)
 - `router/` - File-based routing with compile-time manifest generation (runtime-agnostic)

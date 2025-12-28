@@ -29,7 +29,7 @@ HonoStar embraces **server-rendered HTML as the source of truth**. Every navigat
 - Hono JSX for server-side rendering
 - shadcn/ui components pre-converted for Hono JSX
 - Theme system with zero-FOUC server/client coordination
-- Runtime-agnostic: works with Node.js, Bun, Deno, Cloudflare Workers
+- Runtime-agnostic: works with Node.js, Bun, Deno
 
 ### 🔐 Security Built-In
 - CSRF token validation with configurable exemptions
@@ -59,8 +59,8 @@ bun run dev
 // src/pages/issues.tsx
 export default createPage({
   use: [requireAuth], // Optional middleware
-  loader: async (c) => ({ 
-    issues: await fetchIssues(c) 
+  loader: async (c) => ({
+    issues: await fetchIssues(c)
   }),
   component: (props) => <IssuesList issues={props.issues} />,
   topics: ['issues:list'], // Auto-subscribe to SSE topic
@@ -76,13 +76,13 @@ export const POST = createHandler({
   async handler(c) {
     const input = await c.req.json()
     const issue = await createIssue(input)
-    
+
     // Broadcast updated list to all viewers
     const allIssues = await fetchIssues()
     c.var.fx.broadcast('issues:list', [
       ['patch-elements', <IssuesList issues={allIssues} />]
     ])
-    
+
     return c.var.fx.reply([
       ['patch-signals', { modal: { open: false } }]
     ])
@@ -134,9 +134,9 @@ HonoStar uses Datastar's declarative attribute API:
   <button type="submit">Create Issue</button>
 </form>
 
-<div 
+<div
   id="issues-list"
-  data-show="$issuesLoaded" 
+  data-show="$issuesLoaded"
   style="display:none"
 >
   {/* Server renders this, SSE morphs it on updates */}
@@ -156,7 +156,7 @@ Zero-config works out of the box. Override via `HonostarConfig`:
 ```typescript
 // src/index.ts
 const config = {
-  assets: { 
+  assets: {
     css: '/styles.css',
     runtime: '/runtime.js',
     datastar: '/datastar.js'
@@ -164,7 +164,7 @@ const config = {
   endpoints: { sse: '/_/events' },
   security: {
     csp: "script-src 'self' 'unsafe-eval' 'nonce-${nonce}';",
-    csrf: { 
+    csrf: {
       cookieName: 'ds_csrf',
       exceptPaths: ['/webhooks']
     },
