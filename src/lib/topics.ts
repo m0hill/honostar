@@ -6,6 +6,7 @@ export const topics = {
     list: () => 'labels:list',
   },
   issue: (id: number | string) => ({
+    detail: () => `issue:${id}:detail`,
     comments: () => `issue:${id}:comments`,
   }),
 }

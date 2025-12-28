@@ -6,6 +6,7 @@ import { createHandler } from '@/honostar/server'
 
 const searchSchema = z.object({
   search: z.string().optional().default(''),
+  status: z.enum(['open', 'closed', 'all']).optional().default('open'),
 })
 
 export const GET = createHandler({
@@ -13,13 +14,17 @@ export const GET = createHandler({
 
   async handler(c, data) {
     const searchQuery = data.search.trim()
+    const status = data.status
 
     if (!searchQuery) {
-      // Return all issues if no search query
+      // Return filtered issues if no search query
       const allIssues = await c.var.db.query.issues.findMany({
         with: {
           author: true,
         },
+        ...(status !== 'all' && {
+          where: (i, { eq }) => eq(i.status, status),
+        }),
         orderBy: (issues, { desc }) => [desc(issues.createdAt)],
       })
       return c.var.fx.reply([
@@ -29,7 +34,11 @@ export const GET = createHandler({
 
     // Search issues by title
     const searchResults = await c.var.db.query.issues.findMany({
-      where: like(issues.title, `%${searchQuery}%`),
+      where: (i, { and, eq }) =>
+        and(
+          like(i.title, `%${searchQuery}%`),
+          ...(status === 'all' ? [] : [eq(i.status, status)])
+        ),
       with: {
         author: true,
       },

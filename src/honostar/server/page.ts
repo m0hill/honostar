@@ -12,6 +12,7 @@ type PageLoader<T extends Record<string, unknown> = {}> = (
 type PageComponent<T extends Record<string, unknown> = {}> = (props: T) => JSX.Element
 
 type PageTopics = string[] | ((c: Context<AppEnv>) => string[] | Promise<string[]>)
+type PageSseParams = Record<string, string> | ((c: Context<AppEnv>) => Record<string, string> | Promise<Record<string, string>>)
 
 export type PageHeadElements = JSX.Element | JSX.Element[] | null | undefined
 
@@ -98,6 +99,13 @@ export interface PageDefinition<T extends Record<string, unknown> = {}> {
   loader?: PageLoader<T>
   component: PageComponent<T>
   topics?: PageTopics
+  /**
+   * Extra query params to include when opening the page's SSE connection.
+   *
+   * Use this for per-page query context (e.g. list filters) so CQRS query handlers
+   * can render correctly for each connected client.
+   */
+  sseParams?: PageSseParams
   /**
    * CQRS: Topic query handlers that should re-render regions for this page.
    *

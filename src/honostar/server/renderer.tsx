@@ -55,8 +55,14 @@ export const renderer = (userConfig?: Partial<HonostarConfig>) => {
     const base = jsxRenderer(({ children }) => {
       const pageHead = c.var.pageHead
       const topics = c.var.sseTopics ?? []
+      const sseParams = c.var.sseParams ?? {}
       const params = new URLSearchParams()
       if (topics.length > 0) params.set('topics', topics.join(','))
+      for (const [key, value] of Object.entries(sseParams)) {
+        if (value !== undefined && value !== null && String(value).length > 0) {
+          params.set(key, String(value))
+        }
+      }
       if (topicsToken) params.set('topicsToken', topicsToken)
       const topicsQuery = params.size > 0 ? `?${params.toString()}` : ''
       const runtimeData = {

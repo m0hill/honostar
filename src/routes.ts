@@ -17,6 +17,7 @@ export const routes = route({
     new: '/issues/new',
     newModal: '/issues/new-modal',
     show: '/issues/:id',
+    status: '/issues/:id/status',
   },
   labels: '/labels',
   search: '/search',

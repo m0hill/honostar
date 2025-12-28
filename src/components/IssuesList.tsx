@@ -1,5 +1,6 @@
 import { routes } from '@/routes'
 import type { IssueWithAuthor } from '@/types'
+import { Badge } from './ui/badge'
 import { Card } from './ui/card'
 
 export default function IssuesList({ issues }: { issues: IssueWithAuthor[] }) {
@@ -30,8 +31,13 @@ export default function IssuesList({ issues }: { issues: IssueWithAuthor[] }) {
                       />
                     </svg>
                   </div>
-                  <div>
-                    <p class="font-semibold text-lg">{issue.title}</p>
+                  <div class="min-w-0">
+                    <div class="flex items-center gap-2">
+                      <p class="font-semibold text-lg truncate">{issue.title}</p>
+                      <Badge variant={issue.status === 'open' ? 'secondary' : 'outline'}>
+                        {issue.status}
+                      </Badge>
+                    </div>
                     <p class="text-sm text-muted-foreground">
                       #{issue.id} opened by {issue.author.username}
                     </p>

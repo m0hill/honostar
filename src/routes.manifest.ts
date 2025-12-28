@@ -48,6 +48,10 @@ export const routesManifest: RouteManifestEntry[] = [
     load: () => import('./pages/issues/[id]/comments'),
   },
   {
+    routePath: '/issues/:id/status',
+    load: () => import('./pages/issues/[id]/status'),
+  },
+  {
     routePath: '/auth/:action',
     load: () => import('./pages/auth/[action]'),
   },

@@ -132,6 +132,11 @@ async function registerModule(
           typeof pageDef.topics === 'function' ? await pageDef.topics(c) : pageDef.topics
         c.set('sseTopics', topics)
       }
+      if (pageDef.sseParams) {
+        const sseParams =
+          typeof pageDef.sseParams === 'function' ? await pageDef.sseParams(c) : pageDef.sseParams
+        c.set('sseParams', sseParams)
+      }
 
       const loaderResult = (await pageDef.loader?.(c)) ?? {}
       if (loaderResult instanceof Response) {

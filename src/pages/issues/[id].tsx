@@ -21,6 +21,49 @@ const formatDate = (date: Date) =>
     day: 'numeric',
   }).format(date)
 
+async function fetchIssueWithDetails(c: Parameters<QueryHandler>[0]['c'], issueId: number) {
+  const issueData = await c.var.db.query.issues.findFirst({
+    where: (i, { eq }) => eq(i.id, issueId),
+    with: {
+      author: true,
+      issuesToLabels: {
+        with: {
+          label: true,
+        },
+      },
+      comments: {
+        with: {
+          author: true,
+        },
+        orderBy: (c, { asc }) => [asc(c.createdAt)],
+      },
+    },
+  })
+
+  if (!issueData) return null
+
+  const issue: IssueWithDetails = {
+    ...issueData,
+    labels: issueData.issuesToLabels.map(itl => itl.label),
+    comments: issueData.comments,
+  }
+
+  return issue
+}
+
+const issueDetailQuery: QueryHandler = async ({ c, match, topic }) => {
+  const idStr = match?.groups?.id ?? match?.[1]
+  const issueId = Number(idStr)
+  if (!Number.isFinite(issueId) || issueId <= 0) {
+    console.warn(`[CQRS] Ignoring invalid issue detail topic: ${topic}`)
+    return
+  }
+
+  const issue = await fetchIssueWithDetails(c, issueId)
+  if (!issue) return
+  return [['patch-elements', <IssueDetailCard issue={issue} />]]
+}
+
 const issueCommentsQuery: QueryHandler = async ({ c, match, topic }) => {
   const idStr = match?.groups?.id ?? match?.[1]
   const issueId = Number(idStr)
@@ -36,6 +79,93 @@ const issueCommentsQuery: QueryHandler = async ({ c, match, topic }) => {
   })
 
   return [['patch-elements', <CommentsSection comments={updatedComments} />]]
+}
+
+function IssueDetailCard({ issue }: { issue: IssueWithDetails }) {
+  const issueUrl = routes.issues.show.href({ id: issue.id })
+  const toggleTargetStatus = issue.status === 'open' ? 'closed' : 'open'
+  const toggleLabel = issue.status === 'open' ? 'Close issue' : 'Reopen issue'
+
+  return (
+    <Card id="issue-detail">
+      <CardHeader class="border-b">
+        <div class="flex items-start justify-between gap-4">
+          <div class="min-w-0">
+            <CardTitle class="text-3xl flex items-center gap-3">
+              <span class="truncate">{issue.title}</span>
+              <Badge variant={issue.status === 'open' ? 'secondary' : 'outline'}>
+                {issue.status}
+              </Badge>
+            </CardTitle>
+            <CardDescription>
+              Opened by <span class="font-semibold">{issue.author.username}</span> on{' '}
+              {formatDate(issue.createdAt)}
+            </CardDescription>
+          </div>
+
+          <form
+            action={routes.issues.status.href({ id: String(issue.id) })}
+            method="post"
+            class="shrink-0"
+            data-indicator="togglingIssueStatus"
+            data-on:submit__prevent={`@post('${routes.issues.status.href({ id: String(issue.id) })}', { contentType: 'form', openWhenHidden: true })`}
+          >
+            <input type="hidden" name="status" value={toggleTargetStatus} />
+            <Button type="submit" variant={issue.status === 'open' ? 'outline' : 'default'} data-attr:disabled="$togglingIssueStatus">
+              <span data-show="!$togglingIssueStatus" style="display:none">
+                {toggleLabel}
+              </span>
+              <span data-show="$togglingIssueStatus" style="display:none">
+                Saving...
+              </span>
+            </Button>
+          </form>
+        </div>
+      </CardHeader>
+
+      <CardContent>
+        <div class="mt-4">
+          {/* Share button using clipboard plugin */}
+          <Button
+            variant="outline"
+            size="sm"
+            data-signals={JSON.stringify({ copied: false })}
+            data-on:click={`@clipboard(window.location.origin + '${issueUrl}'); $copied = true; setTimeout(() => $copied = false, 2000)`}
+          >
+            <span data-show="!$copied" style="display:none">
+              Share Link
+            </span>
+            <span data-show="$copied" style="display:none">
+              ✓ Copied!
+            </span>
+          </Button>
+        </div>
+
+        {issue.description && <p class="mt-6 whitespace-pre-wrap">{issue.description}</p>}
+
+        {issue.imageUrl && (
+          <div class="mt-6">
+            <img src={issue.imageUrl} alt="Issue image" class="max-w-full h-auto rounded-md" />
+          </div>
+        )}
+
+        <div class="mt-6">
+          <h3 class="text-lg font-semibold mb-2">Labels</h3>
+          <div class="flex flex-wrap gap-2">
+            {issue.labels.length > 0 ? (
+              issue.labels.map(label => (
+                <Badge key={label.id} variant="secondary">
+                  {label.name}
+                </Badge>
+              ))
+            ) : (
+              <p class="text-sm text-muted-foreground">No labels attached.</p>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  )
 }
 
 function CommentForm({ issueId, user }: { issueId: number; user: User | null }) {
@@ -102,8 +232,6 @@ function IssueDetailPage({
   user: User | null
   commentError?: string
 }) {
-  const issueUrl = routes.issues.show.href({ id: issue.id })
-
   return (
     <div class="min-h-screen bg-background text-foreground flex flex-col items-center pt-10 px-4">
       <div class="max-w-4xl w-full">
@@ -111,57 +239,9 @@ function IssueDetailPage({
           <Button asChild variant="link" class="p-0 h-auto">
             <a href={routes.home.href()}>&larr; Back to Issues</a>
           </Button>
-
-          {/* Share button using clipboard plugin */}
-          <Button
-            variant="outline"
-            size="sm"
-            data-signals={JSON.stringify({ copied: false })}
-            data-on:click={`@clipboard(window.location.origin + '${issueUrl}'); $copied = true; setTimeout(() => $copied = false, 2000)`}
-          >
-            <span data-show="!$copied" style="display:none">
-              Share Link
-            </span>
-            <span data-show="$copied" style="display:none">
-              ✓ Copied!
-            </span>
-          </Button>
         </div>
 
-        <Card>
-          <CardHeader class="border-b">
-            <CardTitle class="text-3xl">{issue.title}</CardTitle>
-            <CardDescription>
-              Opened by <span class="font-semibold">{issue.author.username}</span> on{' '}
-              {formatDate(issue.createdAt)}
-            </CardDescription>
-          </CardHeader>
-
-          <CardContent>
-            {issue.description && <p class="whitespace-pre-wrap">{issue.description}</p>}
-
-            {issue.imageUrl && (
-              <div class="mt-6">
-                <img src={issue.imageUrl} alt="Issue image" class="max-w-full h-auto rounded-md" />
-              </div>
-            )}
-
-            <div class="mt-6">
-              <h3 class="text-lg font-semibold mb-2">Labels</h3>
-              <div class="flex flex-wrap gap-2">
-                {issue.labels.length > 0 ? (
-                  issue.labels.map(label => (
-                    <Badge key={label.id} variant="secondary">
-                      {label.name}
-                    </Badge>
-                  ))
-                ) : (
-                  <p class="text-sm text-muted-foreground">No labels attached.</p>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <IssueDetailCard issue={issue} />
 
         <div id="comments" class="scroll-mt-20">
           <div class="mt-8 flex items-center justify-between">
@@ -196,8 +276,14 @@ function IssueDetailPage({
 }
 
 export default defineQueryPage({
-  topics: c => [topics.issue(c.req.param('id')).comments()],
-  queries: [[/^issue:(?<id>\d+):comments$/, issueCommentsQuery]],
+  topics: c => [
+    topics.issue(c.req.param('id')).detail(),
+    topics.issue(c.req.param('id')).comments(),
+  ],
+  queries: [
+    [/^issue:(?<id>\d+):detail$/, issueDetailQuery],
+    [/^issue:(?<id>\d+):comments$/, issueCommentsQuery],
+  ],
   head: ({ issue }) => ({
     title: `${issue.title} • Honostar`,
     elements: [
@@ -213,33 +299,11 @@ export default defineQueryPage({
     }
     const { id } = paramValidation.data
 
-    const issueData = await c.var.db.query.issues.findFirst({
-      where: (i, { eq }) => eq(i.id, id),
-      with: {
-        author: true,
-        issuesToLabels: {
-          with: {
-            label: true,
-          },
-        },
-        comments: {
-          with: {
-            author: true,
-          },
-          orderBy: (c, { asc }) => [asc(c.createdAt)],
-        },
-      },
-    })
-
-    if (!issueData) {
+    const issue = await fetchIssueWithDetails(c, id)
+    if (!issue) {
       return c.text('Issue not found', 404)
     }
 
-    const issue: IssueWithDetails = {
-      ...issueData,
-      labels: issueData.issuesToLabels.map(itl => itl.label),
-      comments: issueData.comments,
-    }
     const commentError = c.req.query('commentError')
     return commentError ? { issue, user: c.var.user, commentError } : { issue, user: c.var.user }
   },
