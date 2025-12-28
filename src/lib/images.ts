@@ -1,4 +1,4 @@
-import { writeFile } from 'node:fs/promises'
+import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
 /**
@@ -37,7 +37,9 @@ async function saveFileBytes(args: {
   const ext = extFromMime || extFromName || 'jpg'
 
   const filename = `image_${Date.now()}_${Math.random().toString(36).substring(2, 11)}.${ext}`
-  const filepath = join(process.cwd(), 'images', filename)
+  const imagesDir = join(process.cwd(), 'images')
+  await mkdir(imagesDir, { recursive: true })
+  const filepath = join(imagesDir, filename)
   await writeFile(filepath, args.bytes)
   return `/images/${filename}`
 }
