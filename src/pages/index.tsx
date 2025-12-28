@@ -1,13 +1,30 @@
 import IssuesList from '@/components/IssuesList'
+import LabelsSection from '@/components/LabelsSection'
 import { ModeToggle } from '@/components/ModeToggle'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { labels } from '@/db/schema'
-import { createPage } from '@/honostar/server'
+import type { QueryHandler } from '@/honostar/server'
+import { defineQueryPage } from '@/honostar/server'
 import { topics } from '@/lib/topics'
 import { routes } from '@/routes'
 import type { IssueWithAuthor, Label, User } from '@/types'
+
+const issuesListQuery: QueryHandler = async ({ c }) => {
+  const issues = await c.var.db.query.issues.findMany({
+    with: {
+      author: true,
+    },
+    orderBy: (issues, { desc }) => [desc(issues.createdAt)],
+  })
+  return [['patch-elements', <IssuesList issues={issues} />]]
+}
+
+const labelsListQuery: QueryHandler = async ({ c }) => {
+  const allLabels = await c.var.db.select().from(labels)
+  return [['patch-elements', <LabelsSection labels={allLabels} />]]
+}
 
 function IndexPage({
   user,
@@ -108,8 +125,12 @@ function IndexPage({
   )
 }
 
-export default createPage({
+export default defineQueryPage({
   topics: [topics.issues.list(), topics.labels.list()],
+  queries: [
+    [topics.issues.list(), issuesListQuery],
+    [topics.labels.list(), labelsListQuery],
+  ],
   head: {
     title: 'Issues • Honostar',
     elements: [

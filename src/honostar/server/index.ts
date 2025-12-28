@@ -16,7 +16,7 @@ export type {
   PageLayoutDefinition,
 } from './page'
 // Pages & Handlers
-export { createHandler, createPage } from './page'
+export { createHandler, createPage, defineCommand, defineQueryPage } from './page'
 // Rendering
 export { renderer } from './renderer'
 // Routing

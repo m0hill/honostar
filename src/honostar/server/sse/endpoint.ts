@@ -13,6 +13,7 @@ import { verifyTopics } from '@/honostar/server/security/topics'
 import type { EffectDefinition } from '@/honostar/server/sse/effect-registry'
 import { SseFormatter } from '@/honostar/server/sse/generator'
 import type { SSEPayload } from '@/honostar/server/sse/pubsub/memory'
+import type { QueryRegistration } from '@/honostar/server/sse/queries'
 import { TopicQueryRegistry } from '@/honostar/server/sse/queries'
 
 type DomainEvent = { name: string; payload: Jsonifiable | null }
@@ -73,8 +74,12 @@ function safeParseJsonifiable(value: string): Jsonifiable | null {
 /**
  * Creates an SSE endpoint handler with optional configuration
  * @param userConfig - Optional partial HonostarConfig (merged with defaults)
+ * @param options - Optional CQRS wiring (e.g. query registrations)
  */
-export const createSseEndpoint = (userConfig?: Partial<HonostarConfig>): Handler => {
+export const createSseEndpoint = (
+  userConfig?: Partial<HonostarConfig>,
+  options?: { queries?: QueryRegistration[] }
+): Handler => {
   const config = createConfig(userConfig)
   const pingMs = config.sse?.pingIntervalMs ?? 25000
   return c =>
@@ -159,6 +164,15 @@ export const createSseEndpoint = (userConfig?: Partial<HonostarConfig>): Handler
         const registry = new TopicQueryRegistry()
         c.set('queries', registry)
         return registry
+      }
+
+      // Allow wiring CQRS queries directly through the SSE endpoint factory so apps don't
+      // need separate `registerQueries(...)` middleware.
+      if (options?.queries && options.queries.length > 0) {
+        const registry = getQueries()
+        for (const [topicOrPattern, handler] of options.queries) {
+          registry.register(topicOrPattern, handler)
+        }
       }
 
       const runQuery = async (topic: string, event?: DomainEvent) => {

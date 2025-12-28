@@ -4,7 +4,8 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
-import { createPage } from '@/honostar/server'
+import type { QueryHandler } from '@/honostar/server'
+import { defineQueryPage } from '@/honostar/server'
 import { topics } from '@/lib/topics'
 import { routes } from '@/routes'
 import type { IssueWithDetails, User } from '@/types'
@@ -19,6 +20,23 @@ const formatDate = (date: Date) =>
     month: 'long',
     day: 'numeric',
   }).format(date)
+
+const issueCommentsQuery: QueryHandler = async ({ c, match, topic }) => {
+  const idStr = match?.groups?.id ?? match?.[1]
+  const issueId = Number(idStr)
+  if (!Number.isFinite(issueId) || issueId <= 0) {
+    console.warn(`[CQRS] Ignoring invalid comments topic: ${topic}`)
+    return
+  }
+
+  const updatedComments = await c.var.db.query.comments.findMany({
+    where: (comments, { eq }) => eq(comments.issueId, issueId),
+    with: { author: true },
+    orderBy: (comments, { asc }) => [asc(comments.createdAt)],
+  })
+
+  return [['patch-elements', <CommentsSection comments={updatedComments} />]]
+}
 
 function CommentForm({ issueId, user }: { issueId: number; user: User | null }) {
   if (!user) {
@@ -177,8 +195,9 @@ function IssueDetailPage({
   )
 }
 
-export default createPage({
+export default defineQueryPage({
   topics: c => [topics.issue(c.req.param('id')).comments()],
+  queries: [[/^issue:(?<id>\d+):comments$/, issueCommentsQuery]],
   head: ({ issue }) => ({
     title: `${issue.title} • Honostar`,
     elements: [

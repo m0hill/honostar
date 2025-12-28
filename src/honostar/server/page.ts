@@ -3,6 +3,7 @@ import type { Context, MiddlewareHandler } from 'hono'
 import type { JSX } from 'hono/jsx/jsx-runtime'
 import type { AppEnv } from '@/honostar/server/context'
 import type { FxResponse } from '@/honostar/server/sse/middleware'
+import type { QueryRegistration } from '@/honostar/server/sse/queries'
 
 type PageLoader<T extends Record<string, unknown> = {}> = (
   c: Context<AppEnv>
@@ -97,6 +98,12 @@ export interface PageDefinition<T extends Record<string, unknown> = {}> {
   loader?: PageLoader<T>
   component: PageComponent<T>
   topics?: PageTopics
+  /**
+   * CQRS: Topic query handlers that should re-render regions for this page.
+   *
+   * These run on the SSE connection when a topic receives a domain event via `c.var.fx.publish(...)`.
+   */
+  queries?: QueryRegistration[]
   head?: PageHeadDefinition<T>
   layout?: PageLayoutDefinition<T>
 }
@@ -292,6 +299,17 @@ export function createPage<T extends Record<string, unknown>>(
 }
 
 /**
+ * CQRS-friendly alias for `createPage`.
+ *
+ * Use this for GET pages that subscribe to topics and declare `queries` for re-rendering regions.
+ */
+export function defineQueryPage<T extends Record<string, unknown>>(
+  definition: PageDefinition<T>
+): PageDefinition<T> {
+  return definition
+}
+
+/**
  * Creates a handler with automatic Datastar request validation and type-safe data extraction.
  *
  * This is the unified handler creator that handles both validated and non-validated cases.
@@ -399,3 +417,11 @@ export function createHandler<Schema extends StandardSchemaV1>(
     handler: definition.handler,
   }
 }
+
+/**
+ * CQRS-friendly alias for `createHandler`.
+ *
+ * Use this for mutation endpoints (POST/PUT/PATCH/DELETE) that publish domain events and only
+ * `reply()` to the initiating tab for validation or confirmation UI.
+ */
+export const defineCommand = createHandler

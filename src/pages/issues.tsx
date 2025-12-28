@@ -1,8 +1,9 @@
 import { z } from 'zod'
 import { issues, issuesToLabels, labels as labelsTable } from '@/db/schema'
-import { createHandler } from '@/honostar/server'
+import { defineCommand } from '@/honostar/server'
 import { requireAuth } from '@/lib/auth-middleware'
 import { saveBase64Image } from '@/lib/images'
+import { topics } from '@/lib/topics'
 import { routes } from '@/routes'
 
 /**
@@ -22,7 +23,7 @@ const issueSchema = z.object({
   }),
 })
 
-export const POST = createHandler({
+export const POST = defineCommand({
   schema: issueSchema,
   use: [requireAuth],
   hook: (result, c) => {
@@ -52,6 +53,7 @@ export const POST = createHandler({
     const labelIds: number[] = issue.labels.map((v: string) => Number(v)).filter(Boolean)
 
     const newLabel = issue.newLabel?.trim()
+    let createdNewLabel = false
 
     if (newLabel) {
       const exists = await c.var.db.query.labels.findFirst({
@@ -62,7 +64,10 @@ export const POST = createHandler({
           .insert(labelsTable)
           .values({ name: newLabel, color: '#999999' })
           .returning()
-        if (inserted) labelIds.push(inserted.id)
+        if (inserted) {
+          createdNewLabel = true
+          labelIds.push(inserted.id)
+        }
       } else {
         labelIds.push(exists.id)
       }
@@ -112,13 +117,39 @@ export const POST = createHandler({
         .values(labelIds.map(labelId => ({ issueId: created.id, labelId })))
     }
 
-    // CQRS: command publishes an event; queries re-render subscribed regions.
-    // This custom effect handles:
-    // - Publishing the domain event to the shared topic
-    // - Showing success toast to creator
-    // - Closing modal and resetting form
+    // CQRS: command publishes domain events; queries re-render subscribed regions on SSE.
+    c.var.fx.publish(topics.issues.list(), 'issue:created', { id: created.id })
+    if (createdNewLabel && newLabel) {
+      c.var.fx.publish(topics.labels.list(), 'label:created', { name: newLabel })
+    }
+
     if (c.req.header('datastar-request') !== null) {
-      return c.var.fx.reply([['issue:created-success', created]], { status: 201 })
+      return c.var.fx.reply(
+        [
+          ['toast:show', `Issue "${created.title}" created successfully!`, 'success'],
+          [
+            'patch-elements',
+            '',
+            {
+              selector: '#ds-overlays [data-modal-id="create-issue"]',
+              mode: 'remove',
+            },
+          ],
+          [
+            'patch-signals',
+            {
+              issue: {
+                title: '',
+                description: '',
+                labels: [],
+                newLabel: '',
+                image: null,
+              },
+            },
+          ],
+        ],
+        { status: 201 }
+      )
     }
     return c.redirect(routes.issues.show.href({ id: created.id }), 303)
   },

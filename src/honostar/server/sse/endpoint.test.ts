@@ -5,7 +5,7 @@ import type { AppEnv } from '@/honostar/server/context'
 import { signTopics } from '@/honostar/server/security/topics'
 import { createSseEndpoint } from '@/honostar/server/sse/endpoint'
 import { MemoryBus } from '@/honostar/server/sse/pubsub/memory'
-import { TopicQueryRegistry } from '@/honostar/server/sse/queries'
+import type { QueryRegistration } from '@/honostar/server/sse/queries'
 
 const tick = () => new Promise(resolve => setTimeout(resolve, 0))
 
@@ -76,21 +76,26 @@ describe('createSseEndpoint CQRS topic queries', () => {
 
   test('runs a registered query on connect and again on honostar-event', async () => {
     const bus = new MemoryBus()
-    const queries = new TopicQueryRegistry()
     const topic = 'issue:123:comments'
 
-    queries.register(/^issue:(?<id>\d+):comments$/, async ({ event }) => {
-      return [['patch-elements', `<div id="comments-section">${event ? 'EVENT' : 'INIT'}</div>`]]
-    })
+    const queries: QueryRegistration[] = [
+      [
+        /^issue:(?<id>\d+):comments$/,
+        async ({ event }) => {
+          return [
+            ['patch-elements', `<div id="comments-section">${event ? 'EVENT' : 'INIT'}</div>`],
+          ]
+        },
+      ],
+    ]
 
     const app = new Hono<AppEnv>()
     app.use('*', async (c, next) => {
       c.set('clientId', c.req.header('X-Tab-ID') ?? 'anonymous')
       c.set('bus', bus)
-      c.set('queries', queries)
       await next()
     })
-    app.get('/_/events', createSseEndpoint())
+    app.get('/_/events', createSseEndpoint(undefined, { queries }))
 
     const ac = new AbortController()
     const res = await app.request(`/_/events?topics=${topic}`, {

@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { labels as labelsTable } from '@/db/schema'
-import { createPage } from '@/honostar/server'
+import { defineQueryPage } from '@/honostar/server'
 import { requireAuth } from '@/lib/auth-middleware'
 import { routes } from '@/routes'
 import type { Label as LabelType } from '@/types'
@@ -104,7 +104,7 @@ function NewIssuePage(props: { labels: LabelType[]; error?: string }) {
   )
 }
 
-export default createPage({
+export default defineQueryPage({
   use: [requireAuth],
   head: { title: 'New Issue • Honostar' },
   async loader(c) {

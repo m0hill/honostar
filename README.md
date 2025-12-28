@@ -22,8 +22,8 @@ HonoStar embraces **server-rendered HTML as the source of truth**. Every navigat
 
 ### 🔄 Declarative Real-Time Updates
 - **Replies** (`c.var.fx.reply()`) - Tab-scoped updates for validation errors, toasts, modal state
-- **Broadcasts** (`c.var.fx.broadcast(topic, ...)`) - Shared state updates to all viewers via topics
-- **Fat patches** - Re-render entire regions to avoid fragile incremental updates
+- **Domain events** (`c.var.fx.publish(topic, name, payload)`) - Commands publish; queries re-render fat patches on SSE
+- **Fat patches** - Re-render entire regions so clients self-heal after reconnects
 
 ### 🎨 Modern DX
 - Hono JSX for server-side rendering
@@ -57,31 +57,29 @@ bun run dev
 
 ```typescript
 // src/pages/issues.tsx
-export default createPage({
+export default defineQueryPage({
   use: [requireAuth], // Optional middleware
   loader: async (c) => ({
     issues: await fetchIssues(c)
   }),
   component: (props) => <IssuesList issues={props.issues} />,
-  topics: ['issues:list'], // Auto-subscribe to SSE topic
+  topics: [topics.issues.list()], // Auto-subscribe to SSE topic
+  queries: [[topics.issues.list(), issuesListQuery]], // Re-render on domain events
 })
 ```
 
-**Handlers** process mutations and send SSE updates:
+**Handlers** (commands) mutate state and publish domain events:
 
 ```typescript
-// src/pages/issues/[id].tsx
-export const POST = createHandler({
+// src/pages/issues.tsx
+export const POST = defineCommand({
   use: [requireAuth],
   async handler(c) {
     const input = await c.req.json()
     const issue = await createIssue(input)
 
-    // Broadcast updated list to all viewers
-    const allIssues = await fetchIssues()
-    c.var.fx.broadcast('issues:list', [
-      ['patch-elements', <IssuesList issues={allIssues} />]
-    ])
+    // CQRS: publish domain event; queries re-render subscribed regions.
+    c.var.fx.publish(topics.issues.list(), 'issue:created', { id: issue.id })
 
     return c.var.fx.reply([
       ['patch-signals', { modal: { open: false } }]
@@ -90,24 +88,25 @@ export const POST = createHandler({
 })
 ```
 
-### Replies vs Broadcasts
+### Replies vs Domain Events
 
 | Use | When | API |
 |-----|------|-----|
 | `reply()` | Tab-scoped feedback (validation errors, toasts) | Targets the initiating tab only |
-| `broadcast(topic, ...)` | Shared state all viewers must see | Fans out to all subscribers of a topic |
+| `publish(topic, name, payload)` | Shared state changes (create/update/delete) | Fans out an event; queries re-render canonical HTML |
 
-**Rule**: Every shared state change must broadcast through a topic defined in `src/lib/topics.ts`.
+**Rule**: Every shared state change must publish through a topic defined in `src/lib/topics.ts`.
 
 `reply()` now inspects the incoming request and, when it comes from a Datastar action, automatically returns HTTP patches for simple built-in effects (`patch-elements`, `patch-elements-seq`, `patch-signals`). The response includes the required `datastar-*` headers so the client can morph the DOM without needing an SSE connection. More complex replies (custom effects, execute-script, multi-effect responses) continue to use SSE just like before.
 
 ### SSE Patch Discipline
 
 ```typescript
-// ✅ Good: Default outer morph with fat patch
-c.var.fx.broadcast('issues:list', [
-  ['patch-elements', <IssuesList issues={allIssues} />]
-])
+// ✅ Good: Query returns a fat patch (default outer morph)
+export const issuesListQuery: QueryHandler = async ({ c }) => {
+  const allIssues = await fetchIssues(c)
+  return [['patch-elements', <IssuesList issues={allIssues} />]]
+}
 
 // ✅ Good: Append modal to overlay container
 c.var.fx.reply([

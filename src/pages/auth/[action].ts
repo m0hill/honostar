@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { createHandler } from '@/honostar/server'
+import { defineCommand } from '@/honostar/server'
 import { createAuthResponse, handleLogin, handleSignup } from '@/lib/auth'
 import { routes } from '@/routes'
 
@@ -10,7 +10,7 @@ const authPayloadSchema = z.object({
   }),
 })
 
-export const POST = createHandler({
+export const POST = defineCommand({
   schema: authPayloadSchema,
   hook: (result, c) => {
     const error = result.error[0]?.message || 'Validation failed'

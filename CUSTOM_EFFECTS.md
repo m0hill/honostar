@@ -8,21 +8,17 @@ Without custom effects, your handlers can become verbose with repeated patterns:
 
 ```typescript
 // ❌ Verbose and repetitive
-export const POST = createHandler({
+export const POST = defineCommand({
   async handler(c) {
     const issue = await createIssue(c)
     
     // Every time you create an issue, you repeat this pattern:
-    return c.var.fx.respond({
-      effects: [
-        ['patch-elements', <IssuesList issues={await fetchIssues(c)} />],
-        ['patch-elements', <Toast message="Success!" type="success" />, { selector: '#toast-container', mode: 'append' }],
-        ['patch-elements', '', { selector: '#create-issue-modal', mode: 'remove' }],
-        ['patch-signals', { 'createIssueModal.open': false }]
-      ],
-      topics: ['issues:list'],
-      toClient: true
-    })
+    c.var.fx.publish(topics.issues.list(), 'issue:created', { id: issue.id })
+    return c.var.fx.reply([
+      ['patch-elements', <Toast message="Success!" type="success" />, { selector: '#toast-container', mode: 'append' }],
+      ['patch-elements', '', { selector: '#create-issue-modal', mode: 'remove' }],
+      ['patch-signals', { 'createIssueModal.open': false }]
+    ])
   }
 })
 ```
@@ -31,7 +27,7 @@ With custom effects, you can create semantic, reusable abstractions:
 
 ```typescript
 // ✅ Clean and semantic
-export const POST = createHandler({
+export const POST = defineCommand({
   async handler(c) {
     const issue = await createIssue(c)
     
@@ -91,7 +87,7 @@ app.use('*', registerEffects({
 Now you can use your custom effects in any handler:
 
 ```typescript
-export const POST = createHandler({
+export const POST = defineCommand({
   async handler(c) {
     // Use your custom effects
     return c.var.fx.reply([
@@ -137,10 +133,8 @@ Create effects that encapsulate complex domain logic:
 
 ```typescript
 const issueCreated: EffectHandler<[issue: Issue]> = async (c, issue) => {
-  // Broadcast update to all viewers
-  await c.var.fx.broadcast('issues:list', [
-    ['patch-elements', <IssuesList issues={await fetchIssues(c)} />]
-  ])
+  // CQRS: publish domain event; queries re-render canonical HTML on SSE.
+  c.var.fx.publish(topics.issues.list(), 'issue:created', { id: issue.id })
   
   // Show success toast to creator
   await c.var.fx.reply([
@@ -159,11 +153,6 @@ Effects can call other custom effects:
 
 ```typescript
 const issueDeleted: EffectHandler<[issueId: number]> = async (c, issueId) => {
-  // Update UI
-  await c.var.fx.broadcast('issues:list', [
-    ['patch-elements', <IssuesList issues={await fetchIssues(c)} />]
-  ])
-  
   // Use another custom effect
   await toastShow(c, 'Issue deleted', 'success')
   await analyticsTrack(c, 'issue:deleted', { issueId })
