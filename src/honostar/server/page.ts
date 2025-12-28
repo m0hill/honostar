@@ -286,13 +286,37 @@ async function safeParseUnknownBody(c: Context<AppEnv>): Promise<unknown> {
 
 async function extractHandlerData(c: Context<AppEnv>): Promise<unknown> {
   if (c.req.method === 'GET') {
+    const url = new URL(c.req.url)
+    const params = new URLSearchParams(url.search)
+    params.delete('datastar')
+    const queryData = expandObjectKeys(urlSearchParamsToObject(params))
+
     const datastarParam = c.req.query('datastar')
-    if (!datastarParam) return {}
-    try {
-      return JSON.parse(datastarParam)
-    } catch {
-      return {}
+    if (!datastarParam) return queryData
+
+    const parsedDatastar = (() => {
+      try {
+        return JSON.parse(datastarParam)
+      } catch {
+        return {}
+      }
+    })()
+
+    const isRecord = (value: unknown): value is Record<string, unknown> =>
+      typeof value === 'object' && value !== null && !Array.isArray(value)
+
+    const mergePreferRight = (left: unknown, right: unknown): unknown => {
+      if (isRecord(left) && isRecord(right)) {
+        const out: Record<string, unknown> = { ...left }
+        for (const [key, value] of Object.entries(right)) {
+          out[key] = key in out ? mergePreferRight(out[key], value) : value
+        }
+        return out
+      }
+      return right
     }
+
+    return mergePreferRight(queryData, parsedDatastar)
   }
 
   const contentType = (c.req.header('content-type') ?? '').toLowerCase()

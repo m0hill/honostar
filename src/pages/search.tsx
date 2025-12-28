@@ -1,15 +1,7 @@
 import { like } from 'drizzle-orm'
 import { z } from 'zod'
 import IssuesList from '@/components/IssuesList'
-import { issues } from '@/db/schema'
 import { createHandler } from '@/honostar/server'
-
-type IssueStatusFilter = 'open' | 'closed' | 'all'
-
-function resolveStatusFilter(raw: string | undefined | null): IssueStatusFilter {
-  if (raw === 'closed' || raw === 'all') return raw
-  return 'open'
-}
 
 const searchSchema = z.object({
   search: z.string().optional().default(''),
@@ -21,7 +13,7 @@ export const GET = createHandler({
 
   async handler(c, data) {
     const searchQuery = data.search.trim()
-    const status = resolveStatusFilter(c.req.query('status') ?? data.status)
+    const status = data.status
 
     if (!searchQuery) {
       // Return filtered issues if no search query
