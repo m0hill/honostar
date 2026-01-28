@@ -1,0 +1,56 @@
+{
+  "name": "@honostar/core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": [
+    "dist/client/bootstrap/*.js",
+    "dist/server/polyfills/*.js"
+  ],
+  "exports": {
+    "./server": {
+      "types": "./dist/server/index.d.ts",
+      "default": "./dist/server/index.js"
+    },
+    "./client": {
+      "types": "./dist/client/index.d.ts",
+      "default": "./dist/client/index.js"
+    },
+    "./common": {
+      "types": "./dist/common/index.d.ts",
+      "default": "./dist/common/index.js"
+    },
+    "./client/bootstrap/minimal": {
+      "types": "./dist/client/bootstrap/minimal.d.ts",
+      "default": "./dist/client/bootstrap/minimal.js"
+    },
+    "./client/bootstrap/standard": {
+      "types": "./dist/client/bootstrap/standard.d.ts",
+      "default": "./dist/client/bootstrap/standard.js"
+    },
+    "./server/polyfills/compression.js": "./dist/server/polyfills/compression.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "oxlint --type-aware -c ../../.oxlintrc.json",
+    "test": "bun test"
+  },
+  "peerDependencies": {
+    "hono": "^4"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/node": "^22.10.1",
+    "hono": "^4.11.7",
+    "oxlint": "^1.28.0",
+    "oxlint-tsgolint": "^0.6.0",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@standard-schema/spec": "^1.0.0"
+  }
+}

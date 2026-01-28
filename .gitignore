@@ -1,18 +1,19 @@
 # deps
-node_modules/
+**/node_modules/
 
 # build artifacts
-public/styles.css
-public/runtime.js
-public/plugins.js
+apps/demo/public/styles.css
+apps/demo/public/runtime.js
+apps/demo/public/plugins.js
+apps/starter/public/runtime.js
 
 # database
-sqlite.db
+apps/demo/sqlite.db
 
-.env
+apps/demo/.env
 
-drizzle/
+apps/demo/drizzle/
 
-images/
+apps/demo/images/
 
-dist/
+**/dist/
