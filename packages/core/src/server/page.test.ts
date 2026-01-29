@@ -112,6 +112,78 @@ describe("createHandler request parsing", () => {
     expect(await res.json()).toEqual({ name: "alice" })
   })
 
+  test("expands dotted/bracket keys in urlencoded bodies", async () => {
+    const route = createHandler({
+      schema: createTestSchema<{ user: { name: string }; tags: string[] }>((raw) => {
+        const data = (typeof raw === "object" && raw !== null ? raw : {}) as Record<string, unknown>
+        const user = data.user
+        if (typeof user !== "object" || user === null) {
+          return { issues: [{ message: "user is required", path: ["user"] }] }
+        }
+        const userRecord = user as Record<string, unknown>
+        if (typeof userRecord.name !== "string" || userRecord.name.length === 0) {
+          return { issues: [{ message: "user.name is required", path: ["user", "name"] }] }
+        }
+
+        const tagsRaw = data.tags
+        const tags =
+          typeof tagsRaw === "string" ? [tagsRaw] : Array.isArray(tagsRaw) ? tagsRaw : []
+        if (tags.some((t) => typeof t !== "string")) {
+          return { issues: [{ message: "tags must be strings", path: ["tags"] }] }
+        }
+
+        return { value: { user: { name: userRecord.name }, tags: tags as string[] } }
+      }),
+      hook: () => new Response("invalid", { status: 400 }),
+      async handler(c, data) {
+        return c.json(data)
+      },
+    })
+
+    const app = new Hono<AppEnv>()
+    app.post(
+      "/",
+      (route as unknown as { handler: (c: Context<AppEnv>) => Promise<Response> }).handler
+    )
+
+    const body = new URLSearchParams()
+    body.append("user[name]", "alice")
+    body.append("tags[]", "a")
+    body.append("tags[]", "b")
+
+    const res = await app.request("/", { method: "POST", body })
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual({ user: { name: "alice" }, tags: ["a", "b"] })
+  })
+
+  test("parses repeated query params into arrays", async () => {
+    const route = createHandler({
+      schema: createTestSchema<{ tag: string[] }>((raw) => {
+        const data = (typeof raw === "object" && raw !== null ? raw : {}) as Record<string, unknown>
+        const tagRaw = data.tag
+        const tag = typeof tagRaw === "string" ? [tagRaw] : Array.isArray(tagRaw) ? tagRaw : []
+        if (tag.some((t) => typeof t !== "string")) {
+          return { issues: [{ message: "tag must be strings", path: ["tag"] }] }
+        }
+        return { value: { tag: tag as string[] } }
+      }),
+      hook: () => new Response("invalid", { status: 400 }),
+      async handler(c, data) {
+        return c.json(data)
+      },
+    })
+
+    const app = new Hono<AppEnv>()
+    app.get(
+      "/",
+      (route as unknown as { handler: (c: Context<AppEnv>) => Promise<Response> }).handler
+    )
+
+    const res = await app.request("/?tag=a&tag=b")
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual({ tag: ["a", "b"] })
+  })
+
   test("parses multipart/form-data bodies (including File)", async () => {
     const route = createHandler({
       schema: createTestSchema<{ note: string; upload: File }>((raw) => {

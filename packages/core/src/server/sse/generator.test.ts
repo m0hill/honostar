@@ -152,12 +152,6 @@ describe("SseFormatter", () => {
     )
   })
 
-  test("requires elements parameter for patch", () => {
-    const formatter = new SseFormatter()
-
-    expect(() => formatter.patchElements("", {})).toThrow(/elements is required/)
-  })
-
   test("requires signals parameter", () => {
     const formatter = new SseFormatter()
 

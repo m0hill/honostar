@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
 import type { PluginsApi } from "./plugins"
-import { createPluginSystem } from "./plugins"
+import { createPluginSystem, installPluginSystem, registerRuntimePlugin } from "./plugins"
 
 describe("Plugin System", () => {
   let plugins: PluginsApi
@@ -133,45 +133,37 @@ describe("Plugin System", () => {
   })
 
   describe("plugin handlers", () => {
-    test("plugin receives context and arguments", () => {
-      let receivedCtx: unknown = null
-      let receivedArgs: unknown[] = []
+    test("registerRuntimePlugin queues until plugin system is installed", () => {
+      ;(global as any).window = {}
 
-      plugins.register("test", (ctx, ...args) => {
-        receivedCtx = ctx
-        receivedArgs = args
-      })
+      const handler = () => {}
+      registerRuntimePlugin("queued", handler)
 
-      // Simulate calling the plugin (normally done by Datastar)
-      // Since we're testing the registry, we verify it's stored correctly
-      expect(plugins.has("test")).toBe(true)
+      const pending = (global as any).window.__honostarPendingPluginRegistrations as
+        | Array<{ name: string; handler: unknown }>
+        | undefined
+      expect(pending?.length).toBe(1)
+      expect(pending?.[0]?.name).toBe("queued")
+
+      ;(global as any).window = undefined
     })
 
-    test("async plugin handlers are supported", async () => {
-      let executed = false
+    test("installPluginSystem flushes queued runtime plugins", () => {
+      ;(global as any).window = {}
 
-      plugins.register("asyncTest", async () => {
-        await new Promise((resolve) => setTimeout(resolve, 10))
-        executed = true
-      })
+      registerRuntimePlugin("a", () => {})
+      registerRuntimePlugin("b", () => {})
 
-      expect(plugins.has("asyncTest")).toBe(true)
-      // The handler would be called by Datastar, not by the registry
-    })
+      const installed = installPluginSystem()
+      expect(installed.has("a")).toBe(true)
+      expect(installed.has("b")).toBe(true)
 
-    test("type-safe plugin with specific arguments", () => {
-      type Handler = (
-        ctx: { el: HTMLElement; error: (msg: string) => void },
-        text: string,
-        count: number
-      ) => void
+      const pending = (global as any).window.__honostarPendingPluginRegistrations as
+        | Array<{ name: string; handler: unknown }>
+        | undefined
+      expect(pending?.length ?? 0).toBe(0)
 
-      const handler: Handler = (ctx, text, count) => {
-        // Handler would use text and count
-      }
-
-      plugins.register("typed", handler)
-      expect(plugins.has("typed")).toBe(true)
+      ;(global as any).window = undefined
     })
   })
 

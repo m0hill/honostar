@@ -4,6 +4,5 @@
   "tabWidth": 2,
   "printWidth": 100,
   "trailingComma": "es5",
-  "semi": false,
-  "ignorePatterns": ["worker-configuration.d.ts"]
+  "semi": false
 }
