@@ -1,65 +1,65 @@
-import { relations } from 'drizzle-orm'
-import { integer, primaryKey, sqliteTable, text } from 'drizzle-orm/sqlite-core'
+import { relations } from "drizzle-orm"
+import { integer, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core"
 
 const timestamps = {
-  createdAt: integer('created_at', { mode: 'timestamp_ms' })
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
     .notNull()
     .$defaultFn(() => new Date()),
-  updatedAt: integer('updated_at', { mode: 'timestamp_ms' })
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" })
     .notNull()
     .$onUpdateFn(() => new Date()),
 }
 
-export const users = sqliteTable('users', {
-  id: integer('id').primaryKey(),
-  username: text('username').notNull().unique(),
-  passwordHash: text('password_hash').notNull(),
+export const users = sqliteTable("users", {
+  id: integer("id").primaryKey(),
+  username: text("username").notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
   ...timestamps,
 })
 
-export const issues = sqliteTable('issues', {
-  id: integer('id').primaryKey(),
-  title: text('title').notNull(),
-  description: text('description'),
-  status: text('status', { enum: ['open', 'closed'] })
+export const issues = sqliteTable("issues", {
+  id: integer("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description"),
+  status: text("status", { enum: ["open", "closed"] })
     .notNull()
-    .default('open'),
-  imageUrl: text('image_url'),
-  authorId: integer('author_id')
+    .default("open"),
+  imageUrl: text("image_url"),
+  authorId: integer("author_id")
     .notNull()
     .references(() => users.id),
   ...timestamps,
 })
 
-export const comments = sqliteTable('comments', {
-  id: integer('id').primaryKey(),
-  body: text('body').notNull(),
-  authorId: integer('author_id')
+export const comments = sqliteTable("comments", {
+  id: integer("id").primaryKey(),
+  body: text("body").notNull(),
+  authorId: integer("author_id")
     .notNull()
     .references(() => users.id),
-  issueId: integer('issue_id')
+  issueId: integer("issue_id")
     .notNull()
-    .references(() => issues.id, { onDelete: 'cascade' }),
+    .references(() => issues.id, { onDelete: "cascade" }),
   ...timestamps,
 })
 
-export const labels = sqliteTable('labels', {
-  id: integer('id').primaryKey(),
-  name: text('name').notNull().unique(),
-  color: text('color').notNull(),
+export const labels = sqliteTable("labels", {
+  id: integer("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  color: text("color").notNull(),
 })
 
 export const issuesToLabels = sqliteTable(
-  'issues_to_labels',
+  "issues_to_labels",
   {
-    issueId: integer('issue_id')
+    issueId: integer("issue_id")
       .notNull()
-      .references(() => issues.id, { onDelete: 'cascade' }),
-    labelId: integer('label_id')
+      .references(() => issues.id, { onDelete: "cascade" }),
+    labelId: integer("label_id")
       .notNull()
-      .references(() => labels.id, { onDelete: 'cascade' }),
+      .references(() => labels.id, { onDelete: "cascade" }),
   },
-  t => ({
+  (t) => ({
     pk: primaryKey({ columns: [t.issueId, t.labelId] }),
   })
 )

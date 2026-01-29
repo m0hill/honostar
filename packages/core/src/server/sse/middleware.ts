@@ -1,8 +1,8 @@
-import type { StatusCode } from 'hono/utils/http-status'
-import { factory } from '../middleware'
-import type { EffectDefinition, EffectHandler } from './effect-registry'
-import type { QueryHandler } from './queries'
-import { TopicQueryRegistry } from './queries'
+import type { StatusCode } from "hono/utils/http-status"
+import { factory } from "../middleware"
+import type { EffectDefinition, EffectHandler } from "./effect-registry"
+import type { QueryHandler } from "./queries"
+import { TopicQueryRegistry } from "./queries"
 
 export type FxResponse = {
   fx: EffectDefinition[]
@@ -14,11 +14,11 @@ export type FxResponse = {
 }
 
 function isFxResponse(value: unknown): value is FxResponse {
-  if (typeof value !== 'object' || value === null || value instanceof Response) {
+  if (typeof value !== "object" || value === null || value instanceof Response) {
     return false
   }
 
-  return 'fx' in value && Array.isArray((value as { fx: unknown }).fx)
+  return "fx" in value && Array.isArray((value as { fx: unknown }).fx)
 }
 
 export const fxResponder = factory.createMiddleware(async (c, next) => {
@@ -106,9 +106,9 @@ export function registerEffects(effects: Record<string, EffectHandler>) {
 export function registerQuery(topicOrPattern: string | RegExp, handler: QueryHandler) {
   return factory.createMiddleware(async (c, next) => {
     const queries = c.var.queries ?? new TopicQueryRegistry()
-    if (!c.var.queries) c.set('queries', queries)
+    if (!c.var.queries) c.set("queries", queries)
 
-    if (typeof topicOrPattern === 'string') queries.register(topicOrPattern, handler)
+    if (typeof topicOrPattern === "string") queries.register(topicOrPattern, handler)
     else queries.register(topicOrPattern, handler)
     await next()
   })
@@ -122,10 +122,10 @@ export function registerQueries(
 ) {
   return factory.createMiddleware(async (c, next) => {
     const registry = c.var.queries ?? new TopicQueryRegistry()
-    if (!c.var.queries) c.set('queries', registry)
+    if (!c.var.queries) c.set("queries", registry)
 
     for (const [topicOrPattern, handler] of queries) {
-      if (typeof topicOrPattern === 'string') registry.register(topicOrPattern, handler)
+      if (typeof topicOrPattern === "string") registry.register(topicOrPattern, handler)
       else registry.register(topicOrPattern, handler)
     }
     await next()

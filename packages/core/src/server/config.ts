@@ -139,17 +139,17 @@ export type HonostarConfig = {
        * Default tab to show when inspector opens
        * (default: 'signals')
        */
-      defaultTab?: 'signals' | 'patches' | 'sse' | 'persisted'
+      defaultTab?: "signals" | "patches" | "sse" | "persisted"
       /**
        * Default view mode for signals/persisted tabs
        * (default: 'json')
        */
-      defaultViewMode?: 'json' | 'table'
+      defaultViewMode?: "json" | "table"
       /**
        * Default position of the inspector panel
        * (default: 'bottom')
        */
-      defaultPosition?: 'bottom' | 'right' | 'left' | 'top'
+      defaultPosition?: "bottom" | "right" | "left" | "top"
     }
   }
 }
@@ -160,32 +160,32 @@ export type HonostarConfig = {
  */
 export const DEFAULT_CONFIG: HonostarConfig = {
   document: {
-    title: 'Honostar',
-    lang: 'en',
+    title: "Honostar",
+    lang: "en",
   },
   assets: {
-    css: '/styles.css',
-    runtime: '/runtime.js',
-    datastar: '/datastar.js',
+    css: "/styles.css",
+    runtime: "/runtime.js",
+    datastar: "/datastar.js",
     plugins: [],
     // Use empty string instead of `undefined` to satisfy `exactOptionalPropertyTypes`.
     // `withAssetVersion()` treats empty/whitespace as "disabled".
-    version: process.env.HONOSTAR_ASSET_VERSION ?? '',
+    version: process.env.HONOSTAR_ASSET_VERSION ?? "",
   },
   endpoints: {
-    sse: '/_/events',
+    sse: "/_/events",
   },
   security: {
     csp: "script-src 'self' 'unsafe-eval' 'nonce-${nonce}';",
     csrf: {
-      cookieName: 'ds_csrf',
-      headerName: 'X-CSRF-Token',
-      exceptPaths: ['/_/events'], // Will be overridden by createConfig to match endpoints.sse
+      cookieName: "ds_csrf",
+      headerName: "X-CSRF-Token",
+      exceptPaths: ["/_/events"], // Will be overridden by createConfig to match endpoints.sse
     },
     topics: {
-      cookieName: 'honostar_topics',
+      cookieName: "honostar_topics",
       maxAgeSec: 300,
-      secretEnv: 'HONOSTAR_SIGNING_SECRET',
+      secretEnv: "HONOSTAR_SIGNING_SECRET",
       bindToClientId: false,
     },
   },
@@ -194,11 +194,11 @@ export const DEFAULT_CONFIG: HonostarConfig = {
   },
   devtools: {
     inspector: {
-      enabled: process.env.NODE_ENV !== 'production',
+      enabled: process.env.NODE_ENV !== "production",
       maxEvents: 100,
-      defaultTab: 'signals',
-      defaultViewMode: 'json',
-      defaultPosition: 'bottom',
+      defaultTab: "signals",
+      defaultViewMode: "json",
+      defaultPosition: "bottom",
     },
   },
 }

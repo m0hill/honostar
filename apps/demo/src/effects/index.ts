@@ -1,4 +1,4 @@
-import { toastEffects } from '@/effects/toast'
+import { toastEffects } from "@/effects/toast"
 
 export const customEffects = {
   ...toastEffects,

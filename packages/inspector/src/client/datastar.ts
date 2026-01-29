@@ -2,7 +2,7 @@
  * Datastar integration for the inspector
  */
 
-import type { InspectorEvent } from './types'
+import type { InspectorEvent } from "./types"
 
 /**
  * Setup event listener for signal patches
@@ -16,17 +16,17 @@ export function setupSignalPatchListener(
 
     const event: InspectorEvent = {
       timestamp: Date.now(),
-      type: 'signal-patch',
+      type: "signal-patch",
       data: detail,
-      source: 'backend',
+      source: "backend",
     }
 
     onSignalPatch(event)
     onRenderNeeded()
   }
 
-  document.addEventListener('datastar-signal-patch', listener)
-  return () => document.removeEventListener('datastar-signal-patch', listener)
+  document.addEventListener("datastar-signal-patch", listener)
+  return () => document.removeEventListener("datastar-signal-patch", listener)
 }
 
 /**
@@ -35,28 +35,28 @@ export function setupSignalPatchListener(
 export function setupFetchListener(onSSEEvent: (event: InspectorEvent) => void): () => void {
   const listener = (evt: Event) => {
     const detail = evt instanceof CustomEvent ? evt.detail : undefined
-    if (detail && typeof detail === 'object') {
+    if (detail && typeof detail === "object") {
       const event: InspectorEvent = {
         timestamp: Date.now(),
-        type: 'sse',
+        type: "sse",
         data: detail,
-        source: 'backend',
+        source: "backend",
       }
       onSSEEvent(event)
     }
   }
 
-  document.addEventListener('datastar-fetch', listener)
-  return () => document.removeEventListener('datastar-fetch', listener)
+  document.addEventListener("datastar-fetch", listener)
+  return () => document.removeEventListener("datastar-fetch", listener)
 }
 
 /**
  * Setup mutation observer to watch for signal changes
  */
 export function setupSignalObserver(onSignalChange: () => void): () => void {
-  const signalsEl = document.getElementById('ds-inspector-signals')
+  const signalsEl = document.getElementById("ds-inspector-signals")
   if (!signalsEl) {
-    console.warn('[Inspector] #ds-inspector-signals element not found')
+    console.warn("[Inspector] #ds-inspector-signals element not found")
     return () => {}
   }
 

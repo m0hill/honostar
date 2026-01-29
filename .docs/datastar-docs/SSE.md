@@ -8,8 +8,7 @@ Responses to [backend actions](https://data-star.dev/reference/actions#backend-a
 
 > The backend [SDKs](https://data-star.dev/reference/sdks)can handle the formatting of SSE events for you, or you can format them yourself.
 
-Event Types [#](https://data-star.dev/reference/sse_events#event-types)
------------------------------------------------------------------------
+## Event Types [#](https://data-star.dev/reference/sse_events#event-types)
 
 ### `datastar-patch-elements`[#](https://data-star.dev/reference/sse_events#datastar-patch-elements)
 
@@ -30,19 +29,19 @@ SVG morphing in Datastar requires special handling due to XML namespaces. See th
 
 Additional `data` lines can be added to the response to override the default behavior.
 
-| Key | Description |
-| --- | --- |
-| `data: mode outer` | Morphs the outer HTML of the elements. This is the default (and recommended) mode. |
-| `data: mode inner` | Morphs the inner HTML of the elements. |
-| `data: mode replace` | Replaces the outer HTML of the elements. |
-| `data: mode prepend` | Prepends the elements to the target’s children. |
-| `data: mode append` | Appends the elements to the target’s children. |
-| `data: mode before` | Inserts the elements before the target as siblings. |
-| `data: mode after` | Inserts the elements after the target as siblings. |
-| `data: mode remove` | Removes the target elements from DOM. |
-| `data: selector #foo` | Selects the target element of the patch using a CSS selector. Not required when using the `outer` or `inner` modes. |
-| `data: useViewTransition true` | Whether to use view transitions when patching elements. Defaults to `false`. |
-| `data: elements` | The HTML elements to patch. |
+| Key                            | Description                                                                                                         |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| `data: mode outer`             | Morphs the outer HTML of the elements. This is the default (and recommended) mode.                                  |
+| `data: mode inner`             | Morphs the inner HTML of the elements.                                                                              |
+| `data: mode replace`           | Replaces the outer HTML of the elements.                                                                            |
+| `data: mode prepend`           | Prepends the elements to the target’s children.                                                                     |
+| `data: mode append`            | Appends the elements to the target’s children.                                                                      |
+| `data: mode before`            | Inserts the elements before the target as siblings.                                                                 |
+| `data: mode after`             | Inserts the elements after the target as siblings.                                                                  |
+| `data: mode remove`            | Removes the target elements from DOM.                                                                               |
+| `data: selector #foo`          | Selects the target element of the patch using a CSS selector. Not required when using the `outer` or `inner` modes. |
+| `data: useViewTransition true` | Whether to use view transitions when patching elements. Defaults to `false`.                                        |
+| `data: elements`               | The HTML elements to patch.                                                                                         |
 
 Copied!
 

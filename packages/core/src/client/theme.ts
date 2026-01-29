@@ -1,5 +1,5 @@
-import type { ThemePreference, ThemeRuntimeConfig, ThemeValue } from '../common/theme'
-import { ensureHonostar, freeze } from './runtime/global'
+import type { ThemePreference, ThemeRuntimeConfig, ThemeValue } from "../common/theme"
+import { ensureHonostar, freeze } from "./runtime/global"
 
 type ThemeControllerState = {
   preference: ThemePreference
@@ -18,11 +18,11 @@ export type ThemeController = {
 }
 
 function isThemeValue(candidate: unknown): candidate is ThemeValue {
-  return candidate === 'light' || candidate === 'dark'
+  return candidate === "light" || candidate === "dark"
 }
 
 function isThemePreference(candidate: unknown): candidate is ThemePreference {
-  return candidate === 'system' || isThemeValue(candidate)
+  return candidate === "system" || isThemeValue(candidate)
 }
 
 export function createThemeController(config: ThemeRuntimeConfig): ThemeController | null {
@@ -34,8 +34,8 @@ export function createThemeController(config: ThemeRuntimeConfig): ThemeControll
 
   const listeners = new Set<(state: ThemeControllerState) => void>()
   const systemMatcher =
-    config.respectSystemPreference && typeof window.matchMedia === 'function'
-      ? window.matchMedia('(prefers-color-scheme: dark)')
+    config.respectSystemPreference && typeof window.matchMedia === "function"
+      ? window.matchMedia("(prefers-color-scheme: dark)")
       : null
 
   const readStoredPreference = (): ThemePreference | null => {
@@ -59,15 +59,15 @@ export function createThemeController(config: ThemeRuntimeConfig): ThemeControll
 
   const resolveSystemTheme = (): ThemeValue => {
     if (!systemMatcher) return config.systemFallback
-    return systemMatcher.matches ? 'dark' : 'light'
+    return systemMatcher.matches ? "dark" : "light"
   }
 
   const resolvePreference = (pref: ThemePreference): ThemeValue =>
-    pref === 'system' ? resolveSystemTheme() : pref
+    pref === "system" ? resolveSystemTheme() : pref
 
   const applyResolvedTheme = (resolved: ThemeValue, pref: ThemePreference): void => {
-    if (config.attribute === 'class') {
-      root.classList.remove('light', 'dark')
+    if (config.attribute === "class") {
+      root.classList.remove("light", "dark")
       root.classList.add(resolved)
     } else {
       root.setAttribute(config.attribute, resolved)
@@ -105,19 +105,19 @@ export function createThemeController(config: ThemeRuntimeConfig): ThemeControll
 
   const emit = (): void => {
     const state: ThemeControllerState = { preference, resolved }
-    listeners.forEach(listener => {
+    listeners.forEach((listener) => {
       try {
         listener(state)
       } catch {}
     })
     try {
-      window.dispatchEvent(new CustomEvent('honostar-theme-change', { detail: state }))
+      window.dispatchEvent(new CustomEvent("honostar-theme-change", { detail: state }))
     } catch {}
   }
 
   const setPreference = (next: ThemePreference): void => {
     if (preference === next) {
-      if (next === 'system') {
+      if (next === "system") {
         const nextResolved = applyPreference(next)
         if (nextResolved !== resolved) {
           resolved = nextResolved
@@ -136,10 +136,10 @@ export function createThemeController(config: ThemeRuntimeConfig): ThemeControll
     getPreference: () => preference,
     getResolvedTheme: () => resolved,
     setTheme: setPreference,
-    setLight: () => setPreference('light'),
-    setDark: () => setPreference('dark'),
-    setSystem: () => setPreference('system'),
-    toggle: () => setPreference(resolved === 'dark' ? 'light' : 'dark'),
+    setLight: () => setPreference("light"),
+    setDark: () => setPreference("dark"),
+    setSystem: () => setPreference("system"),
+    toggle: () => setPreference(resolved === "dark" ? "light" : "dark"),
     subscribe: (listener: (state: ThemeControllerState) => void) => {
       listeners.add(listener)
       listener({ preference, resolved })
@@ -154,16 +154,16 @@ export function createThemeController(config: ThemeRuntimeConfig): ThemeControll
       addListener?: (listener: (this: MediaQueryList, ev: MediaQueryListEvent) => void) => void
     }
     const systemListener = () => {
-      if (preference !== 'system') return
-      const nextResolved = applyPreference('system')
+      if (preference !== "system") return
+      const nextResolved = applyPreference("system")
       if (nextResolved !== resolved) {
         resolved = nextResolved
         emit()
       }
     }
-    if (typeof systemMatcher.addEventListener === 'function') {
-      systemMatcher.addEventListener('change', systemListener)
-    } else if (typeof legacyMatcher.addListener === 'function') {
+    if (typeof systemMatcher.addEventListener === "function") {
+      systemMatcher.addEventListener("change", systemListener)
+    } else if (typeof legacyMatcher.addListener === "function") {
       legacyMatcher.addListener(systemListener)
     }
   }

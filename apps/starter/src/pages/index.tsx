@@ -1,11 +1,11 @@
-import { defineQueryPage, type QueryHandler } from '@honostar/core/server'
-import { Counter } from '../components/Counter'
-import { getCounter } from '../state'
+import { defineQueryPage, type QueryHandler } from "@honostar/core/server"
+import { Counter } from "../components/Counter"
+import { getCounter } from "../state"
 
-const counterTopic = 'counter'
+const counterTopic = "counter"
 
 export const counterQuery: QueryHandler = async () => {
-  return [['patch-elements', <Counter count={getCounter()} />, { selector: '#counter' }]]
+  return [["patch-elements", <Counter count={getCounter()} />, { selector: "#counter" }]]
 }
 
 export default defineQueryPage({
@@ -14,7 +14,7 @@ export default defineQueryPage({
   loader: async () => ({
     count: getCounter(),
   }),
-  component: props => {
+  component: (props) => {
     return (
       <main>
         <h1>HonoStar Starter</h1>

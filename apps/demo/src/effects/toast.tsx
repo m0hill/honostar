@@ -1,18 +1,18 @@
-import type { EffectHandler } from '@honostar/core/server'
+import type { EffectHandler } from "@honostar/core/server"
 
-type ToastType = 'success' | 'error' | 'info'
+type ToastType = "success" | "error" | "info"
 
 function Toast({ message, type }: { message: string; type: ToastType }) {
   const bgColor = {
-    success: 'bg-green-600',
-    error: 'bg-red-600',
-    info: 'bg-blue-600',
+    success: "bg-green-600",
+    error: "bg-red-600",
+    info: "bg-blue-600",
   }[type]
 
   const icon = {
-    success: '✓',
-    error: '✕',
-    info: 'ℹ',
+    success: "✓",
+    error: "✕",
+    info: "ℹ",
   }[type]
 
   const timestamp = new Date().getTime()
@@ -35,23 +35,23 @@ export const toastShow: EffectHandler<[message: string, type: ToastType]> = asyn
 ) => {
   await c.var.fx.reply([
     [
-      'patch-elements',
+      "patch-elements",
       <Toast message={message} type={type} />,
-      { selector: '#toast-container', mode: 'append' },
+      { selector: "#toast-container", mode: "append" },
     ],
   ])
 }
 
 export const toastSuccess: EffectHandler<[message: string]> = async (c, message) => {
-  await c.var.fx.reply([['toast:show', message, 'success']])
+  await c.var.fx.reply([["toast:show", message, "success"]])
 }
 
 export const toastError: EffectHandler<[message: string]> = async (c, message) => {
-  await c.var.fx.reply([['toast:show', message, 'error']])
+  await c.var.fx.reply([["toast:show", message, "error"]])
 }
 
 export const toastEffects = {
-  'toast:show': toastShow,
-  'toast:success': toastSuccess,
-  'toast:error': toastError,
+  "toast:show": toastShow,
+  "toast:success": toastSuccess,
+  "toast:error": toastError,
 } as const

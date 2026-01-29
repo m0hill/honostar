@@ -1,18 +1,42 @@
-import { describe, expect, test } from 'bun:test'
-import type { Context } from 'hono'
-import { Hono } from 'hono'
-import { z } from 'zod'
-import type { AppEnv } from './context'
-import { createHandler } from './page'
+import { describe, expect, test } from "bun:test"
+import type { StandardSchemaV1 } from "@standard-schema/spec"
+import type { Context } from "hono"
+import { Hono } from "hono"
+import type { AppEnv } from "./context"
+import { createHandler } from "./page"
 
-describe('createHandler request parsing', () => {
-  test('parses GET query string params', async () => {
+function createTestSchema<Output>(
+  validate: (
+    value: unknown
+  ) => StandardSchemaV1.Result<Output> | Promise<StandardSchemaV1.Result<Output>>
+): StandardSchemaV1<unknown, Output> {
+  return {
+    "~standard": {
+      version: 1,
+      vendor: "honostar-test",
+      validate,
+      // Needed so StandardSchemaV1.InferOutput<Schema> works in TypeScript.
+      types: {
+        input: undefined as unknown,
+        output: undefined as Output,
+      },
+    },
+  }
+}
+
+describe("createHandler request parsing", () => {
+  test("parses GET query string params", async () => {
     const route = createHandler({
-      schema: z.object({
-        search: z.string().optional().default(''),
-        status: z.enum(['open', 'closed', 'all']).optional().default('open'),
+      schema: createTestSchema<{ search: string; status: "open" | "closed" | "all" }>((raw) => {
+        const data = (typeof raw === "object" && raw !== null ? raw : {}) as Record<string, unknown>
+        const search = typeof data.search === "string" ? data.search : ""
+        const status =
+          data.status === "open" || data.status === "closed" || data.status === "all"
+            ? data.status
+            : "open"
+        return { value: { search, status } }
       }),
-      hook: () => new Response('invalid', { status: 400 }),
+      hook: () => new Response("invalid", { status: 400 }),
       async handler(c, data) {
         return c.json({ search: data.search, status: data.status })
       },
@@ -20,22 +44,27 @@ describe('createHandler request parsing', () => {
 
     const app = new Hono<AppEnv>()
     app.get(
-      '/',
+      "/",
       (route as unknown as { handler: (c: Context<AppEnv>) => Promise<Response> }).handler
     )
 
-    const res = await app.request('/?search=bug&status=closed')
+    const res = await app.request("/?search=bug&status=closed")
     expect(res.status).toBe(200)
-    expect(await res.json()).toEqual({ search: 'bug', status: 'closed' })
+    expect(await res.json()).toEqual({ search: "bug", status: "closed" })
   })
 
-  test('merges GET query string with datastar payload (datastar wins)', async () => {
+  test("merges GET query string with datastar payload (datastar wins)", async () => {
     const route = createHandler({
-      schema: z.object({
-        search: z.string().optional().default(''),
-        status: z.enum(['open', 'closed', 'all']).optional().default('open'),
+      schema: createTestSchema<{ search: string; status: "open" | "closed" | "all" }>((raw) => {
+        const data = (typeof raw === "object" && raw !== null ? raw : {}) as Record<string, unknown>
+        const search = typeof data.search === "string" ? data.search : ""
+        const status =
+          data.status === "open" || data.status === "closed" || data.status === "all"
+            ? data.status
+            : "open"
+        return { value: { search, status } }
       }),
-      hook: () => new Response('invalid', { status: 400 }),
+      hook: () => new Response("invalid", { status: 400 }),
       async handler(c, data) {
         return c.json({ search: data.search, status: data.status })
       },
@@ -43,20 +72,26 @@ describe('createHandler request parsing', () => {
 
     const app = new Hono<AppEnv>()
     app.get(
-      '/',
+      "/",
       (route as unknown as { handler: (c: Context<AppEnv>) => Promise<Response> }).handler
     )
 
-    const datastar = encodeURIComponent(JSON.stringify({ search: 'hello', status: 'open' }))
+    const datastar = encodeURIComponent(JSON.stringify({ search: "hello", status: "open" }))
     const res = await app.request(`/?search=bug&status=closed&datastar=${datastar}`)
     expect(res.status).toBe(200)
-    expect(await res.json()).toEqual({ search: 'hello', status: 'open' })
+    expect(await res.json()).toEqual({ search: "hello", status: "open" })
   })
 
-  test('parses application/x-www-form-urlencoded bodies', async () => {
+  test("parses application/x-www-form-urlencoded bodies", async () => {
     const route = createHandler({
-      schema: z.object({ name: z.string() }),
-      hook: () => new Response('invalid', { status: 400 }),
+      schema: createTestSchema<{ name: string }>((raw) => {
+        const data = (typeof raw === "object" && raw !== null ? raw : {}) as Record<string, unknown>
+        if (typeof data.name !== "string" || data.name.length === 0) {
+          return { issues: [{ message: "name is required", path: ["name"] }] }
+        }
+        return { value: { name: data.name } }
+      }),
+      hook: () => new Response("invalid", { status: 400 }),
       async handler(c, data) {
         return c.json({ name: data.name })
       },
@@ -64,26 +99,32 @@ describe('createHandler request parsing', () => {
 
     const app = new Hono<AppEnv>()
     app.post(
-      '/',
+      "/",
       (route as unknown as { handler: (c: Context<AppEnv>) => Promise<Response> }).handler
     )
 
-    const res = await app.request('/', {
-      method: 'POST',
-      body: new URLSearchParams({ name: 'alice' }),
+    const res = await app.request("/", {
+      method: "POST",
+      body: new URLSearchParams({ name: "alice" }),
     })
 
     expect(res.status).toBe(200)
-    expect(await res.json()).toEqual({ name: 'alice' })
+    expect(await res.json()).toEqual({ name: "alice" })
   })
 
-  test('parses multipart/form-data bodies (including File)', async () => {
+  test("parses multipart/form-data bodies (including File)", async () => {
     const route = createHandler({
-      schema: z.object({
-        note: z.string(),
-        upload: z.instanceof(File),
+      schema: createTestSchema<{ note: string; upload: File }>((raw) => {
+        const data = (typeof raw === "object" && raw !== null ? raw : {}) as Record<string, unknown>
+        const note = typeof data.note === "string" ? data.note : ""
+        const upload = data.upload
+        if (!note) return { issues: [{ message: "note is required", path: ["note"] }] }
+        if (!(upload instanceof File)) {
+          return { issues: [{ message: "upload must be a File", path: ["upload"] }] }
+        }
+        return { value: { note, upload } }
       }),
-      hook: () => new Response('invalid', { status: 400 }),
+      hook: () => new Response("invalid", { status: 400 }),
       async handler(c, data) {
         return c.json({
           note: data.note,
@@ -95,20 +136,20 @@ describe('createHandler request parsing', () => {
 
     const app = new Hono<AppEnv>()
     app.post(
-      '/',
+      "/",
       (route as unknown as { handler: (c: Context<AppEnv>) => Promise<Response> }).handler
     )
 
     const form = new FormData()
-    form.set('note', 'hello')
-    form.set('upload', new File(['hi'], 'hi.txt', { type: 'text/plain' }))
+    form.set("note", "hello")
+    form.set("upload", new File(["hi"], "hi.txt", { type: "text/plain" }))
 
-    const res = await app.request('/', {
-      method: 'POST',
+    const res = await app.request("/", {
+      method: "POST",
       body: form,
     })
 
     expect(res.status).toBe(200)
-    expect(await res.json()).toEqual({ note: 'hello', filename: 'hi.txt', isFile: true })
+    expect(await res.json()).toEqual({ note: "hello", filename: "hi.txt", isFile: true })
   })
 })

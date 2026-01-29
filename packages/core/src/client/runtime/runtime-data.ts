@@ -1,6 +1,9 @@
-import type { ThemePreference, ThemeRuntimeConfig, ThemeValue } from '../../common/theme'
-import { resolveThemeProvider } from '../../common/theme'
-import type { InspectorPosition, InspectorTab, InspectorViewMode } from '../inspector'
+import type { ThemePreference, ThemeRuntimeConfig, ThemeValue } from "../../common/theme"
+import { resolveThemeProvider } from "../../common/theme"
+
+type InspectorTab = "signals" | "patches" | "sse" | "persisted"
+type InspectorViewMode = "json" | "table"
+type InspectorPosition = "bottom" | "right" | "left" | "top"
 
 type RuntimeAssets = {
   css: string
@@ -28,9 +31,9 @@ type RuntimeData = {
 
 const FALLBACK_THEME_CONFIG = resolveThemeProvider().config
 const FALLBACK_ASSETS: RuntimeAssets = {
-  css: '/styles.css',
-  runtime: '/runtime.js',
-  datastar: '/datastar.js',
+  css: "/styles.css",
+  runtime: "/runtime.js",
+  datastar: "/datastar.js",
   plugins: [],
 }
 const FALLBACK_RUNTIME_DATA: RuntimeData = {
@@ -41,40 +44,40 @@ const FALLBACK_RUNTIME_DATA: RuntimeData = {
 }
 
 function isThemeValue(candidate: unknown): candidate is ThemeValue {
-  return candidate === 'light' || candidate === 'dark'
+  return candidate === "light" || candidate === "dark"
 }
 
 function isThemePreference(candidate: unknown): candidate is ThemePreference {
-  return candidate === 'system' || isThemeValue(candidate)
+  return candidate === "system" || isThemeValue(candidate)
 }
 
 function normalizeThemeConfig(candidate: unknown): ThemeRuntimeConfig {
-  if (!candidate || typeof candidate !== 'object') {
+  if (!candidate || typeof candidate !== "object") {
     return FALLBACK_THEME_CONFIG
   }
   const raw = candidate as Partial<ThemeRuntimeConfig>
   return {
     attribute:
-      typeof raw.attribute === 'string' && raw.attribute.length > 0
+      typeof raw.attribute === "string" && raw.attribute.length > 0
         ? raw.attribute
         : FALLBACK_THEME_CONFIG.attribute,
     defaultTheme: isThemePreference(raw.defaultTheme)
       ? raw.defaultTheme
       : FALLBACK_THEME_CONFIG.defaultTheme,
     storageKey:
-      typeof raw.storageKey === 'string' && raw.storageKey.length > 0
+      typeof raw.storageKey === "string" && raw.storageKey.length > 0
         ? raw.storageKey
         : FALLBACK_THEME_CONFIG.storageKey,
     respectSystemPreference:
-      typeof raw.respectSystemPreference === 'boolean'
+      typeof raw.respectSystemPreference === "boolean"
         ? raw.respectSystemPreference
         : FALLBACK_THEME_CONFIG.respectSystemPreference,
     disableTransitionClass:
-      typeof raw.disableTransitionClass === 'string' || raw.disableTransitionClass === null
+      typeof raw.disableTransitionClass === "string" || raw.disableTransitionClass === null
         ? raw.disableTransitionClass
         : FALLBACK_THEME_CONFIG.disableTransitionClass,
     rootSelector:
-      typeof raw.rootSelector === 'string' && raw.rootSelector.length > 0
+      typeof raw.rootSelector === "string" && raw.rootSelector.length > 0
         ? raw.rootSelector
         : FALLBACK_THEME_CONFIG.rootSelector,
     systemFallback: isThemeValue(raw.systemFallback)
@@ -84,64 +87,64 @@ function normalizeThemeConfig(candidate: unknown): ThemeRuntimeConfig {
 }
 
 function normalizeAssets(candidate: unknown): RuntimeAssets {
-  if (!candidate || typeof candidate !== 'object') {
+  if (!candidate || typeof candidate !== "object") {
     return FALLBACK_ASSETS
   }
   const raw = candidate as Partial<RuntimeAssets>
   return {
-    css: typeof raw.css === 'string' && raw.css.length > 0 ? raw.css : FALLBACK_ASSETS.css,
+    css: typeof raw.css === "string" && raw.css.length > 0 ? raw.css : FALLBACK_ASSETS.css,
     runtime:
-      typeof raw.runtime === 'string' && raw.runtime.length > 0
+      typeof raw.runtime === "string" && raw.runtime.length > 0
         ? raw.runtime
         : FALLBACK_ASSETS.runtime,
     datastar:
-      typeof raw.datastar === 'string' && raw.datastar.length > 0
+      typeof raw.datastar === "string" && raw.datastar.length > 0
         ? raw.datastar
         : FALLBACK_ASSETS.datastar,
     plugins:
-      Array.isArray(raw.plugins) && raw.plugins.every(p => typeof p === 'string')
+      Array.isArray(raw.plugins) && raw.plugins.every((p) => typeof p === "string")
         ? raw.plugins
         : FALLBACK_ASSETS.plugins,
   }
 }
 
 function normalizeInspectorConfig(candidate: unknown): RuntimeInspectorConfig | null {
-  if (!candidate || typeof candidate !== 'object') return null
+  if (!candidate || typeof candidate !== "object") return null
   const raw = candidate as Partial<RuntimeInspectorConfig>
 
   if (raw.enabled !== true) return null
 
   return {
     enabled: true,
-    maxEvents: typeof raw.maxEvents === 'number' ? raw.maxEvents : 100,
+    maxEvents: typeof raw.maxEvents === "number" ? raw.maxEvents : 100,
     defaultTab:
-      raw.defaultTab === 'signals' ||
-      raw.defaultTab === 'patches' ||
-      raw.defaultTab === 'sse' ||
-      raw.defaultTab === 'persisted'
+      raw.defaultTab === "signals" ||
+      raw.defaultTab === "patches" ||
+      raw.defaultTab === "sse" ||
+      raw.defaultTab === "persisted"
         ? raw.defaultTab
-        : 'signals',
+        : "signals",
     defaultViewMode:
-      raw.defaultViewMode === 'table' || raw.defaultViewMode === 'json'
+      raw.defaultViewMode === "table" || raw.defaultViewMode === "json"
         ? raw.defaultViewMode
-        : 'json',
+        : "json",
     defaultPosition:
-      raw.defaultPosition === 'bottom' ||
-      raw.defaultPosition === 'right' ||
-      raw.defaultPosition === 'left' ||
-      raw.defaultPosition === 'top'
+      raw.defaultPosition === "bottom" ||
+      raw.defaultPosition === "right" ||
+      raw.defaultPosition === "left" ||
+      raw.defaultPosition === "top"
         ? raw.defaultPosition
-        : 'bottom',
+        : "bottom",
   }
 }
 
 function parseRuntimeData(raw: string): RuntimeData {
   try {
     const parsed: unknown = JSON.parse(raw)
-    if (parsed && typeof parsed === 'object') {
+    if (parsed && typeof parsed === "object") {
       const token = (parsed as { csrfToken?: unknown }).csrfToken
       return {
-        csrfToken: typeof token === 'string' ? token : null,
+        csrfToken: typeof token === "string" ? token : null,
         theme: normalizeThemeConfig((parsed as { theme?: unknown }).theme),
         assets: normalizeAssets((parsed as { assets?: unknown }).assets),
         devtools: {
@@ -158,7 +161,7 @@ function parseRuntimeData(raw: string): RuntimeData {
 }
 
 export function readRuntimeData(): RuntimeData {
-  const el = document.getElementById('runtime-data')
+  const el = document.getElementById("runtime-data")
   if (!el || !(el instanceof HTMLScriptElement)) {
     return FALLBACK_RUNTIME_DATA
   }

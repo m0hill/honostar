@@ -1,11 +1,11 @@
-import type { AppEnv } from '@honostar/core/server'
-import type { Context } from 'hono'
-import { setCookie } from 'hono/cookie'
-import { sign } from 'hono/jwt'
-import type { StatusCode } from 'hono/utils/http-status'
-import type { DB } from '@/db'
-import { users } from '@/db/schema'
-import type { User } from '@/types'
+import type { AppEnv } from "@honostar/core/server"
+import type { Context } from "hono"
+import { setCookie } from "hono/cookie"
+import { sign } from "hono/jwt"
+import type { StatusCode } from "hono/utils/http-status"
+import type { DB } from "@/db"
+import { users } from "@/db/schema"
+import type { User } from "@/types"
 
 type Credentials = { username: string; password: string }
 
@@ -18,7 +18,7 @@ export async function handleSignup(db: DB, creds: Credentials): Promise<AuthResu
     where: (users, { eq }) => eq(users.username, creds.username),
   })
   if (existingUser) {
-    return { error: 'Username is already taken.', status: 409 }
+    return { error: "Username is already taken.", status: 409 }
   }
 
   const passwordHash = await Bun.password.hash(creds.password)
@@ -28,7 +28,7 @@ export async function handleSignup(db: DB, creds: Credentials): Promise<AuthResu
     .returning()
 
   if (!user) {
-    return { error: 'Failed to create user.', status: 500 }
+    return { error: "Failed to create user.", status: 500 }
   }
   return { user }
 }
@@ -38,12 +38,12 @@ export async function handleLogin(db: DB, creds: Credentials): Promise<AuthResul
     where: (users, { eq }) => eq(users.username, creds.username),
   })
   if (!foundUser) {
-    return { error: 'Invalid username or password.', status: 401 }
+    return { error: "Invalid username or password.", status: 401 }
   }
 
   const isPasswordValid = await Bun.password.verify(creds.password, foundUser.passwordHash)
   if (!isPasswordValid) {
-    return { error: 'Invalid username or password.', status: 401 }
+    return { error: "Invalid username or password.", status: 401 }
   }
   return { user: foundUser }
 }
@@ -55,12 +55,12 @@ export async function createAuthResponse(c: Context<AppEnv>, user: User): Promis
     exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24,
   }
   const token = await sign(payload, process.env.JWT_SECRET!)
-  setCookie(c, 'token', token, {
-    path: '/',
+  setCookie(c, "token", token, {
+    path: "/",
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'Lax',
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "Lax",
   })
 
-  return c.var.fx.reply([['patch-signals', { auth: { id: user.id, username: user.username } }]])
+  return c.var.fx.reply([["patch-signals", { auth: { id: user.id, username: user.username } }]])
 }

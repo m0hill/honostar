@@ -1,10 +1,10 @@
-import { routes } from '@/routes'
-import type { Label } from '@/types'
-import LabelsSection from './LabelsSection'
-import { Button } from './ui/button'
-import { Input } from './ui/input'
-import { Label as UILabel } from './ui/label'
-import { Textarea } from './ui/textarea'
+import { routes } from "@/routes"
+import type { Label } from "@/types"
+import LabelsSection from "./LabelsSection"
+import { Button } from "./ui/button"
+import { Input } from "./ui/input"
+import { Label as UILabel } from "./ui/label"
+import { Textarea } from "./ui/textarea"
 
 export default function IssueModal({ labels }: { labels: Label[] }) {
   return (

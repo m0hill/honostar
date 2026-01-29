@@ -1,27 +1,27 @@
-import type { QueryHandler } from '@honostar/core/server'
-import { defineQueryPage } from '@honostar/core/server'
-import { z } from 'zod'
-import { CommentsSection } from '@/components/CommentsSection'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Textarea } from '@/components/ui/textarea'
-import { topics } from '@/lib/topics'
-import { routes } from '@/routes'
-import type { IssueWithDetails, User } from '@/types'
+import type { QueryHandler } from "@honostar/core/server"
+import { defineQueryPage } from "@honostar/core/server"
+import { z } from "zod"
+import { CommentsSection } from "@/components/CommentsSection"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Textarea } from "@/components/ui/textarea"
+import { topics } from "@/lib/topics"
+import { routes } from "@/routes"
+import type { IssueWithDetails, User } from "@/types"
 
 const paramSchema = z.object({
   id: z.coerce.number().int().positive(),
 })
 
 const formatDate = (date: Date) =>
-  new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
+  new Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   }).format(date)
 
-async function fetchIssueWithDetails(c: Parameters<QueryHandler>[0]['c'], issueId: number) {
+async function fetchIssueWithDetails(c: Parameters<QueryHandler>[0]["c"], issueId: number) {
   const issueData = await c.var.db.query.issues.findFirst({
     where: (i, { eq }) => eq(i.id, issueId),
     with: {
@@ -44,7 +44,7 @@ async function fetchIssueWithDetails(c: Parameters<QueryHandler>[0]['c'], issueI
 
   const issue: IssueWithDetails = {
     ...issueData,
-    labels: issueData.issuesToLabels.map(itl => itl.label),
+    labels: issueData.issuesToLabels.map((itl) => itl.label),
     comments: issueData.comments,
   }
 
@@ -61,7 +61,7 @@ const issueDetailQuery: QueryHandler = async ({ c, match, topic }) => {
 
   const issue = await fetchIssueWithDetails(c, issueId)
   if (!issue) return
-  return [['patch-elements', <IssueDetailCard issue={issue} />]]
+  return [["patch-elements", <IssueDetailCard issue={issue} />]]
 }
 
 const issueCommentsQuery: QueryHandler = async ({ c, match, topic }) => {
@@ -78,13 +78,13 @@ const issueCommentsQuery: QueryHandler = async ({ c, match, topic }) => {
     orderBy: (comments, { asc }) => [asc(comments.createdAt)],
   })
 
-  return [['patch-elements', <CommentsSection comments={updatedComments} />]]
+  return [["patch-elements", <CommentsSection comments={updatedComments} />]]
 }
 
 function IssueDetailCard({ issue }: { issue: IssueWithDetails }) {
   const issueUrl = routes.issues.show.href({ id: issue.id })
-  const toggleTargetStatus = issue.status === 'open' ? 'closed' : 'open'
-  const toggleLabel = issue.status === 'open' ? 'Close issue' : 'Reopen issue'
+  const toggleTargetStatus = issue.status === "open" ? "closed" : "open"
+  const toggleLabel = issue.status === "open" ? "Close issue" : "Reopen issue"
 
   return (
     <Card id="issue-detail">
@@ -93,12 +93,12 @@ function IssueDetailCard({ issue }: { issue: IssueWithDetails }) {
           <div class="min-w-0">
             <CardTitle class="text-3xl flex items-center gap-3">
               <span class="truncate">{issue.title}</span>
-              <Badge variant={issue.status === 'open' ? 'secondary' : 'outline'}>
+              <Badge variant={issue.status === "open" ? "secondary" : "outline"}>
                 {issue.status}
               </Badge>
             </CardTitle>
             <CardDescription>
-              Opened by <span class="font-semibold">{issue.author.username}</span> on{' '}
+              Opened by <span class="font-semibold">{issue.author.username}</span> on{" "}
               {formatDate(issue.createdAt)}
             </CardDescription>
           </div>
@@ -113,7 +113,7 @@ function IssueDetailCard({ issue }: { issue: IssueWithDetails }) {
             <input type="hidden" name="status" value={toggleTargetStatus} />
             <Button
               type="submit"
-              variant={issue.status === 'open' ? 'outline' : 'default'}
+              variant={issue.status === "open" ? "outline" : "default"}
               data-attr:disabled="$togglingIssueStatus"
             >
               <span data-show="!$togglingIssueStatus" style="display:none">
@@ -157,7 +157,7 @@ function IssueDetailCard({ issue }: { issue: IssueWithDetails }) {
           <h3 class="text-lg font-semibold mb-2">Labels</h3>
           <div class="flex flex-wrap gap-2">
             {issue.labels.length > 0 ? (
-              issue.labels.map(label => (
+              issue.labels.map((label) => (
                 <Badge key={label.id} variant="secondary">
                   {label.name}
                 </Badge>
@@ -280,9 +280,9 @@ function IssueDetailPage({
 }
 
 export default defineQueryPage({
-  topics: c => [
-    topics.issue(c.req.param('id')).detail(),
-    topics.issue(c.req.param('id')).comments(),
+  topics: (c) => [
+    topics.issue(c.req.param("id")).detail(),
+    topics.issue(c.req.param("id")).comments(),
   ],
   queries: [
     [/^issue:(?<id>\d+):detail$/, issueDetailQuery],
@@ -299,16 +299,16 @@ export default defineQueryPage({
   async loader(c) {
     const paramValidation = paramSchema.safeParse(c.req.param())
     if (!paramValidation.success) {
-      return c.text('Invalid issue ID', 400)
+      return c.text("Invalid issue ID", 400)
     }
     const { id } = paramValidation.data
 
     const issue = await fetchIssueWithDetails(c, id)
     if (!issue) {
-      return c.text('Issue not found', 404)
+      return c.text("Issue not found", 404)
     }
 
-    const commentError = c.req.query('commentError')
+    const commentError = c.req.query("commentError")
     return commentError ? { issue, user: c.var.user, commentError } : { issue, user: c.var.user }
   },
 

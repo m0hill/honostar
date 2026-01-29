@@ -2,28 +2,26 @@
 
 This document contains all the Datastar examples scraped from data-star.dev
 
-
 ## Active Search
 
 **Source:** https://data-star.dev/examples/active_search
 
 Demo
 
-| First Name | Last Name |
-| --- | --- |
-| Marta | Block |
-| Corine | Buckridge |
-| Lonny | Runolfsson |
-| Ally | Harber |
-| Rashawn | Nikolaus |
-| Kim | Torp |
-| Brennon | Orn |
-| Dorcas | O'Kon |
-| Mohammed | Reichert |
-| Geovany | Mayert |
+| First Name | Last Name  |
+| ---------- | ---------- |
+| Marta      | Block      |
+| Corine     | Buckridge  |
+| Lonny      | Runolfsson |
+| Ally       | Harber     |
+| Rashawn    | Nikolaus   |
+| Kim        | Torp       |
+| Brennon    | Orn        |
+| Dorcas     | O'Kon      |
+| Mohammed   | Reichert   |
+| Geovany    | Mayert     |
 
-Explanation [#](https://data-star.dev/examples/active_search#explanation)
--------------------------------------------------------------------------
+## Explanation [#](https://data-star.dev/examples/active_search#explanation)
 
 This example actively searches a contacts database as the user enters text.
 
@@ -44,7 +42,6 @@ The input issues a `GET` to `/active_search/search` with the input value bound t
 
 ---
 
-
 ## Animations
 
 **Source:** https://data-star.dev/examples/animations
@@ -64,20 +61,21 @@ With SSE, we just update the style every second
 6</div>
 ```
 
-View Transitions [#](https://data-star.dev/examples/animations#view-transitions)
---------------------------------------------------------------------------------
+## View Transitions [#](https://data-star.dev/examples/animations#view-transitions)
 
 The swapping of the button below is happening on the backend. Each click is causing a transition of state. The animated opacity animation is provided automatically by the View Transition API (not yet supported by Firefox). Doesn’t matter if the targeted elements are different types, it will still “do the right thing”.
 
 Demo
 Fade Out On Swap [#](https://data-star.dev/examples/animations#fade-out-on-swap)
---------------------------------------------------------------------------------
+
+---
 
 If you want to fade out an element that is going to be removed when the request ends, just send an SSE event with the opacity set to 0 and set a transition duration. This will fade out the element before it is removed.
 
 Demo
 Fade In On Addition [#](https://data-star.dev/examples/animations#fade-in-on-addition)
---------------------------------------------------------------------------------------
+
+---
 
 Building on the previous example, we can fade in the new content the same way, starting from an opacity of 0 and transitioning to an opacity of 1.
 
@@ -85,13 +83,11 @@ Demo[← Previous](https://data-star.dev/examples/active_search)[Next →](https
 
 ---
 
-
 ## Bad Apple
 
 **Source:** https://data-star.dev/examples/bad_apple
 
-Explanation [#](https://data-star.dev/examples/bad_apple#explanation)
----------------------------------------------------------------------
+## Explanation [#](https://data-star.dev/examples/bad_apple#explanation)
 
 Per a conversation on the [htmx meme discord channel](https://discordapp.com/channels/725789699527933952/996832027083026563/1276380165613813894) there was an offhand remark about adding the [Bad Apple Music video](https://www.youtube.com/watch?v=FtutLA63Cp8) as a benchmark. Thought it'd be fun to do so. We take the [already converted](https://github.com/trung-kieen/bad-apple-ascii) frames of video and turn them into a ZSTD compressed Gob file that’s embedded in the server binary. This makes the whole animation about 1.9MB. We then stream the frames to the client and update the contents of a pre tag with the frames. The percentage is updated with the current frame number.
 
@@ -120,7 +116,6 @@ This is using Datastar’s ability to patch signals directly. **_No need to gene
 
 ---
 
-
 ## Bulk Update
 
 **Source:** https://data-star.dev/examples/bulk_update
@@ -129,12 +124,12 @@ Demo
 
 NameEmailStatus Joe Smith[email protected]ActiveAngie MacDowell[email protected]ActiveFuqua Tarkenton[email protected]ActiveKim Yee[email protected]Active
 
-Activate 
-Deactivate 
-HTML # 
+Activate
+Deactivate
+HTML #
 
- 1<div  2 id="demo"  3 data-signals__ifmissing="{_fetching: false, selections: Array(4).fill(false)}"  4>  5 <table>  6 <thead>  7 <tr>  8 <th>  9 <input 10 type="checkbox" 11 data-bind:_all 12 data-on:change="$selections = Array(4).fill($_all)" 13 data-effect="$selections; $_all = $selections.every(Boolean)" 14 data-attr:disabled="$_fetching" 15 /> 16 </th> 17 <th>Name</th> 18 <th>Email</th> 19 <th>Status</th> 20 </tr> 21 </thead> 22 <tbody> 23 <tr> 24 <td> 25 <input 26 type="checkbox" 27 data-bind:selections 28 data-attr:disabled="$_fetching" 29 /> 30 </td> 31 <td>Joe Smith</td> 32 <td>[email protected]</td> 33 <td>Active</td> 34 </tr> 35 <!-- More rows... --> 36 </tbody> 37 </table> 38 <div role="group"> 39 <button 40 class="success" 41 data-on:click="@put('/examples/bulk_update/activate')" 42 data-indicator:_fetching 43 data-attr:disabled="$_fetching" 44 > 45 <i class="pixelarticons:user-plus"></i> 46 Activate 47 </button> 48 <button 49 class="error" 50 data-on:click="@put('/examples/bulk_update/deactivate')" 51 data-indicator:_fetching 52 data-attr:disabled="$_fetching" 53 > 54 <i class="pixelarticons:user-x"></i> 55 Deactivate 56 </button> 57 </div> 58</div> 
-Explanation # 
+1<div 2 id="demo" 3 data-signals\_\_ifmissing="{\_fetching: false, selections: Array(4).fill(false)}" 4> 5 <table> 6 <thead> 7 <tr> 8 <th> 9 <input 10 type="checkbox" 11 data-bind:\_all 12 data-on:change="$selections = Array(4).fill($\_all)" 13 data-effect="$selections; $_all = $selections.every(Boolean)" 14 data-attr:disabled="$\_fetching" 15 /> 16 </th> 17 <th>Name</th> 18 <th>Email</th> 19 <th>Status</th> 20 </tr> 21 </thead> 22 <tbody> 23 <tr> 24 <td> 25 <input 26 type="checkbox" 27 data-bind:selections 28 data-attr:disabled="$_fetching" 29 /> 30 </td> 31 <td>Joe Smith</td> 32 <td>[email protected]</td> 33 <td>Active</td> 34 </tr> 35 <!-- More rows... --> 36 </tbody> 37 </table> 38 <div role="group"> 39 <button 40 class="success" 41 data-on:click="@put('/examples/bulk_update/activate')" 42 data-indicator:_fetching 43 data-attr:disabled="$\_fetching" 44 > 45 <i class="pixelarticons:user-plus"></i> 46 Activate 47 </button> 48 <button 49 class="error" 50 data-on:click="@put('/examples/bulk_update/deactivate')" 51 data-indicator:\_fetching 52 data-attr:disabled="$\_fetching" 53 > 54 <i class="pixelarticons:user-x"></i> 55 Deactivate 56 </button> 57 </div> 58</div>
+Explanation #
 This example shows how to implement a common pattern where rows are selected and then bulk updated. This is accomplished by putting a form around a table, with checkboxes in the table, and then including the checked values in PUTs to two different endpoints: activate and deactivate.
 The server will either activate or deactivate the checked users and then re-render the table with updated rows.← Previous Next →
 
@@ -143,13 +138,11 @@ Hosted by Arcustech
 
 ---
 
-
 ## Click To Edit
 
 **Source:** https://data-star.dev/examples/click_to_edit
 
-Explanation [#](https://data-star.dev/examples/click_to_edit#explanation)
--------------------------------------------------------------------------
+## Explanation [#](https://data-star.dev/examples/click_to_edit#explanation)
 
 The click to edit pattern is a way to inline edit all or part of a record without a page refresh. This pattern starts with a UI that shows the details of a contact. The div has a button that will get the editing UI for the contact from `/edit`
 
@@ -240,15 +233,14 @@ On the backend we’ve also added a quick sanitizer on the input to avoid bad ac
 
 ---
 
-
 ## Click To Load
 
 **Source:** https://data-star.dev/examples/click_to_load
 
 Demo
 
-| Name | Email | ID |
-| --- | --- | --- |
+| Name          | Email                                                                 | ID               |
+| ------------- | --------------------------------------------------------------------- | ---------------- |
 | Agent Smith 0 | [[email protected]](https://data-star.dev/cdn-cgi/l/email-protection) | 1982e3a7bb241055 |
 | Agent Smith 1 | [[email protected]](https://data-star.dev/cdn-cgi/l/email-protection) | 65cd25028f98f158 |
 | Agent Smith 2 | [[email protected]](https://data-star.dev/cdn-cgi/l/email-protection) | 7b95a7322f5da314 |
@@ -256,13 +248,13 @@ Demo
 | Agent Smith 4 | [[email protected]](https://data-star.dev/cdn-cgi/l/email-protection) | 628911027fcf803f |
 | Agent Smith 5 | [[email protected]](https://data-star.dev/cdn-cgi/l/email-protection) | 5edb980100c87e72 |
 | Agent Smith 6 | [[email protected]](https://data-star.dev/cdn-cgi/l/email-protection) | 3564a48862bc4a0d |
-| Agent Smith 7 | [[email protected]](https://data-star.dev/cdn-cgi/l/email-protection) | 6eed105b82285fa |
+| Agent Smith 7 | [[email protected]](https://data-star.dev/cdn-cgi/l/email-protection) | 6eed105b82285fa  |
 | Agent Smith 8 | [[email protected]](https://data-star.dev/cdn-cgi/l/email-protection) | 664f427c6b2c4bea |
 | Agent Smith 9 | [[email protected]](https://data-star.dev/cdn-cgi/l/email-protection) | 28353a066812b268 |
+
 Load More
 
-Explanation [#](https://data-star.dev/examples/click_to_load#explanation)
--------------------------------------------------------------------------
+## Explanation [#](https://data-star.dev/examples/click_to_load#explanation)
 
 This example shows how to implement click-to-load the next page in a table of data. The crux of the example is the final row:
 
@@ -282,7 +274,6 @@ After clicking this button, the server responds with a set of elements in a `tex
 [← Previous](https://data-star.dev/examples/click_to_edit)[Next →](https://data-star.dev/examples/custom_event)
 
 ---
-
 
 ## Custom Event
 
@@ -309,8 +300,7 @@ After clicking this button, the server responds with a set of elements in a `tex
 18</script>
 ```
 
-Explanation [#](https://data-star.dev/examples/custom_event#explanation)
-------------------------------------------------------------------------
+## Explanation [#](https://data-star.dev/examples/custom_event#explanation)
 
 The `data-on` attribute can listen to any event, including custom events. In this example, we are listening to a custom event myevent on the foo element. When the event is triggered, the `$_eventDetails` signal is set to the event’s details.
 
@@ -324,14 +314,14 @@ There is an extra variable `evt` available in the event handler that contains th
 
 ---
 
-
 ## Custom Plugin
 
 **Source:** https://data-star.dev/examples/custom_plugin
 
 [← Previous](https://data-star.dev/examples/custom_event)[Next →](https://data-star.dev/examples/dbmon)Demo
 Explanation [#](https://data-star.dev/examples/custom_plugin#explanation)
--------------------------------------------------------------------------
+
+---
 
 Custom actions, attributes, and watchers can be implemented using the [plugin API](https://data-star.dev/examples/custom_plugin##). This example implements a simple alert action and attribute.
 
@@ -392,7 +382,6 @@ On [apply](https://data-star.dev/examples/custom_plugin##), we create an event l
 
 ---
 
-
 ## Dbmon
 
 **Source:** https://data-star.dev/examples/dbmon
@@ -406,164 +395,187 @@ We don't want to waste resources if you've stepped away!
 
 REFRESH TO RESUME
 HTML
+
 #
- 1
+
+1
+
 <div
 
- 2
-    id="demo"
+2
+id="demo"
 
- 3
-    data-init="@get('/examples/dbmon/updates')"
+3
+data-init="@get('/examples/dbmon/updates')"
 
- 4
-    data-signals:_editing__ifmissing="false"
+4
+data-signals:\_editing\_\_ifmissing="false"
 
- 5
+5
+
 >
 
- 6
-    <p>
+6
 
- 7
-        Average render time for entire page: { renderTime }
+<p>
 
- 8
-    </p>
+7
+Average render time for entire page: { renderTime }
 
- 9
-    <div role="group">
+8
+
+</p>
+
+9
+
+<div role="group">
 
 10
-        <label>
+<label>
 
 11
-            Mutation Rate %
+Mutation Rate %
 
 12
-            <input
+<input
 
 13
-                type="number"
+type="number"
 
 14
-                min="0"
+min="0"
 
 15
-                max="100"
+max="100"
 
 16
-                value="20"
+value="20"
 
 17
-                data-on:focus="$_editing = true"
+data-on:focus="$\_editing = true"
 
 18
-                data-on:blur="@put('/examples/dbmon/inputs'); $_editing = false"
+data-on:blur="@put('/examples/dbmon/inputs'); $\_editing = false"
 
 19
-                data-attr:data-bind:mutation-rate="$_editing"
+data-attr:data-bind:mutation-rate="$\_editing"
 
 20
-                data-attr:data-bind:_mutation-rate="!$_editing"
+data-attr:data-bind:\_mutation-rate="!$\_editing"
 
 21
-            />
+/>
 
 22
-        </label>
+</label>
 
 23
-        <label>
+<label>
 
 24
-            FPS
+FPS
 
 25
-            <input
+<input
 
 26
-                type="number"
+type="number"
 
 27
-                min="1"
+min="1"
 
 28
-                max="144"
+max="144"
 
 29
-                value="60"
+value="60"
 
 30
-                data-on:focus="$_editing = true"
+data-on:focus="$\_editing = true"
 
 31
-                data-on:blur="@put('/examples/dbmon/inputs'); $_editing = false"
+data-on:blur="@put('/examples/dbmon/inputs'); $\_editing = false"
 
 32
-                data-attr:data-bind:fps="$_editing"
+data-attr:data-bind:fps="$\_editing"
 
 33
-                data-attr:data-bind:_fps="!$_editing"
+data-attr:data-bind:\_fps="!$\_editing"
 
 34
-            />
+/>
 
 35
-        </label>
+</label>
 
 36
-    </div>
+
+</div>
 
 37
-    <table style="table-layout: fixed; width: 100%; word-break: break-all">
+
+<table style="table-layout: fixed; width: 100%; word-break: break-all">
 
 38
-        <tbody>
+
+<tbody>
 
 39
-            <!-- Dynamic rows generated by server -->
+
+<!-- Dynamic rows generated by server -->
 
 40
-            <tr>
+
+<tr>
 
 41
-                <td>cluster1</td>
+
+<td>cluster1</td>
 
 42
-                <td style="background-color: var(--_active-color)" class="success">
+
+<td style="background-color: var(--_active-color)" class="success">
 
 43
-                    8
+8
 
 44
-                </td>
+
+</td>
 
 45
-                <td aria-description="SELECT blah from something">
+
+<td aria-description="SELECT blah from something">
 
 46
-                    12ms
+12ms
 
 47
-                </td>
+
+</td>
 
 48
-                <!-- More query cells... -->
+
+<!-- More query cells... -->
 
 49
-            </tr>
+
+</tr>
 
 50
-            <!-- More database rows... -->
+
+<!-- More database rows... -->
 
 51
-        </tbody>
+
+</tbody>
 
 52
-    </table>
+
+</table>
 
 53
+
 </div>
 Explanation
 #
@@ -573,6 +585,7 @@ Per a conversation on the discord server there was a desire to port an old React
 The logic is 1:1 but all done on the backend, and since it’s Go, it’s an interesting comparison to the SPA based approach. We’ve limited purely since the site is run on a free tier server and don’t want to be a bad user. If you run the site from source you can easily 10x the rows without major issues.
 
 Note
+
 #
 
 If you open your Network tab in DevTools we are leveraging ZSTD compression so the data rate is relatively low for the contents.
@@ -586,7 +599,6 @@ Arcustech
 
 ---
 
-
 ## Delete Row
 
 **Source:** https://data-star.dev/examples/delete_row
@@ -598,11 +610,11 @@ DeleteAngie MacDowell[email protected]
 DeleteFuqua Tarkenton[email protected]
 DeleteKim Yee[email protected]
 Delete
-Reset 
-Explanation # 
+Reset
+Explanation #
 This example shows how to implement a delete button that removes a table row upon completion. First let’s look at the table body:
 
- 1<table>  2 <thead>  3 <tr>  4 <th>Name</th>  5 <th>Email</th>  6 <th>Actions</th>  7 </tr>  8 </thead>  9 <tbody> 10 <tr> 11 <td>Joe Smith</td> 12 <td>[email protected]</td> 13 <td> 14 <button 15 class="error" 16 data-on:click="confirm('Are you sure?') && @delete('/examples/delete_row/0')" 17 data-indicator:_fetching 18 data-attr:disabled="$_fetching" 19 > 20 Delete 21 </button> 22 </td> 23 </tr> 24 </tbody> 25</table> 
+1<table> 2 <thead> 3 <tr> 4 <th>Name</th> 5 <th>Email</th> 6 <th>Actions</th> 7 </tr> 8 </thead> 9 <tbody> 10 <tr> 11 <td>Joe Smith</td> 12 <td>[email protected]</td> 13 <td> 14 <button 15 class="error" 16 data-on:click="confirm('Are you sure?') && @delete('/examples/delete_row/0')" 17 data-indicator:\_fetching 18 data-attr:disabled="$\_fetching" 19 > 20 Delete 21 </button> 22 </td> 23 </tr> 24 </tbody> 25</table>
 The row has a normal confirm to confirm() the delete action.← Previous Next →
 
 © Star Federation
@@ -610,22 +622,20 @@ Hosted by Arcustech
 
 ---
 
-
 ## Edit Row
 
 **Source:** https://data-star.dev/examples/edit_row
 
 [← Previous](https://data-star.dev/examples/delete_row)[Next →](https://data-star.dev/examples/event_bubbling)Demo
 
-| Name | Email | Actions |
-| --- | --- | --- |
-| Joe Smith | [[email protected]](https://data-star.dev/cdn-cgi/l/email-protection) |  |
-| Angie MacDowell | [[email protected]](https://data-star.dev/cdn-cgi/l/email-protection) |  |
-| Fuqua Tarkenton | [[email protected]](https://data-star.dev/cdn-cgi/l/email-protection) |  |
-| Kim Yee | [[email protected]](https://data-star.dev/cdn-cgi/l/email-protection) |  |
+| Name            | Email                                                                 | Actions |
+| --------------- | --------------------------------------------------------------------- | ------- |
+| Joe Smith       | [[email protected]](https://data-star.dev/cdn-cgi/l/email-protection) |         |
+| Angie MacDowell | [[email protected]](https://data-star.dev/cdn-cgi/l/email-protection) |         |
+| Fuqua Tarkenton | [[email protected]](https://data-star.dev/cdn-cgi/l/email-protection) |         |
+| Kim Yee         | [[email protected]](https://data-star.dev/cdn-cgi/l/email-protection) |         |
 
-Explanation [#](https://data-star.dev/examples/edit_row#explanation)
---------------------------------------------------------------------
+## Explanation [#](https://data-star.dev/examples/edit_row#explanation)
 
 This example shows how to implement editable rows. First let’s look at the row prior to editing:
 
@@ -670,7 +680,6 @@ Here we have a few things going on, clicking the cancel button will bring back t
 
 ---
 
-
 ## Event Bubbling
 
 **Source:** https://data-star.dev/examples/event_bubbling
@@ -679,8 +688,7 @@ Here we have a few things going on, clicking the cancel button will bring back t
 
 Key pressed:
 
-HTML [#](https://data-star.dev/examples/event_bubbling#html)
-------------------------------------------------------------
+## HTML [#](https://data-star.dev/examples/event_bubbling#html)
 
 ```
 1<div id="demo">
@@ -708,8 +716,7 @@ HTML [#](https://data-star.dev/examples/event_bubbling#html)
 23</style>
 ```
 
-Explanation [#](https://data-star.dev/examples/event_bubbling#explanation)
---------------------------------------------------------------------------
+## Explanation [#](https://data-star.dev/examples/event_bubbling#explanation)
 
 This example shows how [event bubbling](https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Scripting/Event_bubbling) can be leveraged using Datastar. A `data-on:click` attribute on the parent container of the buttons. When any button is clicked, the event bubbles up to the parent, where we can access the clicked button’s `data-id` attribute via `evt.target.dataset.id`. This allows us to handle all button clicks with a single event listener.
 
@@ -719,7 +726,6 @@ Note the `pointer-events: none;` style on the button container. This is to preve
 
 ---
 
-
 ## File Upload
 
 **Source:** https://data-star.dev/examples/file_upload
@@ -728,10 +734,9 @@ Demo
 
 Pick anything less than 1 MiB
 
- Submit
+Submit
 
-Explanation [#](https://data-star.dev/examples/file_upload#explanation)
------------------------------------------------------------------------
+## Explanation [#](https://data-star.dev/examples/file_upload#explanation)
 
 In this example we show how to create a file upload form that will be submitted via fetch.
 
@@ -759,14 +764,14 @@ If you try to upload a file that is too large you will get an error message in t
 
 ---
 
-
 ## Form Data
 
 **Source:** https://data-star.dev/examples/form_data
 
 [← Previous](https://data-star.dev/examples/file_upload)[Next →](https://data-star.dev/examples/infinite_scroll)Demo
 Explanation [#](https://data-star.dev/examples/form_data#explanation)
----------------------------------------------------------------------
+
+---
 
 Setting the `contentType` option to `form` tells the `@get()` action to look for the closest form, perform validation on it, and send all form elements within it to the backend. A `selector` option can be provided to specify a form element. No signals are sent to the backend in this type of request.
 
@@ -788,8 +793,7 @@ Setting the `contentType` option to `form` tells the `@get()` action to look for
 15</button>
 ```
 
-Explanation [#](https://data-star.dev/examples/form_data#explanation)
----------------------------------------------------------------------
+## Explanation [#](https://data-star.dev/examples/form_data#explanation)
 
 In this example, the `@get()` action is placed inside a submit listener on the form element using `data-on:submit`.
 
@@ -806,7 +810,6 @@ In this example, the `@get()` action is placed inside a submit listener on the f
 
 ---
 
-
 ## Infinite Scroll
 
 **Source:** https://data-star.dev/examples/infinite_scroll
@@ -821,35 +824,34 @@ This last element contains a listener which, when scrolled into view, will trigg
 
 Demo
 
-Agents| Name | Email | ID |
-| --- | --- | --- |
-| Agent Smith 0 | void1@null.org | 1982e3a7bb241055 |
-| Agent Smith 1 | void2@null.org | 65cd25028f98f158 |
-| Agent Smith 2 | void3@null.org | 7b95a7322f5da314 |
-| Agent Smith 3 | void4@null.org | 7324dc1e7e9474f0 |
-| Agent Smith 4 | void5@null.org | 628911027fcf803f |
-| Agent Smith 5 | void6@null.org | 5edb980100c87e72 |
-| Agent Smith 6 | void7@null.org | 3564a48862bc4a0d |
-| Agent Smith 7 | void8@null.org | 6eed105b82285fa |
-| Agent Smith 8 | void9@null.org | 664f427c6b2c4bea |
-| Agent Smith 9 | void10@null.org | 28353a066812b268 |
+| Agents         | Name            | Email            | ID  |
+| -------------- | --------------- | ---------------- | --- |
+| Agent Smith 0  | void1@null.org  | 1982e3a7bb241055 |
+| Agent Smith 1  | void2@null.org  | 65cd25028f98f158 |
+| Agent Smith 2  | void3@null.org  | 7b95a7322f5da314 |
+| Agent Smith 3  | void4@null.org  | 7324dc1e7e9474f0 |
+| Agent Smith 4  | void5@null.org  | 628911027fcf803f |
+| Agent Smith 5  | void6@null.org  | 5edb980100c87e72 |
+| Agent Smith 6  | void7@null.org  | 3564a48862bc4a0d |
+| Agent Smith 7  | void8@null.org  | 6eed105b82285fa  |
+| Agent Smith 8  | void9@null.org  | 664f427c6b2c4bea |
+| Agent Smith 9  | void10@null.org | 28353a066812b268 |
 | Agent Smith 10 | void11@null.org | 50698444ed39c832 |
 | Agent Smith 11 | void12@null.org | 205381dc855b977a |
 | Agent Smith 12 | void13@null.org | 7ecd2e572c949f74 |
 | Agent Smith 13 | void14@null.org | 10a0338accf546ca |
-| Agent Smith 14 | void15@null.org | 14908a81dd43806 |
+| Agent Smith 14 | void15@null.org | 14908a81dd43806  |
 | Agent Smith 15 | void16@null.org | 57080b213541ea80 |
 | Agent Smith 16 | void17@null.org | 6fe5d3b279f68366 |
 | Agent Smith 17 | void18@null.org | 224b1d542cede2db |
 | Agent Smith 18 | void19@null.org | 7b7265f3c6196653 |
-| Agent Smith 19 | void20@null.org | f2c84c43a4bb670 |
+| Agent Smith 19 | void20@null.org | f2c84c43a4bb670  |
 
 Loading...![Image 1: Indicator](https://data-star.dev/cdn-cgi/image/format=auto,width=32/static/images/rocket-animated-1d781383a0d7cbb1eb575806abeec107c8a915806fb55ee19e4e33e8632c75e5.gif)
 
 [← Previous](https://data-star.dev/examples/form_data)[Next →](https://data-star.dev/examples/inline_validation)
 
 ---
-
 
 ## Inline Validation
 
@@ -899,15 +901,13 @@ Loading...![Image 1: Indicator](https://data-star.dev/cdn-cgi/image/format=auto,
 41</div>
 ```
 
-Explanation [#](https://data-star.dev/examples/inline_validation#explanation)
------------------------------------------------------------------------------
+## Explanation [#](https://data-star.dev/examples/inline_validation#explanation)
 
 This example shows how to do inline field validation, in this case of an email address. To do this we need to create a form with an input that `POST`s back to the server with the value to be validated and updates the DOM with the validation results. Since it’s easy to replace the whole form, the logic for displaying the validation results is kept simple.
 
 [← Previous](https://data-star.dev/examples/infinite_scroll)[Next →](https://data-star.dev/examples/lazy_load)
 
 ---
-
 
 ## Lazy Load
 
@@ -917,8 +917,7 @@ Demo
 
 Loading...![Image 4: Indicator](https://data-star.dev/cdn-cgi/image/format=auto,width=32/static/images/rocket-animated-1d781383a0d7cbb1eb575806abeec107c8a915806fb55ee19e4e33e8632c75e5.gif)
 
-Explanation [#](https://data-star.dev/examples/lazy_load#explanation)
----------------------------------------------------------------------
+## Explanation [#](https://data-star.dev/examples/lazy_load#explanation)
 
 This example shows how to lazily load an element on a page. We start with an initial state that looks like this:
 
@@ -940,7 +939,6 @@ Which shows a progress indicator as we are loading the graph. The graph is loade
 
 ---
 
-
 ## Lazy Tabs
 
 **Source:** https://data-star.dev/examples/lazy_tabs
@@ -951,8 +949,7 @@ Tab 0 Tab 1 Tab 2 Tab 3 Tab 4 Tab 5 Tab 6 Tab 7
 
 Ut vitae nostrum debitis ea necessitatibus. Asperiores illo non necessitatibus eveniet accusantium. Molestiae officia aut autem rerum pariatur. Vel alias hic voluptate aliquid debitis. Sit ex rem unde quis accusamus.
 
-HTML [#](https://data-star.dev/examples/lazy_tabs#html)
--------------------------------------------------------
+## HTML [#](https://data-star.dev/examples/lazy_tabs#html)
 
 ```
 1<div id="demo">
@@ -988,15 +985,13 @@ HTML [#](https://data-star.dev/examples/lazy_tabs#html)
 31</div>
 ```
 
-Explanation [#](https://data-star.dev/examples/lazy_tabs#explanation)
----------------------------------------------------------------------
+## Explanation [#](https://data-star.dev/examples/lazy_tabs#explanation)
 
 This example shows how easy it is to implement tabs using Datastar. Following the principles of Hypertext As The Engine Of Application State, the selected tab is a part of the application state. Therefore, to display and select tabs in your application, simply include the tab markup in the returned HTML fragment.
 
 [← Previous](https://data-star.dev/examples/lazy_load)[Next →](https://data-star.dev/examples/on_signal_patch)
 
 ---
-
 
 ## On Signal Patch
 
@@ -1010,8 +1005,7 @@ Counter:
 
 Message:
 
-Explanation [#](https://data-star.dev/examples/on_signal_patch#explanation)
----------------------------------------------------------------------------
+## Explanation [#](https://data-star.dev/examples/on_signal_patch#explanation)
 
 ```
 1<div data-signals="{counter: 0, message: 'Hello World', allChanges: [], counterChanges: []}">
@@ -1059,7 +1053,6 @@ You can filter which signals to watch using the `data-on-signal-patch-filter` at
 
 ---
 
-
 ## Progress Bar
 
 **Source:** https://data-star.dev/examples/progress_bar
@@ -1106,7 +1099,7 @@ You can filter which signals to watch using the `data-on-signal-patch-filter` at
 39            style="transform:rotate(90deg) translate(0px, -196px)"
 40        >50%</text>
 41    </svg>
-42    
+42
 43    <!-- When progress is 100% -->
 44    <button
 45        data-indicator:_fetching
@@ -1121,8 +1114,7 @@ You can filter which signals to watch using the `data-on-signal-patch-filter` at
 54</div>
 ```
 
-Explanation [#](https://data-star.dev/examples/progress_bar#explanation)
-------------------------------------------------------------------------
+## Explanation [#](https://data-star.dev/examples/progress_bar#explanation)
 
 This example shows an updating progress graphic. Since Datastar supports SSE, this is very easy to implement. The server sends down a new progress bar svg every 500 milliseconds causing the client to update. After the progress is complete, the server sends down a button allowing the user to restart the progress bar.
 
@@ -1133,7 +1125,6 @@ The `openWhenHidden` option is used to keep the connection open even when the pr
 [← Previous](https://data-star.dev/examples/on_signal_patch)[Next →](https://data-star.dev/examples/progressive_load)
 
 ---
-
 
 ## Progressive Load
 
@@ -1147,8 +1138,7 @@ Demo
 
 Each part is loaded randomly and progressively.
 
-HTML [#](https://data-star.dev/examples/progressive_load#html)
---------------------------------------------------------------
+## HTML [#](https://data-star.dev/examples/progressive_load#html)
 
 ```
 1<div>
@@ -1195,8 +1185,7 @@ HTML [#](https://data-star.dev/examples/progressive_load#html)
 42</div>
 ```
 
-Explanation [#](https://data-star.dev/examples/progressive_load#explanation)
-----------------------------------------------------------------------------
+## Explanation [#](https://data-star.dev/examples/progressive_load#explanation)
 
 This is a response to [Dan Abramov's article on progressive JSON](https://overreacted.io/progressive-json/). I think it's overcomplicated and shows a lack of understanding of how powerful native hypermedia is.
 
@@ -1212,13 +1201,11 @@ Nothing is faster than direct HTML morphing without a virtual DOM. – let the b
 
 ---
 
-
 ## Sortable
 
 **Source:** https://data-star.dev/examples/sortable
 
-Explanation [#](https://data-star.dev/examples/sortable#explanation)
---------------------------------------------------------------------
+## Explanation [#](https://data-star.dev/examples/sortable#explanation)
 
 Datastar allows you to listen for custom events using `data-on` and react to them by modifying signals.
 
@@ -1256,7 +1243,6 @@ We instruct the [SortableJS](https://sortablejs.github.io/Sortable/) library to 
 
 ---
 
-
 ## Svg Morphing
 
 **Source:** https://data-star.dev/examples/svg_morphing
@@ -1270,8 +1256,7 @@ We instruct the [SortableJS](https://sortablejs.github.io/Sortable/) library to 
 6</svg>
 ```
 
-Basic Circle Color Change [#](https://data-star.dev/examples/svg_morphing#basic-circle-color-change)
-----------------------------------------------------------------------------------------------------
+## Basic Circle Color Change [#](https://data-star.dev/examples/svg_morphing#basic-circle-color-change)
 
 This example demonstrates morphing an SVG circle’s color. Click the button to change the circle from red to blue.
 
@@ -1285,8 +1270,7 @@ Demo
 5})
 ```
 
-Circle Radius Change [#](https://data-star.dev/examples/svg_morphing#circle-radius-change)
-------------------------------------------------------------------------------------------
+## Circle Radius Change [#](https://data-star.dev/examples/svg_morphing#circle-radius-change)
 
 This example shows how to morph the size of an SVG element. The circle will change to a random radius when you click the button.
 
@@ -1300,8 +1284,7 @@ Demo
 5})
 ```
 
-Random Shape Transformation [#](https://data-star.dev/examples/svg_morphing#random-shape-transformation)
---------------------------------------------------------------------------------------------------------
+## Random Shape Transformation [#](https://data-star.dev/examples/svg_morphing#random-shape-transformation)
 
 SVG morphing can handle changing between different shape types. This example morphs to a random shape each time you click.
 
@@ -1315,8 +1298,7 @@ Demo
 5})
 ```
 
-Multiple Random Elements [#](https://data-star.dev/examples/svg_morphing#multiple-random-elements)
---------------------------------------------------------------------------------------------------
+## Multiple Random Elements [#](https://data-star.dev/examples/svg_morphing#multiple-random-elements)
 
 You can morph multiple SVG elements at once. This example updates three circles with random colors and sizes each time you click.
 
@@ -1339,8 +1321,7 @@ Demo
 14})
 ```
 
-Animated Sequence [#](https://data-star.dev/examples/svg_morphing#animated-sequence)
-------------------------------------------------------------------------------------
+## Animated Sequence [#](https://data-star.dev/examples/svg_morphing#animated-sequence)
 
 This example demonstrates a sequence of SVG morphs that happen automatically when triggered, creating a smooth animation effect.
 
@@ -1349,37 +1330,35 @@ Demo
 ```
 1svgMorphingRouter.Get("/animated_morph", func(w http.ResponseWriter, r *http.Request) {
  2    sse := datastar.NewSSE(w, r)
- 3    
+ 3
  4    // First morph
  5    sse.PatchElements(`<svg id="animated-demo"><circle cx="50" cy="50" r="30" fill="red" /></svg>`)
  6    time.Sleep(500 * time.Millisecond)
- 7    
+ 7
  8    // Second morph
  9    sse.PatchElements(`<svg id="animated-demo"><circle cx="50" cy="50" r="45" fill="orange" /></svg>`)
 10    time.Sleep(500 * time.Millisecond)
-11    
+11
 12    // Third morph
 13    sse.PatchElements(`<svg id="animated-demo"><circle cx="50" cy="50" r="60" fill="yellow" /></svg>`)
 14    time.Sleep(500 * time.Millisecond)
-15    
+15
 16    // Reset
 17    sse.PatchElements(`<svg id="animated-demo"><circle cx="50" cy="50" r="20" fill="green" /></svg>`)
 18})
 ```
 
-Key Points [#](https://data-star.dev/examples/svg_morphing#key-points)
-----------------------------------------------------------------------
+## Key Points [#](https://data-star.dev/examples/svg_morphing#key-points)
 
-*   SVG elements must be wrapped in an outer `<svg>` container
-*   The inner `<svg>` element should have the target ID
-*   All SVG element types (circle, rect, path, etc.) can be morphed
-*   Multiple SVG elements can be updated in a single morph operation
-*   CSS transitions work with SVG morphing for smooth animations
+- SVG elements must be wrapped in an outer `<svg>` container
+- The inner `<svg>` element should have the target ID
+- All SVG element types (circle, rect, path, etc.) can be morphed
+- Multiple SVG elements can be updated in a single morph operation
+- CSS transitions work with SVG morphing for smooth animations
 
 [← Previous](https://data-star.dev/examples/sortable)[Next →](https://data-star.dev/examples/templ_counter)
 
 ---
-
 
 ## Templ Counter
 
@@ -1389,8 +1368,7 @@ Demo
 
 Increment Global: 41 Increment User: 0
 
-HTML [#](https://data-star.dev/examples/templ_counter#html)
------------------------------------------------------------
+## HTML [#](https://data-star.dev/examples/templ_counter#html)
 
 ```
 1<div
@@ -1417,15 +1395,13 @@ HTML [#](https://data-star.dev/examples/templ_counter#html)
 22</div>
 ```
 
-Explanation [#](https://data-star.dev/examples/templ_counter#explanation)
--------------------------------------------------------------------------
+## Explanation [#](https://data-star.dev/examples/templ_counter#explanation)
 
 This example demonstrates two counters - a global counter shared across all users and a user-specific counter. The counters are updated via server-sent events (SSE) and increment when clicked.
 
 [← Previous](https://data-star.dev/examples/svg_morphing)[Next →](https://data-star.dev/examples/title_update)
 
 ---
-
 
 ## Title Update
 
@@ -1435,8 +1411,7 @@ Demo
 
 Look at the title change in the browser tab!
 
-Explanation [#](https://data-star.dev/examples/title_update#explanation)
-------------------------------------------------------------------------
+## Explanation [#](https://data-star.dev/examples/title_update#explanation)
 
 A user in the Discord channel was asking about needing a plugin similar to htmx’s head support to update title or head elements. With Datastar this is unnecessary as you can just update the title directly with a patch elements event.
 
@@ -1450,18 +1425,15 @@ A user in the Discord channel was asking about needing a plugin similar to htmx�
 
 ---
 
-
 ## Todomvc
 
 **Source:** https://data-star.dev/examples/todomvc
 
-Explanation [#](https://data-star.dev/examples/todomvc#explanation)
--------------------------------------------------------------------
+## Explanation [#](https://data-star.dev/examples/todomvc#explanation)
 
 This is a full implementation of TodoMVC using Datastar. It demonstrates complex state management, including adding, editing, deleting, and filtering todos, all handled through server-sent events.
 
-HTML [#](https://data-star.dev/examples/todomvc#html)
------------------------------------------------------
+## HTML [#](https://data-star.dev/examples/todomvc#html)
 
 ```
 1<section
@@ -1515,13 +1487,11 @@ HTML [#](https://data-star.dev/examples/todomvc#html)
 
 ---
 
-
 ## Web Component
 
 **Source:** https://data-star.dev/examples/web_component
 
-Explanation [#](https://data-star.dev/examples/web_component#explanation)
--------------------------------------------------------------------------
+## Explanation [#](https://data-star.dev/examples/web_component#explanation)
 
 This is an example of two-way binding with a web component that reverses a string. Normally, the web component would output the reversed value, but in this example, all it does is perform the logic and dispatch an event containing the result, which is then displayed.
 

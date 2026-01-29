@@ -1,9 +1,9 @@
-import type { StandardSchemaV1 } from '@standard-schema/spec'
-import type { Context, MiddlewareHandler } from 'hono'
-import type { JSX } from 'hono/jsx/jsx-runtime'
-import type { AppEnv } from './context'
-import type { FxResponse } from './sse/middleware'
-import type { QueryRegistration } from './sse/queries'
+import type { StandardSchemaV1 } from "@standard-schema/spec"
+import type { Context, MiddlewareHandler } from "hono"
+import type { JSX } from "hono/jsx/jsx-runtime"
+import type { AppEnv } from "./context"
+import type { FxResponse } from "./sse/middleware"
+import type { QueryRegistration } from "./sse/queries"
 
 type PageLoader<T extends Record<string, unknown> = {}> = (
   c: Context<AppEnv>
@@ -62,7 +62,7 @@ export async function resolvePageHead<T extends Record<string, unknown>>(
   const elements: JSX.Element[] = []
 
   for (const def of definitions) {
-    const resolved = typeof def === 'function' ? await def(props, c) : def
+    const resolved = typeof def === "function" ? await def(props, c) : def
     if (resolved.title !== undefined) title = resolved.title
     if (resolved.lang !== undefined) lang = resolved.lang
     if (resolved.elements) {
@@ -150,11 +150,11 @@ export type HandlerDefinition = BaseHandlerDefinition
 function isValidatedHandler<Schema extends StandardSchemaV1>(
   def: ValidatedHandlerDefinition<Schema> | BaseHandlerDefinition
 ): def is ValidatedHandlerDefinition<Schema> {
-  return 'schema' in def && def.schema !== undefined
+  return "schema" in def && def.schema !== undefined
 }
 
 function isDatastarRequest(c: Context<AppEnv>): boolean {
-  return c.req.header('datastar-request') !== null
+  return c.req.header("datastar-request") !== null
 }
 
 async function safeParseJson(c: Context<AppEnv>): Promise<unknown> {
@@ -181,16 +181,16 @@ function urlSearchParamsToObject(params: URLSearchParams): Record<string, unknow
 function parseKeyPath(key: string): string[] {
   const parts: string[] = []
 
-  const bracketIndex = key.indexOf('[')
+  const bracketIndex = key.indexOf("[")
   const base = bracketIndex === -1 ? key : key.slice(0, bracketIndex)
   if (base) {
-    parts.push(...base.split('.').filter(Boolean))
+    parts.push(...base.split(".").filter(Boolean))
   }
 
   if (bracketIndex !== -1) {
     const bracketMatches = key.slice(bracketIndex).matchAll(/\[([^\]]*)\]/g)
     for (const match of bracketMatches) {
-      const value = match[1] ?? ''
+      const value = match[1] ?? ""
       if (value) parts.push(value)
     }
   }
@@ -199,7 +199,7 @@ function parseKeyPath(key: string): string[] {
 }
 
 function isPlainRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
+  return typeof value === "object" && value !== null && !Array.isArray(value)
 }
 
 function mergeIntoExisting(existing: unknown, value: unknown): unknown {
@@ -216,7 +216,7 @@ function setDeep(target: Record<string, unknown>, path: string[], value: unknown
   let cursor: Record<string, unknown> = target
 
   for (let i = 0; i < path.length; i++) {
-    const segment = path[i] ?? ''
+    const segment = path[i] ?? ""
     const isLast = i === path.length - 1
 
     if (isLast) {
@@ -242,7 +242,7 @@ function expandObjectKeys(input: unknown): unknown {
   const out: Record<string, unknown> = {}
 
   for (const [key, value] of Object.entries(raw)) {
-    if (key.includes('.') || key.includes('[')) {
+    if (key.includes(".") || key.includes("[")) {
       setDeep(out, parseKeyPath(key), value)
     } else {
       out[key] = value
@@ -267,7 +267,7 @@ async function safeParseUnknownBody(c: Context<AppEnv>): Promise<unknown> {
     if (!bodyText) return {}
 
     const trimmed = bodyText.trim()
-    if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+    if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
       try {
         return JSON.parse(trimmed)
       } catch {
@@ -275,7 +275,7 @@ async function safeParseUnknownBody(c: Context<AppEnv>): Promise<unknown> {
       }
     }
 
-    if (trimmed.includes('=') || trimmed.includes('&')) {
+    if (trimmed.includes("=") || trimmed.includes("&")) {
       const params = new URLSearchParams(trimmed)
       return expandObjectKeys(urlSearchParamsToObject(params))
     }
@@ -287,17 +287,17 @@ async function safeParseUnknownBody(c: Context<AppEnv>): Promise<unknown> {
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
+  return typeof value === "object" && value !== null && !Array.isArray(value)
 }
 
 async function extractHandlerData(c: Context<AppEnv>): Promise<unknown> {
-  if (c.req.method === 'GET') {
+  if (c.req.method === "GET") {
     const url = new URL(c.req.url)
     const params = new URLSearchParams(url.search)
-    params.delete('datastar')
+    params.delete("datastar")
     const queryData = expandObjectKeys(urlSearchParamsToObject(params))
 
-    const datastarParam = c.req.query('datastar')
+    const datastarParam = c.req.query("datastar")
     if (!datastarParam) return queryData
 
     const parsedDatastar = (() => {
@@ -322,13 +322,13 @@ async function extractHandlerData(c: Context<AppEnv>): Promise<unknown> {
     return mergePreferRight(queryData, parsedDatastar)
   }
 
-  const contentType = (c.req.header('content-type') ?? '').toLowerCase()
-  const isJson = contentType.includes('application/json') || contentType.includes('+json')
+  const contentType = (c.req.header("content-type") ?? "").toLowerCase()
+  const isJson = contentType.includes("application/json") || contentType.includes("+json")
   if (isJson) return safeParseJson(c)
 
   const isForm =
-    contentType.includes('application/x-www-form-urlencoded') ||
-    contentType.includes('multipart/form-data')
+    contentType.includes("application/x-www-form-urlencoded") ||
+    contentType.includes("multipart/form-data")
   if (isForm) return safeParseFormBody(c)
 
   return safeParseUnknownBody(c)
@@ -432,7 +432,7 @@ export function createHandler<Schema extends StandardSchemaV1>(
         const rawData = await extractHandlerData(c)
 
         // 2. Validate the data against the Standard Schema
-        const result = await definition.schema['~standard'].validate(rawData)
+        const result = await definition.schema["~standard"].validate(rawData)
 
         // 3. Run validation hook on failure
         if (result.issues) {
@@ -440,9 +440,9 @@ export function createHandler<Schema extends StandardSchemaV1>(
             return definition.hook({ success: false, error: result.issues }, c)
           }
           // Default error response if no hook provided
-          const error = result.issues[0]?.message || 'Invalid input'
+          const error = result.issues[0]?.message || "Invalid input"
           if (isDatastarRequest(c)) {
-            return c.var.fx.reply([['patch-signals', { error }]], { status: 400 })
+            return c.var.fx.reply([["patch-signals", { error }]], { status: 400 })
           }
           return c.text(error, 400)
         }

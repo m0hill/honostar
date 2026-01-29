@@ -1,21 +1,21 @@
-import type { QueryHandler } from '@honostar/core/server'
-import { defineQueryPage } from '@honostar/core/server'
-import IssuesList from '@/components/IssuesList'
-import LabelsSection from '@/components/LabelsSection'
-import { ModeToggle } from '@/components/ModeToggle'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { labels } from '@/db/schema'
-import { topics } from '@/lib/topics'
-import { routes } from '@/routes'
-import type { IssueWithAuthor, User } from '@/types'
+import type { QueryHandler } from "@honostar/core/server"
+import { defineQueryPage } from "@honostar/core/server"
+import IssuesList from "@/components/IssuesList"
+import LabelsSection from "@/components/LabelsSection"
+import { ModeToggle } from "@/components/ModeToggle"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { labels } from "@/db/schema"
+import { topics } from "@/lib/topics"
+import { routes } from "@/routes"
+import type { IssueWithAuthor, User } from "@/types"
 
-type IssueStatusFilter = 'open' | 'closed' | 'all'
+type IssueStatusFilter = "open" | "closed" | "all"
 
 function resolveStatusFilter(raw: string | undefined | null): IssueStatusFilter {
-  if (raw === 'closed' || raw === 'all') return raw
-  return 'open'
+  if (raw === "closed" || raw === "all") return raw
+  return "open"
 }
 
 function withQuery(path: string, query: Record<string, string | undefined>): string {
@@ -28,22 +28,22 @@ function withQuery(path: string, query: Record<string, string | undefined>): str
 }
 
 const issuesListQuery: QueryHandler = async ({ c }) => {
-  const status = resolveStatusFilter(c.req.query('status'))
+  const status = resolveStatusFilter(c.req.query("status"))
   const issues = await c.var.db.query.issues.findMany({
     with: {
       author: true,
     },
-    ...(status !== 'all' && {
+    ...(status !== "all" && {
       where: (i, { eq }) => eq(i.status, status),
     }),
     orderBy: (issues, { desc }) => [desc(issues.createdAt)],
   })
-  return [['patch-elements', <IssuesList issues={issues} />]]
+  return [["patch-elements", <IssuesList issues={issues} />]]
 }
 
 const labelsListQuery: QueryHandler = async ({ c }) => {
   const allLabels = await c.var.db.select().from(labels)
-  return [['patch-elements', <LabelsSection labels={allLabels} />]]
+  return [["patch-elements", <LabelsSection labels={allLabels} />]]
 }
 
 function IndexPage({
@@ -56,11 +56,11 @@ function IndexPage({
   status: IssueStatusFilter
 }) {
   const searchInputProps = {
-    'data-on:input__debounce.200ms': `@get('${withQuery(routes.search.href(), { status })}')`,
+    "data-on:input__debounce.200ms": `@get('${withQuery(routes.search.href(), { status })}')`,
   }
   const openHref = routes.home.href()
-  const closedHref = withQuery(routes.home.href(), { status: 'closed' })
-  const allHref = withQuery(routes.home.href(), { status: 'all' })
+  const closedHref = withQuery(routes.home.href(), { status: "closed" })
+  const allHref = withQuery(routes.home.href(), { status: "all" })
 
   return (
     <div class="min-h-screen bg-background text-foreground flex flex-col items-center pt-10 px-4">
@@ -102,31 +102,31 @@ function IndexPage({
             <nav class="flex flex-col gap-1">
               <a
                 href={openHref}
-                aria-current={status === 'open' ? 'page' : undefined}
+                aria-current={status === "open" ? "page" : undefined}
                 class={[
-                  'rounded-md px-2 py-1 text-sm',
-                  status === 'open' ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50',
-                ].join(' ')}
+                  "rounded-md px-2 py-1 text-sm",
+                  status === "open" ? "bg-accent text-accent-foreground" : "hover:bg-accent/50",
+                ].join(" ")}
               >
                 Open
               </a>
               <a
                 href={closedHref}
-                aria-current={status === 'closed' ? 'page' : undefined}
+                aria-current={status === "closed" ? "page" : undefined}
                 class={[
-                  'rounded-md px-2 py-1 text-sm',
-                  status === 'closed' ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50',
-                ].join(' ')}
+                  "rounded-md px-2 py-1 text-sm",
+                  status === "closed" ? "bg-accent text-accent-foreground" : "hover:bg-accent/50",
+                ].join(" ")}
               >
                 Closed
               </a>
               <a
                 href={allHref}
-                aria-current={status === 'all' ? 'page' : undefined}
+                aria-current={status === "all" ? "page" : undefined}
                 class={[
-                  'rounded-md px-2 py-1 text-sm',
-                  status === 'all' ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50',
-                ].join(' ')}
+                  "rounded-md px-2 py-1 text-sm",
+                  status === "all" ? "bg-accent text-accent-foreground" : "hover:bg-accent/50",
+                ].join(" ")}
               >
                 All
               </a>
@@ -195,9 +195,9 @@ export default defineQueryPage({
     [topics.issues.list(), issuesListQuery],
     [topics.labels.list(), labelsListQuery],
   ],
-  sseParams: c => ({ status: String(resolveStatusFilter(c.req.query('status'))) }),
+  sseParams: (c) => ({ status: String(resolveStatusFilter(c.req.query("status"))) }),
   head: {
-    title: 'Issues • Honostar',
+    title: "Issues • Honostar",
     elements: [
       <meta
         name="description"
@@ -208,12 +208,12 @@ export default defineQueryPage({
 
   async loader(c) {
     const user = c.var.user
-    const status = resolveStatusFilter(c.req.query('status'))
+    const status = resolveStatusFilter(c.req.query("status"))
     const issues = await c.var.db.query.issues.findMany({
       with: {
         author: true,
       },
-      ...(status !== 'all' && {
+      ...(status !== "all" && {
         where: (i, { eq }) => eq(i.status, status),
       }),
       orderBy: (issues, { desc }) => [desc(issues.createdAt)],

@@ -1,10 +1,10 @@
-import { defineQueryPage } from '@honostar/core/server'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { requireGuest } from '@/lib/auth-middleware'
-import { routes } from '@/routes'
+import { defineQueryPage } from "@honostar/core/server"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { requireGuest } from "@/lib/auth-middleware"
+import { routes } from "@/routes"
 
 function SignupPage(props: { error?: string }) {
   return (
@@ -35,11 +35,11 @@ function SignupPage(props: { error?: string }) {
 
           <form
             class="space-y-4"
-            action={routes.auth.action.href({ action: 'signup' })}
+            action={routes.auth.action.href({ action: "signup" })}
             method="post"
-            data-on:submit__prevent={`@post('${routes.auth.action.href({ action: 'signup' })}', {openWhenHidden: true})`}
+            data-on:submit__prevent={`@post('${routes.auth.action.href({ action: "signup" })}', {openWhenHidden: true})`}
             data-indicator="signingUp"
-            data-signals={JSON.stringify({ error: props.error ?? '' })}
+            data-signals={JSON.stringify({ error: props.error ?? "" })}
             data-signals__ifmissing='{"form":{"username":"","password":""}}'
           >
             <div class="space-y-2">
@@ -77,7 +77,7 @@ function SignupPage(props: { error?: string }) {
           </form>
 
           <div class="mt-4 text-center text-sm text-muted-foreground">
-            <span>Already have an account?</span>{' '}
+            <span>Already have an account?</span>{" "}
             <a
               href={routes.auth.login.href()}
               class="font-medium text-primary underline-offset-4 hover:underline"
@@ -94,11 +94,11 @@ function SignupPage(props: { error?: string }) {
 export default defineQueryPage({
   use: [requireGuest],
   head: {
-    title: 'Sign Up • Honostar',
+    title: "Sign Up • Honostar",
   },
 
   loader(c) {
-    const error = c.req.query('error')
+    const error = c.req.query("error")
     return Promise.resolve(error ? { error } : {})
   },
 

@@ -2,9 +2,12 @@
   "name": "@honostar/core",
   "version": "0.0.0",
   "private": true,
+  "files": [
+    "dist"
+  ],
   "type": "module",
   "sideEffects": [
-    "dist/client/bootstrap/*.js",
+    "dist/client/bootstrap/minimal.js",
     "dist/server/polyfills/*.js"
   ],
   "exports": {
@@ -24,23 +27,16 @@
       "types": "./dist/client/bootstrap/minimal.d.ts",
       "default": "./dist/client/bootstrap/minimal.js"
     },
-    "./client/bootstrap/standard": {
-      "types": "./dist/client/bootstrap/standard.d.ts",
-      "default": "./dist/client/bootstrap/standard.js"
-    },
     "./server/polyfills/compression.js": "./dist/server/polyfills/compression.js"
   },
-  "files": [
-    "dist"
-  ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "oxlint --type-aware -c ../../.oxlintrc.json",
     "test": "bun test"
   },
-  "peerDependencies": {
-    "hono": "^4"
+  "dependencies": {
+    "@standard-schema/spec": "^1.0.0"
   },
   "devDependencies": {
     "@types/bun": "latest",
@@ -50,7 +46,7 @@
     "oxlint-tsgolint": "^0.6.0",
     "typescript": "^5.9.3"
   },
-  "dependencies": {
-    "@standard-schema/spec": "^1.0.0"
+  "peerDependencies": {
+    "hono": "^4"
   }
 }

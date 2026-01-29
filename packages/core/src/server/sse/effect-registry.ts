@@ -1,12 +1,12 @@
-import type { Context } from 'hono'
-import type { JSX } from 'hono/jsx/jsx-runtime'
+import type { Context } from "hono"
+import type { JSX } from "hono/jsx/jsx-runtime"
 import type {
   ExecuteScriptOptions,
   Jsonifiable,
   PatchElementsOptions,
   PatchSignalsOptions,
-} from '../../common/types'
-import type { AppEnv } from '../context'
+} from "../../common/types"
+import type { AppEnv } from "../context"
 
 /**
  * Effect handler function signature.
@@ -14,28 +14,28 @@ import type { AppEnv } from '../context'
  */
 export type EffectHandler<TArgs extends unknown[] = unknown[]> = {
   bivarianceHack(c: Context<AppEnv>, ...args: TArgs): Promise<void>
-}['bivarianceHack']
+}["bivarianceHack"]
 
 /**
  * Built-in effect names that come with Honostar.
  */
 export type BuiltInEffectName =
-  | 'patch-elements'
-  | 'patch-elements-seq'
-  | 'patch-signals'
-  | 'execute-script'
-  | 'close-sse'
+  | "patch-elements"
+  | "patch-elements-seq"
+  | "patch-signals"
+  | "execute-script"
+  | "close-sse"
 
 /**
  * Effect definition - a tuple of effect name and its arguments.
  * Supports both built-in effects and custom user-defined effects.
  */
 export type EffectDefinition =
-  | ['patch-elements', JSX.Element | JSX.Element[] | string, PatchElementsOptions?]
-  | ['patch-elements-seq', Array<JSX.Element | string>, PatchElementsOptions?]
-  | ['patch-signals', Record<string, Jsonifiable>, PatchSignalsOptions?]
-  | ['execute-script', string, ExecuteScriptOptions?]
-  | ['close-sse']
+  | ["patch-elements", JSX.Element | JSX.Element[] | string, PatchElementsOptions?]
+  | ["patch-elements-seq", Array<JSX.Element | string>, PatchElementsOptions?]
+  | ["patch-signals", Record<string, Jsonifiable>, PatchSignalsOptions?]
+  | ["execute-script", string, ExecuteScriptOptions?]
+  | ["close-sse"]
   | [string, ...unknown[]] // Allow custom effects with any args
 
 /**

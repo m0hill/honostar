@@ -1,4 +1,4 @@
-import type { PubSubBus, Sink, SSEPayload } from './memory'
+import type { PubSubBus, Sink, SSEPayload } from "./memory"
 
 export interface RedisClient {
   publish(...args: any[]): Promise<any>
@@ -23,24 +23,24 @@ export type RedisBusOptions = {
 }
 
 function isSsePayload(value: unknown): value is SSEPayload {
-  if (typeof value !== 'object' || value === null) return false
+  if (typeof value !== "object" || value === null) return false
   const event = (value as { event?: unknown }).event
-  if (typeof event !== 'string') return false
+  if (typeof event !== "string") return false
   switch (event) {
-    case 'datastar-patch-elements':
-      return typeof (value as { html?: unknown }).html === 'string'
-    case 'datastar-patch-signals':
-      return typeof (value as { signals?: unknown }).signals === 'string'
-    case 'execute-script': {
+    case "datastar-patch-elements":
+      return typeof (value as { html?: unknown }).html === "string"
+    case "datastar-patch-signals":
+      return typeof (value as { signals?: unknown }).signals === "string"
+    case "execute-script": {
       const script = (value as { script?: unknown }).script
-      return typeof script === 'string'
+      return typeof script === "string"
     }
-    case 'honostar-event': {
+    case "honostar-event": {
       const name = (value as { name?: unknown }).name
       const payload = (value as { payload?: unknown }).payload
-      return typeof name === 'string' && typeof payload === 'string'
+      return typeof name === "string" && typeof payload === "string"
     }
-    case 'close':
+    case "close":
       return true
     default:
       return false
@@ -53,7 +53,7 @@ function safeJsonParse(payload: string): SSEPayload | null {
     if (!isSsePayload(parsed)) return null
     return parsed
   } catch (err) {
-    console.error('[RedisBus] Failed to parse payload', err)
+    console.error("[RedisBus] Failed to parse payload", err)
     return null
   }
 }
@@ -72,43 +72,43 @@ export class RedisBus implements PubSubBus {
     this.publisher = options.publisher
     const subscriber = options.subscriber ?? options.publisher.duplicate?.()
     if (!subscriber) {
-      throw new Error('RedisBus requires a dedicated subscriber connection.')
+      throw new Error("RedisBus requires a dedicated subscriber connection.")
     }
     this.subscriber = subscriber
-    this.channelPrefix = options.channelPrefix ?? 'honostar:bus'
-    this.broadcastChannel = this.channelName('broadcast', 'all')
+    this.channelPrefix = options.channelPrefix ?? "honostar:bus"
+    this.broadcastChannel = this.channelName("broadcast", "all")
     this.retainTtlSec = options.retainTtlSec ?? 3600
 
-    this.subscriber.on('message', (...args: unknown[]) => {
-      const channel = typeof args[0] === 'string' ? args[0] : null
-      const payload = typeof args[1] === 'string' ? args[1] : null
+    this.subscriber.on("message", (...args: unknown[]) => {
+      const channel = typeof args[0] === "string" ? args[0] : null
+      const payload = typeof args[1] === "string" ? args[1] : null
       if (channel && payload) {
         this.handleMessage(channel, payload)
       }
     })
 
-    void this.subscriber.subscribe(this.broadcastChannel).catch(err => {
-      console.error('[RedisBus] Failed to subscribe to broadcast channel', err)
+    void this.subscriber.subscribe(this.broadcastChannel).catch((err) => {
+      console.error("[RedisBus] Failed to subscribe to broadcast channel", err)
     })
   }
 
   subscribeClient(clientId: string, sink: Sink) {
-    const channel = this.channelName('client', clientId)
+    const channel = this.channelName("client", clientId)
     return this.registerSink(channel, sink)
   }
 
   subscribeTopic(topic: string, sink: Sink) {
-    const channel = this.channelName('topic', topic)
+    const channel = this.channelName("topic", topic)
     return this.registerSink(channel, sink)
   }
 
   toClient(clientId: string, msg: SSEPayload) {
-    const channel = this.channelName('client', clientId)
+    const channel = this.channelName("client", clientId)
     this.publish(channel, msg)
   }
 
   toTopic(topic: string, msg: SSEPayload) {
-    const channel = this.channelName('topic', topic)
+    const channel = this.channelName("topic", topic)
     this.maybeRetainTopic(topic, msg)
     this.publish(channel, msg)
   }
@@ -117,20 +117,20 @@ export class RedisBus implements PubSubBus {
     this.publish(this.broadcastChannel, msg)
   }
 
-  private channelName(kind: 'client' | 'topic' | 'broadcast', id: string) {
+  private channelName(kind: "client" | "topic" | "broadcast", id: string) {
     return `${this.channelPrefix}:${kind}:${id}`
   }
 
-  private retainKey(kind: 'topic', id: string) {
+  private retainKey(kind: "topic", id: string) {
     return `${this.channelPrefix}:retain:${kind}:${id}`
   }
 
   private canRetain(
     msg: SSEPayload
-  ): msg is Extract<SSEPayload, { event: 'datastar-patch-elements' }> {
-    if (msg.event !== 'datastar-patch-elements') return false
-    const mode = msg.options?.mode ?? 'outer'
-    return mode === 'outer' || mode === 'inner' || mode === 'replace'
+  ): msg is Extract<SSEPayload, { event: "datastar-patch-elements" }> {
+    if (msg.event !== "datastar-patch-elements") return false
+    const mode = msg.options?.mode ?? "outer"
+    return mode === "outer" || mode === "inner" || mode === "replace"
   }
 
   private maybeRetainTopic(topic: string, msg: SSEPayload) {
@@ -140,13 +140,13 @@ export class RedisBus implements PubSubBus {
     this.retainedTopicCache.set(topic, msg)
 
     // Best-effort cross-instance retention in Redis, when supported by the client.
-    const key = this.retainKey('topic', topic)
+    const key = this.retainKey("topic", topic)
     const payload = JSON.stringify(msg)
-    if (typeof this.publisher.set === 'function') {
+    if (typeof this.publisher.set === "function") {
       // ioredis supports: set(key, value, 'EX', seconds)
       this.publisher
-        .set(key, payload, 'EX', this.retainTtlSec)
-        .catch(err => console.error(`[RedisBus] Failed to retain topic ${topic}`, err))
+        .set(key, payload, "EX", this.retainTtlSec)
+        .catch((err) => console.error(`[RedisBus] Failed to retain topic ${topic}`, err))
     }
   }
 
@@ -155,7 +155,7 @@ export class RedisBus implements PubSubBus {
     if (!sinks) {
       sinks = new Set()
       this.channelSinks.set(channel, sinks)
-      void this.subscriber.subscribe(channel).catch(err => {
+      void this.subscriber.subscribe(channel).catch((err) => {
         console.error(`[RedisBus] Failed to subscribe to channel ${channel}`, err)
       })
     }
@@ -172,7 +172,7 @@ export class RedisBus implements PubSubBus {
     if (sinks.size === 0) {
       this.channelSinks.delete(channel)
       if (channel !== this.broadcastChannel) {
-        void this.subscriber.unsubscribe(channel).catch(err => {
+        void this.subscriber.unsubscribe(channel).catch((err) => {
           console.error(`[RedisBus] Failed to unsubscribe from channel ${channel}`, err)
         })
       }
@@ -196,7 +196,7 @@ export class RedisBus implements PubSubBus {
 
   private publish(channel: string, msg: SSEPayload) {
     const payload = JSON.stringify(msg)
-    this.publisher.publish(channel, payload).catch(err => {
+    this.publisher.publish(channel, payload).catch((err) => {
       console.error(`[RedisBus] Failed to publish to channel ${channel}`, err)
     })
   }
@@ -225,7 +225,7 @@ export class RedisBus implements PubSubBus {
       try {
         sink(parsed)
       } catch (err) {
-        console.error('[RedisBus] Sink handler failed', err)
+        console.error("[RedisBus] Sink handler failed", err)
       }
     }
   }
@@ -235,15 +235,15 @@ export class RedisBus implements PubSubBus {
       try {
         sink(msg)
       } catch (err) {
-        console.error('[RedisBus] Sink handler failed', err)
+        console.error("[RedisBus] Sink handler failed", err)
       }
     }
   }
 
   async getRetainedTopic(topic: string): Promise<SSEPayload | null> {
     // Prefer Redis as the source of truth when available (cross-instance).
-    const key = this.retainKey('topic', topic)
-    if (typeof this.publisher.get === 'function') {
+    const key = this.retainKey("topic", topic)
+    if (typeof this.publisher.get === "function") {
       try {
         const payload = await this.publisher.get(key)
         if (!payload) return null

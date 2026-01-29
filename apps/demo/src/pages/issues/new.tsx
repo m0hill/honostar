@@ -1,13 +1,13 @@
-import { defineQueryPage } from '@honostar/core/server'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { labels as labelsTable } from '@/db/schema'
-import { requireAuth } from '@/lib/auth-middleware'
-import { routes } from '@/routes'
-import type { Label as LabelType } from '@/types'
+import { defineQueryPage } from "@honostar/core/server"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { labels as labelsTable } from "@/db/schema"
+import { requireAuth } from "@/lib/auth-middleware"
+import { routes } from "@/routes"
+import type { Label as LabelType } from "@/types"
 
 function NewIssuePage(props: { labels: LabelType[]; error?: string }) {
   return (
@@ -39,7 +39,7 @@ function NewIssuePage(props: { labels: LabelType[]; error?: string }) {
               enctype="multipart/form-data"
               class="space-y-4"
               data-indicator="creating"
-              data-signals={JSON.stringify({ issueForm: { error: props.error ?? '' } })}
+              data-signals={JSON.stringify({ issueForm: { error: props.error ?? "" } })}
               data-on:submit__prevent={`$issueForm.error=''; @post('${routes.issues.create.href()}', {contentType: 'form', openWhenHidden: true})`}
             >
               <div
@@ -64,7 +64,7 @@ function NewIssuePage(props: { labels: LabelType[]; error?: string }) {
               <div class="space-y-2">
                 <Label>Labels</Label>
                 <div class="flex flex-wrap gap-2">
-                  {props.labels.map(l => (
+                  {props.labels.map((l) => (
                     <label class="inline-flex items-center gap-2 cursor-pointer" key={l.id}>
                       <input
                         type="checkbox"
@@ -106,10 +106,10 @@ function NewIssuePage(props: { labels: LabelType[]; error?: string }) {
 
 export default defineQueryPage({
   use: [requireAuth],
-  head: { title: 'New Issue • Honostar' },
+  head: { title: "New Issue • Honostar" },
   async loader(c) {
     const allLabels = await c.var.db.select().from(labelsTable)
-    const error = c.req.query('error')
+    const error = c.req.query("error")
     return error ? { labels: allLabels, error } : { labels: allLabels }
   },
   component: NewIssuePage,

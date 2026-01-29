@@ -6,7 +6,7 @@ import {
   DatastarDatalineSignals,
   DefaultSseRetryDurationMs,
   ElementPatchModes,
-} from '../../common/constants'
+} from "../../common/constants"
 import {
   DatastarEventOptions,
   DefaultMapping,
@@ -15,17 +15,17 @@ import {
   type Jsonifiable,
   type PatchElementsOptions,
   type PatchSignalsOptions,
-} from '../../common/types'
+} from "../../common/types"
 
 function isRecord(obj: unknown): obj is Record<string, Jsonifiable> {
-  return typeof obj === 'object' && obj !== null
+  return typeof obj === "object" && obj !== null
 }
 
 export class SseFormatter {
   protected validateElementPatchMode(mode: string): asserts mode is ElementPatchMode {
     if (!(ElementPatchModes as readonly string[]).includes(mode)) {
       throw new Error(
-        `Invalid ElementPatchMode: "${mode}". Valid modes are: ${ElementPatchModes.join(', ')}`
+        `Invalid ElementPatchMode: "${mode}". Valid modes are: ${ElementPatchModes.join(", ")}`
       )
     }
   }
@@ -34,7 +34,7 @@ export class SseFormatter {
     value: string | undefined,
     paramName: string
   ): asserts value is string {
-    if (!value || value.trim() === '') {
+    if (!value || value.trim() === "") {
       throw new Error(`${paramName} is required and cannot be empty`)
     }
   }
@@ -52,28 +52,28 @@ export class SseFormatter {
     return typeLine.concat(
       idLine,
       retryLine,
-      dataLines.map(data => {
+      dataLines.map((data) => {
         return `data: ${data}\n`
       }),
-      ['\n']
+      ["\n"]
     )
   }
 
   protected eachNewlineIsADataLine(prefix: string, data: string) {
-    return data.split('\n').map(line => {
+    return data.split("\n").map((line) => {
       return `${prefix} ${line}`
     })
   }
 
   protected eachOptionIsADataLine(options: Record<string, Jsonifiable>): string[] {
     return Object.keys(options)
-      .filter(key => {
+      .filter((key) => {
         return !this.hasDefaultValue(key, options[key])
       })
-      .flatMap(key => {
+      .flatMap((key) => {
         const value = options[key]
         const stringValue =
-          typeof value === 'object' && value !== null ? JSON.stringify(value) : String(value)
+          typeof value === "object" && value !== null ? JSON.stringify(value) : String(value)
         return this.eachNewlineIsADataLine(key, stringValue)
       })
   }
@@ -90,26 +90,26 @@ export class SseFormatter {
     const { eventId, retryDuration, ...renderOptions } =
       options || ({} as Partial<PatchElementsOptions>)
 
-    const patchMode = renderOptions[DatastarDatalinePatchMode] ?? ''
+    const patchMode = renderOptions[DatastarDatalinePatchMode] ?? ""
     if (patchMode) {
       this.validateElementPatchMode(patchMode)
     }
 
-    const selector = renderOptions[DatastarDatalineSelector] ?? ''
-    const isRemoveWithSelector = patchMode === 'remove' && selector
+    const selector = renderOptions[DatastarDatalineSelector] ?? ""
+    const isRemoveWithSelector = patchMode === "remove" && selector
 
     if (!isRemoveWithSelector) {
-      this.validateRequired(elements, 'elements')
+      this.validateRequired(elements, "elements")
     }
 
-    if (!selector && patchMode === 'remove') {
-      if (!elements || elements.trim() === '') {
-        throw new Error('For remove mode without selector, elements parameter with IDs is required')
+    if (!selector && patchMode === "remove") {
+      if (!elements || elements.trim() === "") {
+        throw new Error("For remove mode without selector, elements parameter with IDs is required")
       }
     }
 
     const dataLines = this.eachOptionIsADataLine(renderOptions)
-    if (!isRemoveWithSelector || (elements && elements.trim() !== '')) {
+    if (!isRemoveWithSelector || (elements && elements.trim() !== "")) {
       dataLines.push(...this.eachNewlineIsADataLine(DatastarDatalineElements, elements))
     }
 
@@ -120,11 +120,11 @@ export class SseFormatter {
     if (retryDuration) {
       sendOptions.retryDuration = retryDuration
     }
-    return this.format('datastar-patch-elements', dataLines, sendOptions).join('')
+    return this.format("datastar-patch-elements", dataLines, sendOptions).join("")
   }
 
   public patchSignals(signals: string, options?: PatchSignalsOptions): string {
-    this.validateRequired(signals, 'signals')
+    this.validateRequired(signals, "signals")
 
     const { eventId, retryDuration, ...eventOptions } =
       options || ({} as Partial<PatchSignalsOptions>)
@@ -140,7 +140,7 @@ export class SseFormatter {
     if (retryDuration) {
       sendOptions.retryDuration = retryDuration
     }
-    return this.format('datastar-patch-signals', dataLines, sendOptions).join('')
+    return this.format("datastar-patch-signals", dataLines, sendOptions).join("")
   }
 
   /**
@@ -164,14 +164,14 @@ export class SseFormatter {
   ): string {
     const { autoRemove = true, attributes = {}, eventId, retryDuration } = options || {}
 
-    let attrString = ''
+    let attrString = ""
 
-    if (attributes && typeof attributes === 'object' && !Array.isArray(attributes)) {
+    if (attributes && typeof attributes === "object" && !Array.isArray(attributes)) {
       attrString = Object.entries(attributes)
         .map(([k, v]) => ` ${k}="${v}"`)
-        .join('')
+        .join("")
     } else if (Array.isArray(attributes)) {
-      attrString = attributes.length > 0 ? ' ' + attributes.join(' ') : ''
+      attrString = attributes.length > 0 ? " " + attributes.join(" ") : ""
     }
 
     if (autoRemove) {
@@ -181,9 +181,9 @@ export class SseFormatter {
     const scriptTag = `<script${attrString}>${script}</script>`
 
     const dataLines = [
-      ...this.eachNewlineIsADataLine('mode', 'append'),
-      ...this.eachNewlineIsADataLine('selector', 'body'),
-      ...this.eachNewlineIsADataLine('elements', scriptTag),
+      ...this.eachNewlineIsADataLine("mode", "append"),
+      ...this.eachNewlineIsADataLine("selector", "body"),
+      ...this.eachNewlineIsADataLine("elements", scriptTag),
     ]
 
     const sendOptions: DatastarEventOptions = {}
@@ -193,7 +193,7 @@ export class SseFormatter {
     if (retryDuration) {
       sendOptions.retryDuration = retryDuration
     }
-    return this.format('datastar-patch-elements', dataLines, sendOptions).join('')
+    return this.format("datastar-patch-elements", dataLines, sendOptions).join("")
   }
 
   public removeElements(
@@ -204,11 +204,11 @@ export class SseFormatter {
       retryDuration?: number
     }
   ): string {
-    if (!selector && (!elements || elements.trim() === '')) {
-      throw new Error('Either selector or elements (with IDs) must be provided to remove elements.')
+    if (!selector && (!elements || elements.trim() === "")) {
+      throw new Error("Either selector or elements (with IDs) must be provided to remove elements.")
     }
     const patchOptions: PatchElementsOptions = {
-      mode: 'remove',
+      mode: "remove",
     }
     if (selector) {
       patchOptions.selector = selector
@@ -219,7 +219,7 @@ export class SseFormatter {
     if (options?.retryDuration) {
       patchOptions.retryDuration = options.retryDuration
     }
-    return this.patchElements(elements ?? '', patchOptions)
+    return this.patchElements(elements ?? "", patchOptions)
   }
 
   public removeSignals(
@@ -245,16 +245,16 @@ export class SseFormatter {
     { success: true; signals: Record<string, Jsonifiable> } | { success: false; error: string }
   > {
     try {
-      if (request.method === 'GET') {
+      if (request.method === "GET") {
         const url = new URL(request.url)
         const params = url.searchParams
-        if (params.has('datastar')) {
-          const signals = JSON.parse(params.get('datastar')!)
+        if (params.has("datastar")) {
+          const signals = JSON.parse(params.get("datastar")!)
 
           if (isRecord(signals)) {
             return { success: true, signals }
-          } else throw new Error('Datastar param is not a record')
-        } else throw new Error('No datastar object in request')
+          } else throw new Error("Datastar param is not a record")
+        } else throw new Error("No datastar object in request")
       }
 
       const signals = await request.json()
@@ -263,13 +263,13 @@ export class SseFormatter {
         return { success: true, signals: signals }
       }
 
-      throw new Error('Parsed JSON body is not of type record')
+      throw new Error("Parsed JSON body is not of type record")
     } catch (e: unknown) {
-      if (isRecord(e) && 'message' in e && typeof e.message === 'string') {
+      if (isRecord(e) && "message" in e && typeof e.message === "string") {
         return { success: false, error: e.message }
       }
 
-      return { success: false, error: 'unknown error when parsing request' }
+      return { success: false, error: "unknown error when parsing request" }
     }
   }
 }

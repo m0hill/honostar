@@ -1,27 +1,27 @@
-import { defineCommand } from '@honostar/core/server'
-import type { SQL } from 'drizzle-orm'
-import type { SQLiteColumn } from 'drizzle-orm/sqlite-core'
-import { z } from 'zod'
-import { comments as commentsTable } from '@/db/schema'
-import { requireAuth } from '@/lib/auth-middleware'
-import { topics } from '@/lib/topics'
-import { routes } from '@/routes'
+import { defineCommand } from "@honostar/core/server"
+import type { SQL } from "drizzle-orm"
+import type { SQLiteColumn } from "drizzle-orm/sqlite-core"
+import { z } from "zod"
+import { comments as commentsTable } from "@/db/schema"
+import { requireAuth } from "@/lib/auth-middleware"
+import { topics } from "@/lib/topics"
+import { routes } from "@/routes"
 
 // Drizzle ORM query builder types
 type CommentsTable = typeof commentsTable
 type OrderByColumn = SQLiteColumn | SQL
 
 const bodySchema = z.object({
-  comment: z.string().trim().min(1, 'Comment cannot be empty.'),
+  comment: z.string().trim().min(1, "Comment cannot be empty."),
 })
 
 export const POST = defineCommand({
   schema: bodySchema,
   use: [requireAuth],
   hook: (result, c) => {
-    const error = result.error[0]?.message || 'Invalid comment'
-    if (c.req.header('datastar-request') !== null) {
-      return c.var.fx.reply([['patch-signals', { commentError: error }]], {
+    const error = result.error[0]?.message || "Invalid comment"
+    if (c.req.header("datastar-request") !== null) {
+      return c.var.fx.reply([["patch-signals", { commentError: error }]], {
         status: 400,
       })
     }
@@ -45,19 +45,19 @@ export const POST = defineCommand({
 
     const commentCount = await c.var.db.query.comments.findMany({
       where: (
-        comments: CommentsTable['_']['columns'],
+        comments: CommentsTable["_"]["columns"],
         { eq }: { eq: (column: OrderByColumn, value: number) => SQL }
       ) => eq(comments.issueId, issueId),
     })
 
     // CQRS: publish domain event for query re-render + success toast
-    c.var.fx.publish(topics.issue(issueId).comments(), 'comment:created', { issueId })
+    c.var.fx.publish(topics.issue(issueId).comments(), "comment:created", { issueId })
 
-    if (c.req.header('datastar-request') !== null) {
+    if (c.req.header("datastar-request") !== null) {
       return c.var.fx.reply(
         [
-          ['patch-signals', { commentError: '', comment: '' }],
-          ['toast:show', `Comment posted! (${commentCount.length} total)`, 'success'],
+          ["patch-signals", { commentError: "", comment: "" }],
+          ["toast:show", `Comment posted! (${commentCount.length} total)`, "success"],
         ],
         { status: 201 }
       )

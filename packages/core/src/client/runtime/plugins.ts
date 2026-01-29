@@ -27,14 +27,14 @@ export type DatastarActionModule = {
 }
 
 const isDatastarModule = (value: unknown): value is DatastarActionModule => {
-  if (typeof value !== 'object' || value === null) return false
-  if (!('action' in value)) return false
+  if (typeof value !== "object" || value === null) return false
+  if (!("action" in value)) return false
   const candidate = value as { action?: unknown }
-  return typeof candidate.action === 'function'
+  return typeof candidate.action === "function"
 }
 
 // Datastar action registration function - will be dynamically imported
-let datastarAction: DatastarActionModule['action'] | null = null
+let datastarAction: DatastarActionModule["action"] | null = null
 
 // Datastar action context (passed as first argument to action handlers)
 export interface DatastarActionContext {
@@ -44,7 +44,7 @@ export interface DatastarActionContext {
 
 type BivariantPluginHandler<TArgs extends unknown[] = unknown[]> = {
   bivarianceHack(c: DatastarActionContext, ...args: TArgs): void | Promise<void>
-}['bivarianceHack']
+}["bivarianceHack"]
 
 // Plugin handler signature: receives context + user-defined arguments
 export type PluginHandler<TArgs extends unknown[] = unknown[]> = BivariantPluginHandler<TArgs>
@@ -116,19 +116,19 @@ export interface PluginsApi {
 export function createPluginSystem(datastarEntrypoint?: string): PluginsApi {
   const registry: PluginRegistry = {}
   const pendingRegistrations: PendingPluginRegistration[] = []
-  const resolvedEntrypoint = datastarEntrypoint ?? '/datastar.js'
+  const resolvedEntrypoint = datastarEntrypoint ?? "/datastar.js"
 
   // Dynamically import Datastar's action function
   const loadDatastar = async () => {
     if (datastarAction) return
-    if (typeof window === 'undefined' || typeof document === 'undefined') {
+    if (typeof window === "undefined" || typeof document === "undefined") {
       // In non-browser environments (tests/SSR), skip loading Datastar
       return
     }
     try {
       const ds = await import(resolvedEntrypoint)
       if (!isDatastarModule(ds)) {
-        console.error('[Honostar] Loaded Datastar module does not expose an action() function')
+        console.error("[Honostar] Loaded Datastar module does not expose an action() function")
         return
       }
       datastarAction = ds.action
@@ -138,7 +138,7 @@ export function createPluginSystem(datastarEntrypoint?: string): PluginsApi {
       }
       pendingRegistrations.length = 0
     } catch (err) {
-      console.error('[Honostar] Failed to load Datastar:', err)
+      console.error("[Honostar] Failed to load Datastar:", err)
     }
   }
 
@@ -172,12 +172,12 @@ export function createPluginSystem(datastarEntrypoint?: string): PluginsApi {
       name: string,
       handler: PluginHandler<TArgs>
     ): void {
-      if (!name || typeof name !== 'string') {
-        throw new Error('Plugin name must be a non-empty string')
+      if (!name || typeof name !== "string") {
+        throw new Error("Plugin name must be a non-empty string")
       }
 
-      if (typeof handler !== 'function') {
-        throw new Error('Plugin handler must be a function')
+      if (typeof handler !== "function") {
+        throw new Error("Plugin handler must be a function")
       }
 
       if (registry[name]) {
@@ -227,7 +227,7 @@ export function registerRuntimePlugin<TArgs extends unknown[] = unknown[]>(
   name: string,
   handler: PluginHandler<TArgs>
 ): void {
-  if (typeof window === 'undefined') return
+  if (typeof window === "undefined") return
 
   if (window.Honostar?.plugins) {
     window.Honostar.plugins.register(name, handler)
@@ -248,7 +248,7 @@ export function installPluginSystem(datastarEntrypoint?: string): PluginsApi {
   if (!window.Honostar) window.Honostar = {}
 
   if (window.Honostar.plugins) {
-    console.warn('[Honostar] Plugin system already installed')
+    console.warn("[Honostar] Plugin system already installed")
     return window.Honostar.plugins
   }
 

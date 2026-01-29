@@ -1,5 +1,5 @@
-import type { InferSelectModel } from 'drizzle-orm'
-import type { comments, issues, labels, users } from '@/db/schema'
+import type { InferSelectModel } from "drizzle-orm"
+import type { comments, issues, labels, users } from "@/db/schema"
 
 export type User = InferSelectModel<typeof users>
 export type Issue = InferSelectModel<typeof issues>

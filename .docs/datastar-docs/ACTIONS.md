@@ -74,8 +74,7 @@ Copied!
 14</div>
 ```
 
-Backend Actions [#](https://data-star.dev/reference/actions#backend-actions)
-----------------------------------------------------------------------------
+## Backend Actions [#](https://data-star.dev/reference/actions#backend-actions)
 
 ### `@get()`[#](https://data-star.dev/reference/actions#get)
 
@@ -158,19 +157,20 @@ Copied!
 
 All of the actions above take a second argument of options.
 
-*   `contentType` – The type of content to send. A value of `json` sends all signals in a JSON request. A value of `form` tells the action to look for the closest form to the element on which it is placed (unless a `selector` option is provided), perform validation on the form elements, and send them to the backend using a form request (no signals are sent). Defaults to `json`.
-*   `filterSignals` – A filter object with an `include` property that accepts a regular expression to match signal paths (defaults to all signals: `/.*/`), and an optional `exclude` property to exclude specific signal paths (defaults to all signals that do not have a `_` prefix: `/(^_|\._).*/`).
-> The [Datastar Inspector](https://data-star.dev/reference/datastar_pro#datastar-inspector)can be used to inspect and filter current signals and view signal patch events in real-time.
+- `contentType` – The type of content to send. A value of `json` sends all signals in a JSON request. A value of `form` tells the action to look for the closest form to the element on which it is placed (unless a `selector` option is provided), perform validation on the form elements, and send them to the backend using a form request (no signals are sent). Defaults to `json`.
+- `filterSignals` – A filter object with an `include` property that accepts a regular expression to match signal paths (defaults to all signals: `/.*/`), and an optional `exclude` property to exclude specific signal paths (defaults to all signals that do not have a `_` prefix: `/(^_|\._).*/`).
 
-*   `selector` – Optionally specifies a form to send when the `contentType` option is set to `form`. If the value is `null`, the closest form is used. Defaults to `null`.
-*    – An object containing headers to send with the request.
-*   `openWhenHidden` – Whether to keep the connection open when the page is hidden. Useful for dashboards but can cause a drain on battery life and other resources when enabled. Defaults to `false`.
-*   `retry` – Determines when to retry requests. Can be `'auto'` (default, retries on network errors only), `'error'` (retries on `4xx` and `5xx` responses), `'always'` (retries on all non-`204` responses except redirects), or `'never'` (disables retries). Defaults to `'auto'`.
-*   `retryInterval` – The retry interval in milliseconds. Defaults to `1000` (one second).
-*   `retryScaler` – A numeric multiplier applied to scale retry wait times. Defaults to `2`.
-*   `retryMaxWaitMs` – The maximum allowable wait time in milliseconds between retries. Defaults to `30000` (30 seconds).
-*   `retryMaxCount` – The maximum number of retry attempts. Defaults to `10`.
-*   `requestCancellation` – Controls request cancellation behavior. Can be `'auto'` (default, cancels existing requests on the same element), `'disabled'` (allows concurrent requests), or an `AbortController` instance for custom control. Defaults to `'auto'`.
+  > The [Datastar Inspector](https://data-star.dev/reference/datastar_pro#datastar-inspector)can be used to inspect and filter current signals and view signal patch events in real-time.
+
+- `selector` – Optionally specifies a form to send when the `contentType` option is set to `form`. If the value is `null`, the closest form is used. Defaults to `null`.
+- – An object containing headers to send with the request.
+- `openWhenHidden` – Whether to keep the connection open when the page is hidden. Useful for dashboards but can cause a drain on battery life and other resources when enabled. Defaults to `false`.
+- `retry` – Determines when to retry requests. Can be `'auto'` (default, retries on network errors only), `'error'` (retries on `4xx` and `5xx` responses), `'always'` (retries on all non-`204` responses except redirects), or `'never'` (disables retries). Defaults to `'auto'`.
+- `retryInterval` – The retry interval in milliseconds. Defaults to `1000` (one second).
+- `retryScaler` – A numeric multiplier applied to scale retry wait times. Defaults to `2`.
+- `retryMaxWaitMs` – The maximum allowable wait time in milliseconds between retries. Defaults to `30000` (30 seconds).
+- `retryMaxCount` – The maximum number of retry attempts. Defaults to `10`.
+- `requestCancellation` – Controls request cancellation behavior. Can be `'auto'` (default, cancels existing requests on the same element), `'disabled'` (allows concurrent requests), or an `AbortController` instance for custom control. Defaults to `'auto'`.
 
 Copied!
 
@@ -219,18 +219,18 @@ Copied!
 
 Backend actions automatically handle different response content types:
 
-*   `text/event-stream` – Standard SSE responses with [Datastar SSE events](https://data-star.dev/reference/sse_events).
-*   `text/html` – HTML elements to patch into the DOM.
-*   `application/json` – JSON encoded signals to patch.
-*   `text/javascript` – JavaScript code to execute in the browser.
+- `text/event-stream` – Standard SSE responses with [Datastar SSE events](https://data-star.dev/reference/sse_events).
+- `text/html` – HTML elements to patch into the DOM.
+- `application/json` – JSON encoded signals to patch.
+- `text/javascript` – JavaScript code to execute in the browser.
 
 #### `text/html`
 
 When returning HTML (`text/html`), the server can optionally include the following response headers:
 
-*   `datastar-selector` – A CSS selector for the target elements to patch
-*   `datastar-mode` – How to patch the elements (`outer`, `inner`, `remove`, `replace`, `prepend`, `append`, `before`, `after`). Defaults to `outer`.
-*   `datastar-use-view-transition` – Whether to use the [View Transition API](https://developer.mozilla.org/en-US/docs/Web/API/View_Transitions_API) when patching elements.
+- `datastar-selector` – A CSS selector for the target elements to patch
+- `datastar-mode` – How to patch the elements (`outer`, `inner`, `remove`, `replace`, `prepend`, `append`, `before`, `after`). Defaults to `outer`.
+- `datastar-use-view-transition` – Whether to use the [View Transition API](https://developer.mozilla.org/en-US/docs/Web/API/View_Transitions_API) when patching elements.
 
 Copied!
 
@@ -245,7 +245,7 @@ Copied!
 
 When returning JSON (`application/json`), the server can optionally include the following response header:
 
-*   `datastar-only-if-missing` – If set to `true`, only patch signals that don’t already exist.
+- `datastar-only-if-missing` – If set to `true`, only patch signals that don’t already exist.
 
 Copied!
 
@@ -259,7 +259,7 @@ Copied!
 
 When returning JavaScript (`text/javascript`), the server can optionally include the following response header:
 
-*   `datastar-script-attributes` – Sets the script element’s attributes using a JSON encoded string.
+- `datastar-script-attributes` – Sets the script element’s attributes using a JSON encoded string.
 
 Copied!
 
@@ -273,11 +273,11 @@ Copied!
 
 All of the actions above trigger `datastar-fetch` events during the fetch request lifecycle. The event type determines the stage of the request.
 
-*   `started` – Triggered when the fetch request is started.
-*   `finished` – Triggered when the fetch request is finished.
-*   `error` – Triggered when the fetch request encounters an error.
-*   `retrying` – Triggered when the fetch request is retrying.
-*   `retries-failed` – Triggered when all fetch retries have failed.
+- `started` – Triggered when the fetch request is started.
+- `finished` – Triggered when the fetch request is finished.
+- `error` – Triggered when the fetch request encounters an error.
+- `retrying` – Triggered when the fetch request is retrying.
+- `retries-failed` – Triggered when all fetch retries have failed.
 
 Copied!
 
@@ -287,8 +287,7 @@ Copied!
 3"></div>
 ```
 
-Pro Actions [#](https://data-star.dev/reference/actions#pro-actions)
---------------------------------------------------------------------
+## Pro Actions [#](https://data-star.dev/reference/actions#pro-actions)
 
 ### `@clipboard()`[#](https://data-star.dev/reference/actions#clipboard)[Pro](https://data-star.dev/reference/datastar_pro)
 

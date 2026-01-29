@@ -1,11 +1,11 @@
-type PrefetchStrategy = 'none' | 'hover' | 'intent' | 'visible' | 'immediate' | 'tap'
-type PrefetchDisable = 'off'
+type PrefetchStrategy = "none" | "hover" | "intent" | "visible" | "immediate" | "tap"
+type PrefetchDisable = "off"
 
-type PrefetchMethod = 'link' | 'fetch'
-type PrefetchTarget = 'document' | 'script' | 'style' | 'image' | 'font' | 'fetch'
-type PrefetchPriority = 'high' | 'low' | 'auto'
+type PrefetchMethod = "link" | "fetch"
+type PrefetchTarget = "document" | "script" | "style" | "image" | "font" | "fetch"
+type PrefetchPriority = "high" | "low" | "auto"
 
-const PREFETCH_DISABLE_VALUE: PrefetchDisable = 'off'
+const PREFETCH_DISABLE_VALUE: PrefetchDisable = "off"
 
 export interface PrefetchOptions {
   method?: PrefetchMethod
@@ -14,7 +14,7 @@ export interface PrefetchOptions {
   ttlMs?: number
   signal?: AbortSignal
   allowCrossOrigin?: boolean
-  crossOrigin?: 'anonymous' | 'use-credentials'
+  crossOrigin?: "anonymous" | "use-credentials"
 }
 
 export interface PrefetchPolicy {
@@ -33,7 +33,7 @@ export interface PrefetchPolicy {
   watchMutations: boolean
 }
 
-type EntryState = 'pending' | 'done' | 'error'
+type EntryState = "pending" | "done" | "error"
 
 type CacheEntry = {
   url: string
@@ -55,7 +55,7 @@ function shouldThrottleByNetwork(policy: PrefetchPolicy): boolean {
     }
   ).connection
   const saveData = Boolean(conn && conn.saveData)
-  const slow = Boolean(conn && (conn.effectiveType === '2g' || conn.effectiveType === 'slow-2g'))
+  const slow = Boolean(conn && (conn.effectiveType === "2g" || conn.effectiveType === "slow-2g"))
   if (policy.respectDataSaver && saveData) return true
   if (policy.respectSlowConnections && slow) return true
   return false
@@ -76,7 +76,7 @@ type IdleCapableWindow = Window &
 
 function onIdle(cb: () => void) {
   const win = window as IdleCapableWindow
-  if (typeof win.requestIdleCallback === 'function') {
+  if (typeof win.requestIdleCallback === "function") {
     win.requestIdleCallback(() => cb(), { timeout: 1000 })
     return
   }
@@ -85,12 +85,12 @@ function onIdle(cb: () => void) {
 
 function parsePrefetchStrategy(value: string | null): PrefetchStrategy | null {
   switch (value) {
-    case 'none':
-    case 'hover':
-    case 'intent':
-    case 'visible':
-    case 'immediate':
-    case 'tap':
+    case "none":
+    case "hover":
+    case "intent":
+    case "visible":
+    case "immediate":
+    case "tap":
       return value
     default:
       return null
@@ -98,21 +98,21 @@ function parsePrefetchStrategy(value: string | null): PrefetchStrategy | null {
 }
 
 function parsePrefetchMethod(value: string | null): PrefetchMethod | undefined {
-  return value === 'link' || value === 'fetch' ? value : undefined
+  return value === "link" || value === "fetch" ? value : undefined
 }
 
 function parsePrefetchPriority(value: string | null): PrefetchPriority | undefined {
-  return value === 'high' || value === 'low' || value === 'auto' ? value : undefined
+  return value === "high" || value === "low" || value === "auto" ? value : undefined
 }
 
 function parsePrefetchTarget(value: string | null): PrefetchTarget | undefined {
   switch (value) {
-    case 'document':
-    case 'script':
-    case 'style':
-    case 'image':
-    case 'font':
-    case 'fetch':
+    case "document":
+    case "script":
+    case "style":
+    case "image":
+    case "font":
+    case "fetch":
       return value
     default:
       return undefined
@@ -133,11 +133,11 @@ export class PrefetchClient {
       onlySameOrigin: true,
       respectDataSaver: true,
       respectSlowConnections: true,
-      defaultStrategy: 'hover',
+      defaultStrategy: "hover",
       attachAllAnchors: true,
       hoverDelayMs: 40,
       intentDelayMs: 120,
-      visibleRootMargin: '200px',
+      visibleRootMargin: "200px",
       maxEntries: 200,
       defaultTTLms: 5 * 60 * 1000,
       useLinkRel: true,
@@ -155,12 +155,12 @@ export class PrefetchClient {
     if (!u) return false
     const entry = this.cache.get(u.href)
     if (!entry) return false
-    return entry.state === 'done' && entry.expiresAt > Date.now()
+    return entry.state === "done" && entry.expiresAt > Date.now()
   }
 
   invalidate(where: string | ((url: string) => boolean)) {
     for (const key of this.cache.keys()) {
-      if (typeof where === 'string') {
+      if (typeof where === "string") {
         if (key === absUrl(where)?.href) this.cache.delete(key)
       } else if (where(key)) {
         this.cache.delete(key)
@@ -171,10 +171,10 @@ export class PrefetchClient {
   preconnect(origin: string) {
     try {
       const url = new URL(origin)
-      const link = document.createElement('link')
-      link.rel = 'preconnect'
+      const link = document.createElement("link")
+      link.rel = "preconnect"
       link.href = url.origin
-      link.crossOrigin = ''
+      link.crossOrigin = ""
       document.head.appendChild(link)
     } catch {
       // ignore
@@ -210,49 +210,49 @@ export class PrefetchClient {
       if (oldestKey) this.cache.delete(oldestKey)
     }
 
-    const method: PrefetchMethod = opts.method ?? (this.policy.useLinkRel ? 'link' : 'fetch')
+    const method: PrefetchMethod = opts.method ?? (this.policy.useLinkRel ? "link" : "fetch")
     const entry: CacheEntry = {
       url: key,
       expiresAt: Date.now() + ttl,
-      state: 'pending',
+      state: "pending",
       method,
     }
     this.cache.set(key, entry)
 
     const done = () => {
-      entry.state = 'done'
+      entry.state = "done"
       entry.expiresAt = Date.now() + ttl
     }
     const fail = () => {
-      entry.state = 'error'
+      entry.state = "error"
       entry.expiresAt = Date.now() + 10_000
     }
 
-    if (method === 'link') {
-      entry.promise = new Promise<void>(resolve => {
-        const link = document.createElement('link')
-        link.rel = 'prefetch'
-        const kind = opts.kind ?? 'document'
-        if (kind !== 'document') {
+    if (method === "link") {
+      entry.promise = new Promise<void>((resolve) => {
+        const link = document.createElement("link")
+        link.rel = "prefetch"
+        const kind = opts.kind ?? "document"
+        if (kind !== "document") {
           link.as = kind
         }
         link.href = key
         if (opts.crossOrigin) link.crossOrigin = opts.crossOrigin
         if (opts.priority) {
-          link.setAttribute('importance', opts.priority)
+          link.setAttribute("importance", opts.priority)
         }
 
-        link.addEventListener('load', () => {
+        link.addEventListener("load", () => {
           done()
           resolve()
         })
-        link.addEventListener('error', () => {
+        link.addEventListener("error", () => {
           fail()
           resolve()
         })
         document.head.appendChild(link)
         onIdle(() => {
-          if (entry.state === 'pending') {
+          if (entry.state === "pending") {
             done()
             resolve()
           }
@@ -267,15 +267,15 @@ export class PrefetchClient {
     let abortCleanup: (() => void) | undefined
     if (abortSignal) {
       const onAbort = () => controller.abort()
-      abortSignal.addEventListener('abort', onAbort, { once: true })
-      abortCleanup = () => abortSignal.removeEventListener('abort', onAbort)
+      abortSignal.addEventListener("abort", onAbort, { once: true })
+      abortCleanup = () => abortSignal.removeEventListener("abort", onAbort)
     }
 
     const promise = fetch(key, {
-      method: 'GET',
-      credentials: 'same-origin',
-      cache: 'default',
-      mode: isSameOrigin(u) ? 'same-origin' : 'cors',
+      method: "GET",
+      credentials: "same-origin",
+      cache: "default",
+      mode: isSameOrigin(u) ? "same-origin" : "cors",
       signal: controller.signal,
       keepalive: true,
     })
@@ -296,7 +296,7 @@ export class PrefetchClient {
 
   bindAnchors(root?: ParentNode) {
     const container = root ?? document
-    const anchors = Array.from(container.querySelectorAll<HTMLAnchorElement>('a[href]'))
+    const anchors = Array.from(container.querySelectorAll<HTMLAnchorElement>("a[href]"))
 
     const listenHover = (a: HTMLAnchorElement, delay: number) => {
       let t: number | null = null
@@ -313,11 +313,11 @@ export class PrefetchClient {
           t = null
         }
       }
-      a.addEventListener('pointerenter', onEnter, { passive: true })
-      a.addEventListener('pointerleave', clear, { passive: true })
+      a.addEventListener("pointerenter", onEnter, { passive: true })
+      a.addEventListener("pointerleave", clear, { passive: true })
       return () => {
-        a.removeEventListener('pointerenter', onEnter)
-        a.removeEventListener('pointerleave', clear)
+        a.removeEventListener("pointerenter", onEnter)
+        a.removeEventListener("pointerleave", clear)
       }
     }
 
@@ -330,18 +330,18 @@ export class PrefetchClient {
         if (delay <= 0) fire()
         else setTimeout(fire, delay)
       }
-      a.addEventListener('pointerdown', onDown, { passive: true })
-      a.addEventListener('touchstart', onDown, { passive: true })
+      a.addEventListener("pointerdown", onDown, { passive: true })
+      a.addEventListener("touchstart", onDown, { passive: true })
       return () => {
-        a.removeEventListener('pointerdown', onDown)
-        a.removeEventListener('touchstart', onDown)
+        a.removeEventListener("pointerdown", onDown)
+        a.removeEventListener("touchstart", onDown)
       }
     }
 
     const io =
       this.linkObserver ??
       new IntersectionObserver(
-        entries => {
+        (entries) => {
           for (const e of entries) {
             if (!e.isIntersecting) continue
             const target = e.target
@@ -359,34 +359,34 @@ export class PrefetchClient {
     const unsubs: Array<() => void> = []
 
     for (const a of anchors) {
-      if (a.target || a.hasAttribute('download')) continue
-      const href = a.getAttribute('href') || ''
+      if (a.target || a.hasAttribute("download")) continue
+      const href = a.getAttribute("href") || ""
       if (!href) continue
       if (!absUrl(href)) continue
 
-      const explicitRaw = a.getAttribute('data-prefetch')
+      const explicitRaw = a.getAttribute("data-prefetch")
       const disabled = explicitRaw === PREFETCH_DISABLE_VALUE
       const explicit = parsePrefetchStrategy(explicitRaw)
       const strategy = disabled
-        ? 'none'
-        : (explicit ?? (this.policy.attachAllAnchors ? this.policy.defaultStrategy : 'none'))
+        ? "none"
+        : (explicit ?? (this.policy.attachAllAnchors ? this.policy.defaultStrategy : "none"))
 
-      if (!strategy || strategy === 'none') continue
+      if (!strategy || strategy === "none") continue
       if (this.seen.has(a)) continue
       this.seen.add(a)
 
       switch (strategy) {
-        case 'hover':
+        case "hover":
           unsubs.push(listenHover(a, this.policy.hoverDelayMs))
           break
-        case 'intent':
-        case 'tap':
+        case "intent":
+        case "tap":
           unsubs.push(listenIntent(a, this.policy.intentDelayMs))
           break
-        case 'visible':
+        case "visible":
           io.observe(a)
           break
-        case 'immediate':
+        case "immediate":
           onIdle(() => {
             const { url, options } = this.optsFromDataset(a)
             void this.prefetch(url, options)
@@ -397,24 +397,24 @@ export class PrefetchClient {
       }
     }
 
-    this.cleanupFns.push(() => unsubs.forEach(u => u()))
+    this.cleanupFns.push(() => unsubs.forEach((u) => u()))
   }
 
   private optsFromDataset(a: HTMLAnchorElement): { url: string; options: PrefetchOptions } {
-    const urlOverride = a.getAttribute('data-prefetch-url')
+    const urlOverride = a.getAttribute("data-prefetch-url")
     const url = urlOverride ?? a.href
-    const method = parsePrefetchMethod(a.getAttribute('data-prefetch-method'))
-    const ttlStr = a.getAttribute('data-prefetch-ttl')
+    const method = parsePrefetchMethod(a.getAttribute("data-prefetch-method"))
+    const ttlStr = a.getAttribute("data-prefetch-ttl")
     const ttlVal = ttlStr ? Number(ttlStr) : undefined
-    const priority = parsePrefetchPriority(a.getAttribute('data-prefetch-priority'))
-    const kind = parsePrefetchTarget(a.getAttribute('data-prefetch-kind')) ?? 'document'
-    const allowCrossOriginAttr = a.getAttribute('data-prefetch-allow-cross-origin')
+    const priority = parsePrefetchPriority(a.getAttribute("data-prefetch-priority"))
+    const kind = parsePrefetchTarget(a.getAttribute("data-prefetch-kind")) ?? "document"
+    const allowCrossOriginAttr = a.getAttribute("data-prefetch-allow-cross-origin")
     const allowCrossOrigin =
-      allowCrossOriginAttr === '' || allowCrossOriginAttr === 'true' || allowCrossOriginAttr === '1'
+      allowCrossOriginAttr === "" || allowCrossOriginAttr === "true" || allowCrossOriginAttr === "1"
 
     const options: PrefetchOptions = { kind }
     if (method) options.method = method
-    if (typeof ttlVal === 'number' && Number.isFinite(ttlVal)) {
+    if (typeof ttlVal === "number" && Number.isFinite(ttlVal)) {
       options.ttlMs = ttlVal
     }
     if (priority) options.priority = priority
@@ -428,10 +428,10 @@ export class PrefetchClient {
     const container = root ?? document
     const mo =
       this.mutationObserver ??
-      new MutationObserver(muts => {
+      new MutationObserver((muts) => {
         let needsBind = false
         for (const m of muts) {
-          if (m.type === 'childList' && (m.addedNodes?.length ?? 0) > 0) {
+          if (m.type === "childList" && (m.addedNodes?.length ?? 0) > 0) {
             needsBind = true
             break
           }
@@ -450,7 +450,7 @@ export class PrefetchClient {
   }
 
   stop() {
-    this.cleanupFns.forEach(fn => {
+    this.cleanupFns.forEach((fn) => {
       try {
         fn()
       } catch {

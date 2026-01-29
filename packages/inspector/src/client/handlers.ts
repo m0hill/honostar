@@ -2,24 +2,24 @@
  * Event handlers for the inspector
  */
 
-import { saveState } from './state'
+import { saveState } from "./state"
 import type {
   InspectorPosition,
   InspectorState,
   InspectorStorageType,
   InspectorTab,
   InspectorViewMode,
-} from './types'
+} from "./types"
 
 // Type guard functions
 const isValidTab: (t: string | null) => t is InspectorTab = (t): t is InspectorTab =>
-  t !== null && ['signals', 'patches', 'sse', 'persisted'].includes(t)
+  t !== null && ["signals", "patches", "sse", "persisted"].includes(t)
 
 const isValidViewMode: (m: string | null) => m is InspectorViewMode = (m): m is InspectorViewMode =>
-  m !== null && ['json', 'table'].includes(m)
+  m !== null && ["json", "table"].includes(m)
 
 const isValidPosition: (p: string | null) => p is InspectorPosition = (p): p is InspectorPosition =>
-  p !== null && ['top', 'bottom', 'left', 'right'].includes(p)
+  p !== null && ["top", "bottom", "left", "right"].includes(p)
 
 /**
  * Attach event listeners to the overlay element
@@ -40,17 +40,17 @@ export function attachEventListeners(
   }
 ): void {
   // Close button
-  const closeBtn = overlayElement.querySelector('#inspector-close')
-  closeBtn?.addEventListener('click', callbacks.onClose)
+  const closeBtn = overlayElement.querySelector("#inspector-close")
+  closeBtn?.addEventListener("click", callbacks.onClose)
 
   // Clear events button
-  const clearBtn = overlayElement.querySelector('#inspector-clear')
-  clearBtn?.addEventListener('click', callbacks.onClearEvents)
+  const clearBtn = overlayElement.querySelector("#inspector-clear")
+  clearBtn?.addEventListener("click", callbacks.onClearEvents)
 
   // Tab buttons
-  overlayElement.querySelectorAll('[data-inspector-tab]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const tab = btn.getAttribute('data-inspector-tab')
+  overlayElement.querySelectorAll("[data-inspector-tab]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const tab = btn.getAttribute("data-inspector-tab")
       if (isValidTab(tab)) {
         callbacks.onTabChange(tab)
       }
@@ -58,9 +58,9 @@ export function attachEventListeners(
   })
 
   // View mode buttons
-  overlayElement.querySelectorAll('[data-inspector-view]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const mode = btn.getAttribute('data-inspector-view')
+  overlayElement.querySelectorAll("[data-inspector-view]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const mode = btn.getAttribute("data-inspector-view")
       if (isValidViewMode(mode)) {
         callbacks.onViewModeChange(mode)
       }
@@ -68,9 +68,9 @@ export function attachEventListeners(
   })
 
   // Position buttons
-  overlayElement.querySelectorAll('[data-inspector-position]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const pos = btn.getAttribute('data-inspector-position')
+  overlayElement.querySelectorAll("[data-inspector-position]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const pos = btn.getAttribute("data-inspector-position")
       if (isValidPosition(pos)) {
         callbacks.onPositionChange(pos)
       }
@@ -78,10 +78,10 @@ export function attachEventListeners(
   })
 
   // Filter inputs
-  const includeInput = overlayElement.querySelector('#inspector-filter-include')
-  const excludeInput = overlayElement.querySelector('#inspector-filter-exclude')
+  const includeInput = overlayElement.querySelector("#inspector-filter-include")
+  const excludeInput = overlayElement.querySelector("#inspector-filter-exclude")
 
-  includeInput?.addEventListener('input', e => {
+  includeInput?.addEventListener("input", (e) => {
     try {
       const target = e.target
       if (target instanceof HTMLInputElement) {
@@ -99,7 +99,7 @@ export function attachEventListeners(
     }
   })
 
-  excludeInput?.addEventListener('input', e => {
+  excludeInput?.addEventListener("input", (e) => {
     try {
       const target = e.target
       if (target instanceof HTMLInputElement) {
@@ -118,23 +118,23 @@ export function attachEventListeners(
   })
 
   // Storage type buttons
-  const localBtn = overlayElement.querySelector('#inspector-storage-local')
-  const sessionBtn = overlayElement.querySelector('#inspector-storage-session')
-  const clearStorageBtn = overlayElement.querySelector('#inspector-storage-clear')
+  const localBtn = overlayElement.querySelector("#inspector-storage-local")
+  const sessionBtn = overlayElement.querySelector("#inspector-storage-session")
+  const clearStorageBtn = overlayElement.querySelector("#inspector-storage-clear")
 
-  localBtn?.addEventListener('click', () => {
-    callbacks.onStorageTypeChange('localStorage')
+  localBtn?.addEventListener("click", () => {
+    callbacks.onStorageTypeChange("localStorage")
   })
 
-  sessionBtn?.addEventListener('click', () => {
-    callbacks.onStorageTypeChange('sessionStorage')
+  sessionBtn?.addEventListener("click", () => {
+    callbacks.onStorageTypeChange("sessionStorage")
   })
 
-  clearStorageBtn?.addEventListener('click', callbacks.onStorageClear)
+  clearStorageBtn?.addEventListener("click", callbacks.onStorageClear)
 
   // Resize handle
-  const resizeHandle = overlayElement.querySelector('#inspector-resize-handle')
-  resizeHandle?.addEventListener('mousedown', (e: Event) => {
+  const resizeHandle = overlayElement.querySelector("#inspector-resize-handle")
+  resizeHandle?.addEventListener("mousedown", (e: Event) => {
     if (e instanceof MouseEvent) {
       callbacks.onResizeStart(e)
     }
@@ -148,18 +148,18 @@ export function attachToggleButtonListeners(
   toggleButton: HTMLDivElement,
   onToggle: () => void
 ): void {
-  const btn = toggleButton.querySelector('#inspector-toggle-btn')
-  btn?.addEventListener('click', onToggle)
+  const btn = toggleButton.querySelector("#inspector-toggle-btn")
+  btn?.addEventListener("click", onToggle)
 
   // Hover effect
-  btn?.addEventListener('mouseenter', () => {
+  btn?.addEventListener("mouseenter", () => {
     if (btn instanceof HTMLElement) {
-      btn.style.transform = 'scale(1.05)'
+      btn.style.transform = "scale(1.05)"
     }
   })
-  btn?.addEventListener('mouseleave', () => {
+  btn?.addEventListener("mouseleave", () => {
     if (btn instanceof HTMLElement) {
-      btn.style.transform = 'scale(1)'
+      btn.style.transform = "scale(1)"
     }
   })
 }
@@ -185,13 +185,13 @@ export function setupGlobalMouseHandlers(
     const overlayElement = getOverlayElement()
     if (!overlayElement) return
 
-    const isHorizontal = state.position === 'bottom' || state.position === 'top'
+    const isHorizontal = state.position === "bottom" || state.position === "top"
 
     if (isHorizontal) {
-      const delta = state.position === 'bottom' ? dragStartY - e.clientY : e.clientY - dragStartY
+      const delta = state.position === "bottom" ? dragStartY - e.clientY : e.clientY - dragStartY
       state.height = Math.max(200, Math.min(window.innerHeight * 0.8, resizeStartHeight + delta))
     } else {
-      const delta = state.position === 'right' ? dragStartX - e.clientX : e.clientX - dragStartX
+      const delta = state.position === "right" ? dragStartX - e.clientX : e.clientX - dragStartX
       state.width = Math.max(300, Math.min(window.innerWidth * 0.8, resizeStartWidth + delta))
     }
 
@@ -201,8 +201,8 @@ export function setupGlobalMouseHandlers(
   const mouseUpHandler = () => {
     if (isResizing) {
       isResizing = false
-      document.body.style.cursor = ''
-      document.body.style.userSelect = ''
+      document.body.style.cursor = ""
+      document.body.style.userSelect = ""
       saveState(state)
       onResizeEnd()
     }
@@ -211,21 +211,21 @@ export function setupGlobalMouseHandlers(
   const startResize = (e: MouseEvent) => {
     e.preventDefault()
     isResizing = true
-    const isHorizontal = state.position === 'bottom' || state.position === 'top'
+    const isHorizontal = state.position === "bottom" || state.position === "top"
     resizeStartHeight = state.height
     resizeStartWidth = state.width
     dragStartX = e.clientX
     dragStartY = e.clientY
-    document.body.style.cursor = isHorizontal ? 'ns-resize' : 'ew-resize'
-    document.body.style.userSelect = 'none'
+    document.body.style.cursor = isHorizontal ? "ns-resize" : "ew-resize"
+    document.body.style.userSelect = "none"
   }
 
-  document.addEventListener('mousemove', mouseMoveHandler)
-  document.addEventListener('mouseup', mouseUpHandler)
+  document.addEventListener("mousemove", mouseMoveHandler)
+  document.addEventListener("mouseup", mouseUpHandler)
 
   const cleanup = () => {
-    document.removeEventListener('mousemove', mouseMoveHandler)
-    document.removeEventListener('mouseup', mouseUpHandler)
+    document.removeEventListener("mousemove", mouseMoveHandler)
+    document.removeEventListener("mouseup", mouseUpHandler)
   }
 
   return { startResize, cleanup }

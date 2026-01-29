@@ -1,0 +1,30 @@
+{
+  "name": "@honostar/standard",
+  "version": "0.0.0",
+  "private": true,
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": [
+    "dist/client/bootstrap/*.js"
+  ],
+  "exports": {
+    "./client/bootstrap/standard": {
+      "types": "./dist/client/bootstrap/standard.d.ts",
+      "default": "./dist/client/bootstrap/standard.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@honostar/core": "workspace:*",
+    "@honostar/inspector": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.1",
+    "typescript": "^5.9.3"
+  }
+}

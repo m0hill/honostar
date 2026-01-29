@@ -15,23 +15,27 @@ HonoStar embraces **server-rendered HTML as the source of truth**. Every navigat
 ## Key Features
 
 ### 🎯 Zero-Config Hypermedia MPA
+
 - File-based routing (`src/pages/`) with Next.js-style conventions
 - Type-safe route helpers with automatic parameter extraction
 - SSE event bus for real-time updates (in-memory, Redis, or NATS)
 - Built-in CSRF protection and CSP with nonce support
 
 ### 🔄 Declarative Real-Time Updates
+
 - **Replies** (`c.var.fx.reply()`) - Tab-scoped updates for validation errors, toasts, modal state
 - **Domain events** (`c.var.fx.publish(topic, name, payload)`) - Commands publish; queries re-render fat patches on SSE
 - **Fat patches** - Re-render entire regions so clients self-heal after reconnects
 
 ### 🎨 Modern DX
+
 - Hono JSX for server-side rendering
 - shadcn/ui components pre-converted for Hono JSX
 - Theme system with zero-FOUC server/client coordination
 - Runtime-agnostic: works with Node.js, Bun, Deno
 
 ### 🔐 Security Built-In
+
 - CSRF token validation with configurable exemptions
 - CSP with per-request nonces
 - SSE topic signing to prevent unauthorized subscriptions
@@ -82,21 +86,19 @@ export const POST = defineCommand({
     const issue = await createIssue(input)
 
     // CQRS: publish domain event; queries re-render subscribed regions.
-    c.var.fx.publish(topics.issues.list(), 'issue:created', { id: issue.id })
+    c.var.fx.publish(topics.issues.list(), "issue:created", { id: issue.id })
 
-    return c.var.fx.reply([
-      ['patch-signals', { modal: { open: false } }]
-    ])
-  }
+    return c.var.fx.reply([["patch-signals", { modal: { open: false } }]])
+  },
 })
 ```
 
 ### Replies vs Domain Events
 
-| Use | When | API |
-|-----|------|-----|
-| `reply()` | Tab-scoped feedback (validation errors, toasts) | Targets the initiating tab only |
-| `publish(topic, name, payload)` | Shared state changes (create/update/delete) | Fans out an event; queries re-render canonical HTML |
+| Use                             | When                                            | API                                                 |
+| ------------------------------- | ----------------------------------------------- | --------------------------------------------------- |
+| `reply()`                       | Tab-scoped feedback (validation errors, toasts) | Targets the initiating tab only                     |
+| `publish(topic, name, payload)` | Shared state changes (create/update/delete)     | Fans out an event; queries re-render canonical HTML |
 
 **Rule**: Every shared state change must publish through a topic defined in `src/lib/topics.ts`.
 
@@ -146,6 +148,7 @@ HonoStar uses Datastar's declarative attribute API:
 ```
 
 **Key Rules**:
+
 - Signals are ephemeral UI state, never persistence
 - `data-computed` must be pure (use `data-effect` for side-effects)
 - `data-show` requires `style="display:none"` to prevent FOUC
@@ -159,27 +162,27 @@ Zero-config works out of the box. Override via `HonostarConfig`:
 // src/index.ts
 const config = {
   assets: {
-    css: '/styles.css',
-    runtime: '/runtime.js',
-    datastar: '/datastar.js'
+    css: "/styles.css",
+    runtime: "/runtime.js",
+    datastar: "/datastar.js",
   },
-  endpoints: { sse: '/_/events' },
+  endpoints: { sse: "/_/events" },
   security: {
     csp: "script-src 'self' 'unsafe-eval' 'nonce-${nonce}';",
     csrf: {
-      cookieName: 'ds_csrf',
-      exceptPaths: ['/webhooks']
+      cookieName: "ds_csrf",
+      exceptPaths: ["/webhooks"],
     },
     topics: {
-      secretEnv: 'HONOSTAR_SIGNING_SECRET', // Required in production
-      maxAgeSec: 300
-    }
-  }
+      secretEnv: "HONOSTAR_SIGNING_SECRET", // Required in production
+      maxAgeSec: 300,
+    },
+  },
 }
 
-app.use('*', csrf(config))
-app.use('*', renderer(config))
-app.get('/_/events', createSseEndpoint(config))
+app.use("*", csrf(config))
+app.use("*", renderer(config))
+app.get("/_/events", createSseEndpoint(config))
 ```
 
 ## Multi-Instance Scaling
@@ -229,6 +232,7 @@ HonoStar's architecture eliminates the complexity of client-side state synchroni
 - **No reconciliation logic** - Datastar morphs DOM; no React-style diffing or manual sync
 
 This means:
+
 - No "loading → optimistic → actual" state juggling
 - No conflict resolution or rollback logic
 - No client-side caching/invalidation strategies

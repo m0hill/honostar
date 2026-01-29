@@ -56,12 +56,12 @@ function buildRoutes(defs: RouteDefinitionGroup): RuntimeRoutes {
   for (const key of Object.keys(defs)) {
     const value = defs[key]
 
-    if (typeof value === 'string') {
+    if (typeof value === "string") {
       entries[key] = createRoute(value)
       continue
     }
 
-    if (typeof value === 'object' && value !== null) {
+    if (typeof value === "object" && value !== null) {
       entries[key] = buildRoutes(value)
       continue
     }
@@ -74,7 +74,7 @@ function buildRoutes(defs: RouteDefinitionGroup): RuntimeRoutes {
 
 function createRoute<Path extends string>(pattern: Path): Route<Path> {
   const href = ((params?: Record<string, Primitive>) =>
-    buildPath(pattern, params)) as Route<Path>['href']
+    buildPath(pattern, params)) as Route<Path>["href"]
 
   return {
     pattern,

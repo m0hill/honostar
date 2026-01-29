@@ -20,7 +20,7 @@ During bootstrap (`src/honostar/client/bootstrap/standard.ts`) we instantiate th
 const prefetch = createPrefetchClient({
   enabled: true,
   attachAllAnchors: true,
-  defaultStrategy: 'hover',
+  defaultStrategy: "hover",
   respectDataSaver: true,
   respectSlowConnections: true,
 })
@@ -30,6 +30,7 @@ window.Honostar.prefetch = prefetch
 ```
 
 This means:
+
 - All same-origin `<a>` tags automatically get hover-based prefetch.
 - Prefetching pauses on `Save-Data` or 2G/slow-2g connections.
 - Links with `target`, `download`, or cross-origin destinations are ignored unless explicitly enabled.
@@ -42,19 +43,19 @@ You can change these defaults at runtime (see §4).
 
 Call `window.Honostar.prefetch.configure(partialPolicy)` anytime to override defaults. Available knobs (from `PrefetchPolicy`):
 
-| Option | Type | Description |
-| --- | --- | --- |
-| `enabled` | `boolean` | Master switch for the client. |
-| `onlySameOrigin` | `boolean` | Skip cross-origin URLs unless a link opts in (`data-prefetch-allow-cross-origin`). |
-| `respectDataSaver` / `respectSlowConnections` | `boolean` | Gate prefetched requests when `navigator.connection` says the user is on a constrained network. |
-| `defaultStrategy` | `'none' \| 'hover' \| 'intent' \| 'visible' \| 'immediate' \| 'tap'` | Strategy assigned to anchors that lack `data-prefetch`. |
-| `attachAllAnchors` | `boolean` | If `false`, only `data-prefetch="..."` links get handlers. |
-| `hoverDelayMs`, `intentDelayMs` | `number` | Debounce before triggering hover or intent strategies. |
-| `visibleRootMargin` | `string` | IntersectionObserver root margin for `visible` strategy. |
-| `maxEntries` | `number` | Maximum cached URLs before evicting the oldest. |
-| `defaultTTLms` | `number` | Default TTL (5 minutes) for cached entries. |
-| `useLinkRel` | `boolean` | Choose `<link rel="prefetch">` (true) or `fetch` (false) as the default method. |
-| `watchMutations` | `boolean` | Auto-bind anchors that enter the DOM later via `MutationObserver`. |
+| Option                                        | Type                                                                 | Description                                                                                     |
+| --------------------------------------------- | -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `enabled`                                     | `boolean`                                                            | Master switch for the client.                                                                   |
+| `onlySameOrigin`                              | `boolean`                                                            | Skip cross-origin URLs unless a link opts in (`data-prefetch-allow-cross-origin`).              |
+| `respectDataSaver` / `respectSlowConnections` | `boolean`                                                            | Gate prefetched requests when `navigator.connection` says the user is on a constrained network. |
+| `defaultStrategy`                             | `'none' \| 'hover' \| 'intent' \| 'visible' \| 'immediate' \| 'tap'` | Strategy assigned to anchors that lack `data-prefetch`.                                         |
+| `attachAllAnchors`                            | `boolean`                                                            | If `false`, only `data-prefetch="..."` links get handlers.                                      |
+| `hoverDelayMs`, `intentDelayMs`               | `number`                                                             | Debounce before triggering hover or intent strategies.                                          |
+| `visibleRootMargin`                           | `string`                                                             | IntersectionObserver root margin for `visible` strategy.                                        |
+| `maxEntries`                                  | `number`                                                             | Maximum cached URLs before evicting the oldest.                                                 |
+| `defaultTTLms`                                | `number`                                                             | Default TTL (5 minutes) for cached entries.                                                     |
+| `useLinkRel`                                  | `boolean`                                                            | Choose `<link rel="prefetch">` (true) or `fetch` (false) as the default method.                 |
+| `watchMutations`                              | `boolean`                                                            | Auto-bind anchors that enter the DOM later via `MutationObserver`.                              |
 
 ### Examples
 
@@ -62,12 +63,12 @@ Call `window.Honostar.prefetch.configure(partialPolicy)` anytime to override def
 // Opt-in only: disable automatic hover wiring.
 window.Honostar.prefetch.configure({
   attachAllAnchors: false,
-  defaultStrategy: 'none',
+  defaultStrategy: "none",
 })
 
 // Aggressive document-level intents with a shorter TTL.
 window.Honostar.prefetch.configure({
-  defaultStrategy: 'intent',
+  defaultStrategy: "intent",
   defaultTTLms: 60_000,
 })
 ```
@@ -78,29 +79,22 @@ window.Honostar.prefetch.configure({
 
 Any anchor can override global policy with data attributes:
 
-| Attribute | Values | Effect |
-| --- | --- | --- |
-| `data-prefetch` | `hover`, `intent`, `visible`, `immediate`, `tap`, `none`, `off` | Chooses the strategy for that link. `off`/`none` disable prefetch. |
-| `data-prefetch-method` | `link` &#124; `fetch` | Uses `<link rel="prefetch">` or `fetch()` even if the default differs. |
-| `data-prefetch-kind` | `document`, `script`, `style`, `image`, `font`, `fetch` | Sets the `as` attribute when using `<link rel="prefetch">`. |
-| `data-prefetch-ttl` | Number (ms) | Overrides TTL for this URL. |
-| `data-prefetch-priority` | `low`, `high`, `auto` | Sets the `importance` hint on the generated `<link>`. |
-| `data-prefetch-url` | URL string | Prefetches a different resource than the `href` (useful for `/print` versions, etc.). |
-| `data-prefetch-allow-cross-origin` | empty, `true`, `1` | Allows prefetching cross-origin even if the global policy normally blocks it. |
+| Attribute                          | Values                                                          | Effect                                                                                |
+| ---------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `data-prefetch`                    | `hover`, `intent`, `visible`, `immediate`, `tap`, `none`, `off` | Chooses the strategy for that link. `off`/`none` disable prefetch.                    |
+| `data-prefetch-method`             | `link` &#124; `fetch`                                           | Uses `<link rel="prefetch">` or `fetch()` even if the default differs.                |
+| `data-prefetch-kind`               | `document`, `script`, `style`, `image`, `font`, `fetch`         | Sets the `as` attribute when using `<link rel="prefetch">`.                           |
+| `data-prefetch-ttl`                | Number (ms)                                                     | Overrides TTL for this URL.                                                           |
+| `data-prefetch-priority`           | `low`, `high`, `auto`                                           | Sets the `importance` hint on the generated `<link>`.                                 |
+| `data-prefetch-url`                | URL string                                                      | Prefetches a different resource than the `href` (useful for `/print` versions, etc.). |
+| `data-prefetch-allow-cross-origin` | empty, `true`, `1`                                              | Allows prefetching cross-origin even if the global policy normally blocks it.         |
 
 **Example**
 
 ```html
-<a href="/issues/42" data-prefetch="visible" data-prefetch-ttl="30000">
-  Issue 42
-</a>
+<a href="/issues/42" data-prefetch="visible" data-prefetch-ttl="30000"> Issue 42 </a>
 
-<a
-  href="/profile"
-  data-prefetch="hover"
-  data-prefetch-method="fetch"
-  data-prefetch-priority="high"
->
+<a href="/profile" data-prefetch="hover" data-prefetch-method="fetch" data-prefetch-priority="high">
   Profile
 </a>
 
@@ -115,34 +109,34 @@ Any anchor can override global policy with data attributes:
 
 The global instance is accessible at `window.Honostar.prefetch`. Useful methods include:
 
-| Method | Description |
-| --- | --- |
-| `configure(partialPolicy)` | Merge new policy settings (see §3). |
-| `start(root?)` / `stop()` | Manually start or stop binding (already called during bootstrap). |
-| `bindAnchors(root?)` | Scan and wire anchors inside `root` (defaults to `document`). Handy after injecting HTML via SSE/Datastar if you disabled `watchMutations`. |
-| `prefetch(url, options?)` | Programmatically prefetch anything. Accepts `PrefetchOptions` (`method`, `kind`, `priority`, `ttlMs`, `signal`, `allowCrossOrigin`, `crossOrigin`). |
-| `invalidate(urlOrPredicate)` | Remove cached entries by exact URL or predicate function. |
-| `isPrefetched(url)` | Returns `true` if the cache has a fresh entry for that absolute URL. |
-| `preconnect(origin)` | Adds `<link rel="preconnect">` for the provided origin. |
+| Method                       | Description                                                                                                                                         |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `configure(partialPolicy)`   | Merge new policy settings (see §3).                                                                                                                 |
+| `start(root?)` / `stop()`    | Manually start or stop binding (already called during bootstrap).                                                                                   |
+| `bindAnchors(root?)`         | Scan and wire anchors inside `root` (defaults to `document`). Handy after injecting HTML via SSE/Datastar if you disabled `watchMutations`.         |
+| `prefetch(url, options?)`    | Programmatically prefetch anything. Accepts `PrefetchOptions` (`method`, `kind`, `priority`, `ttlMs`, `signal`, `allowCrossOrigin`, `crossOrigin`). |
+| `invalidate(urlOrPredicate)` | Remove cached entries by exact URL or predicate function.                                                                                           |
+| `isPrefetched(url)`          | Returns `true` if the cache has a fresh entry for that absolute URL.                                                                                |
+| `preconnect(origin)`         | Adds `<link rel="preconnect">` for the provided origin.                                                                                             |
 
 ### Programmatic Examples
 
 ```js
 // Fetch navigation HTML immediately.
-window.Honostar.prefetch.prefetch('/issues/42', {
-  method: 'link',
-  kind: 'document',
+window.Honostar.prefetch.prefetch("/issues/42", {
+  method: "link",
+  kind: "document",
   ttlMs: 120_000,
 })
 
 // Invalidate whenever you know the server content changed.
-window.Honostar.prefetch.invalidate('/issues/42')
+window.Honostar.prefetch.invalidate("/issues/42")
 
 // Warm up a CDN before loading assets.
-window.Honostar.prefetch.preconnect('https://cdn.example.com')
+window.Honostar.prefetch.preconnect("https://cdn.example.com")
 
 // Prefetch dynamically added links inside a modal you just rendered.
-const modal = document.getElementById('issue-modal')
+const modal = document.getElementById("issue-modal")
 window.Honostar.prefetch.bindAnchors(modal)
 ```
 
@@ -164,7 +158,7 @@ window.Honostar.prefetch.bindAnchors(modal)
 <script>
   window.Honostar.prefetch.configure({
     attachAllAnchors: false,
-    defaultStrategy: 'none',
+    defaultStrategy: "none",
   })
 </script>
 
@@ -176,7 +170,7 @@ window.Honostar.prefetch.bindAnchors(modal)
 
 ```js
 window.Honostar.prefetch.configure({
-  defaultStrategy: 'tap', // pointerdown/touchstart triggers
+  defaultStrategy: "tap", // pointerdown/touchstart triggers
   hoverDelayMs: 60,
   intentDelayMs: 0,
 })
@@ -185,9 +179,9 @@ window.Honostar.prefetch.configure({
 ### Prefetch Related Documents When a Page Loads
 
 ```js
-const related = ['/issues/41', '/issues/42', '/issues/43']
-related.forEach(url => {
-  window.Honostar.prefetch.prefetch(url, { method: 'fetch', ttlMs: 30_000 })
+const related = ["/issues/41", "/issues/42", "/issues/43"]
+related.forEach((url) => {
+  window.Honostar.prefetch.prefetch(url, { method: "fetch", ttlMs: 30_000 })
 })
 ```
 

@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "lib": ["ESNext", "DOM"],
+    "module": "ESNext",
+    "target": "ESNext",
+    "moduleResolution": "bundler",
+    "moduleDetection": "force",
+    "strict": true,
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitReturns": true,
+    "noImplicitAny": true,
+    "allowJs": true,
+    "types": ["node"],
+    "paths": {
+      "@honostar/core/client": ["../core/dist/client/index.d.ts"],
+      "@honostar/inspector": ["../inspector/dist/index.d.ts"]
+    }
+  },
+  "include": ["src/**/*"]
+}

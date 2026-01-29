@@ -1,1 +1,12 @@
-export { registerRuntimePlugin } from './runtime/plugins'
+import "./types/global"
+
+export { createPrefetchClient } from "./prefetch"
+export { installFetchAugmentation } from "./runtime/fetch"
+export { onPageRevealFocusApp } from "./runtime/focus"
+export { ensureHonostar, freeze } from "./runtime/global"
+export { installImageEnhancements } from "./runtime/image"
+export { createModalHost } from "./runtime/modals"
+export { installPluginSystem, registerRuntimePlugin } from "./runtime/plugins"
+export { readRuntimeData } from "./runtime/runtime-data"
+export { ensureTabId } from "./runtime/tab"
+export { createThemeController, installThemeActions } from "./theme"

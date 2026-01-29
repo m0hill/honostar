@@ -1,52 +1,52 @@
-import type { Handler } from 'hono'
-import type { JSX } from 'hono/jsx/jsx-runtime'
-import { streamSSE } from 'hono/streaming'
+import type { Handler } from "hono"
+import type { JSX } from "hono/jsx/jsx-runtime"
+import { streamSSE } from "hono/streaming"
 import type {
   ExecuteScriptOptions,
   Jsonifiable,
   PatchElementsOptions,
   PatchSignalsOptions,
-} from '../../common/types'
-import type { HonostarConfig } from '../config'
-import { createConfig } from '../config'
-import { verifyTopics } from '../security/topics'
-import type { EffectDefinition } from './effect-registry'
-import { SseFormatter } from './generator'
-import type { SSEPayload } from './pubsub/memory'
-import type { QueryRegistration } from './queries'
-import { TopicQueryRegistry } from './queries'
+} from "../../common/types"
+import type { HonostarConfig } from "../config"
+import { createConfig } from "../config"
+import { verifyTopics } from "../security/topics"
+import type { EffectDefinition } from "./effect-registry"
+import { SseFormatter } from "./generator"
+import type { SSEPayload } from "./pubsub/memory"
+import type { QueryRegistration } from "./queries"
+import { TopicQueryRegistry } from "./queries"
 
 type DomainEvent = { name: string; payload: Jsonifiable | null }
 
 const isPatchElementsEffect = (
   fx: EffectDefinition
-): fx is ['patch-elements', JSX.Element | JSX.Element[] | string, PatchElementsOptions?] =>
-  fx[0] === 'patch-elements'
+): fx is ["patch-elements", JSX.Element | JSX.Element[] | string, PatchElementsOptions?] =>
+  fx[0] === "patch-elements"
 
 const isPatchElementsSeqEffect = (
   fx: EffectDefinition
-): fx is ['patch-elements-seq', Array<JSX.Element | string>, PatchElementsOptions?] =>
-  fx[0] === 'patch-elements-seq'
+): fx is ["patch-elements-seq", Array<JSX.Element | string>, PatchElementsOptions?] =>
+  fx[0] === "patch-elements-seq"
 
 const isPatchSignalsEffect = (
   fx: EffectDefinition
-): fx is ['patch-signals', Record<string, Jsonifiable>, PatchSignalsOptions?] =>
-  fx[0] === 'patch-signals'
+): fx is ["patch-signals", Record<string, Jsonifiable>, PatchSignalsOptions?] =>
+  fx[0] === "patch-signals"
 
 const isExecuteScriptEffect = (
   fx: EffectDefinition
-): fx is ['execute-script', string, ExecuteScriptOptions?] => fx[0] === 'execute-script'
+): fx is ["execute-script", string, ExecuteScriptOptions?] => fx[0] === "execute-script"
 
 const isPlainRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value)
+  typeof value === "object" && value !== null && !Array.isArray(value)
 
 function isJsonifiable(value: unknown): value is Jsonifiable {
   if (
     value === null ||
     value === undefined ||
-    typeof value === 'string' ||
-    typeof value === 'number' ||
-    typeof value === 'boolean'
+    typeof value === "string" ||
+    typeof value === "number" ||
+    typeof value === "boolean"
   ) {
     return true
   }
@@ -82,12 +82,12 @@ export const createSseEndpoint = (
 ): Handler => {
   const config = createConfig(userConfig)
   const pingMs = config.sse?.pingIntervalMs ?? 25000
-  return c =>
-    streamSSE(c, async stream => {
+  return (c) =>
+    streamSSE(c, async (stream) => {
       const clientId = c.var.clientId
       const bus = c.var.bus
-      if (clientId === 'anonymous') {
-        console.error('[SSE] Anonymous client connection rejected.')
+      if (clientId === "anonymous") {
+        console.error("[SSE] Anonymous client connection rejected.")
         await stream.close()
         return
       }
@@ -96,14 +96,14 @@ export const createSseEndpoint = (
       let writeChain: Promise<unknown> = Promise.resolve()
 
       const enqueue = (fn: () => Promise<unknown>) => {
-        writeChain = writeChain.then(fn).catch(err => {
-          console.error('[SSE] Write chain error', err)
+        writeChain = writeChain.then(fn).catch((err) => {
+          console.error("[SSE] Write chain error", err)
         })
       }
 
       const renderNode = async (node: JSX.Element | string | null | undefined): Promise<string> => {
-        if (node === null || node === undefined) return ''
-        if (typeof node === 'string') return node
+        if (node === null || node === undefined) return ""
+        if (typeof node === "string") return node
         return await c.var.renderFragmentToString(node)
       }
 
@@ -111,8 +111,8 @@ export const createSseEndpoint = (
         payload: JSX.Element | JSX.Element[] | string
       ): Promise<string> => {
         if (Array.isArray(payload)) {
-          const html = await Promise.all(payload.map(part => renderNode(part)))
-          return html.join('\n')
+          const html = await Promise.all(payload.map((part) => renderNode(part)))
+          return html.join("\n")
         }
         return await renderNode(payload)
       }
@@ -120,8 +120,8 @@ export const createSseEndpoint = (
       const renderElementsSeqPayload = async (
         payload: Array<JSX.Element | string>
       ): Promise<string> => {
-        const html = await Promise.all(payload.map(part => renderNode(part)))
-        return html.join('\n')
+        const html = await Promise.all(payload.map((part) => renderNode(part)))
+        return html.join("\n")
       }
 
       const writeEffectsToStream = async (effects: EffectDefinition[]) => {
@@ -152,7 +152,7 @@ export const createSseEndpoint = (
             continue
           }
 
-          if (fx[0] === 'close-sse') {
+          if (fx[0] === "close-sse") {
             await stream.close()
             return
           }
@@ -162,7 +162,7 @@ export const createSseEndpoint = (
       const getQueries = () => {
         if (c.var.queries) return c.var.queries
         const registry = new TopicQueryRegistry()
-        c.set('queries', registry)
+        c.set("queries", registry)
         return registry
       }
 
@@ -182,24 +182,24 @@ export const createSseEndpoint = (
         await writeEffectsToStream(effects)
       }
 
-      await stream.writeSSE({ data: '', event: 'connection-established', id: clientId })
+      await stream.writeSSE({ data: "", event: "connection-established", id: clientId })
       const ping = setInterval(() => {
-        enqueue(() => stream.writeSSE({ event: 'ping', data: '' }))
+        enqueue(() => stream.writeSSE({ event: "ping", data: "" }))
       }, pingMs)
 
       const handleMessage = (msg: SSEPayload) => {
-        if (msg.event === 'datastar-patch-elements') {
+        if (msg.event === "datastar-patch-elements") {
           const eventString = formatter.patchElements(msg.html, msg.options)
           enqueue(() => stream.write(eventString))
-        } else if (msg.event === 'datastar-patch-signals') {
+        } else if (msg.event === "datastar-patch-signals") {
           const eventString = formatter.patchSignals(msg.signals, msg.options)
           enqueue(() => stream.write(eventString))
-        } else if (msg.event === 'execute-script') {
+        } else if (msg.event === "execute-script") {
           const eventString = formatter.executeScript(msg.script, msg.options)
           enqueue(() => stream.write(eventString))
-        } else if (msg.event === 'close') {
+        } else if (msg.event === "close") {
           try {
-            unsubscribes.forEach(u => u?.())
+            unsubscribes.forEach((u) => u?.())
             clearInterval(ping)
           } finally {
             enqueue(() => stream.close())
@@ -211,8 +211,8 @@ export const createSseEndpoint = (
       unsubscribes.push(bus.subscribeClient(clientId, handleMessage))
 
       // Verify and enforce topic allowlist
-      const topicsParam = c.req.query('topics')
-      const requestedTopics = topicsParam ? topicsParam.split(',').filter(t => t.trim()) : []
+      const topicsParam = c.req.query("topics")
+      const requestedTopics = topicsParam ? topicsParam.split(",").filter((t) => t.trim()) : []
 
       if (requestedTopics.length > 0) {
         const allowedTopics = await verifyTopics(c, requestedTopics, config)
@@ -223,7 +223,7 @@ export const createSseEndpoint = (
             let hasLiveMessage = false
             const sink = (msg: SSEPayload) => {
               hasLiveMessage = true
-              if (msg.event === 'honostar-event') {
+              if (msg.event === "honostar-event") {
                 const event: DomainEvent = {
                   name: msg.name,
                   payload: safeParseJsonifiable(msg.payload),
@@ -258,15 +258,15 @@ export const createSseEndpoint = (
           // Verification failed - log warning and skip topic subscriptions
           console.warn(
             `[SSE] Topic verification failed for client ${clientId}. ` +
-              'Only client-specific messages will be delivered. ' +
-              'Requested topics were not authorized.'
+              "Only client-specific messages will be delivered. " +
+              "Requested topics were not authorized."
           )
         }
       }
 
       stream.onAbort(() => {
         console.log(`[SSE] Abort stream for client ${clientId}`)
-        unsubscribes.forEach(unsub => unsub?.())
+        unsubscribes.forEach((unsub) => unsub?.())
         clearInterval(ping)
       })
 

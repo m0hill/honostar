@@ -1,14 +1,14 @@
-import { routes } from '@/routes'
-import type { IssueWithAuthor } from '@/types'
-import { Badge } from './ui/badge'
-import { Card } from './ui/card'
+import { routes } from "@/routes"
+import type { IssueWithAuthor } from "@/types"
+import { Badge } from "./ui/badge"
+import { Card } from "./ui/card"
 
 export default function IssuesList({ issues }: { issues: IssueWithAuthor[] }) {
   return (
     <Card id="issues-list" class="gap-0 py-0">
       <ul class="divide-y divide-border">
         {issues.length > 0 ? (
-          issues.map(issue => (
+          issues.map((issue) => (
             <li key={issue.id}>
               <a
                 href={routes.issues.show.href({ id: String(issue.id) })}
@@ -34,7 +34,7 @@ export default function IssuesList({ issues }: { issues: IssueWithAuthor[] }) {
                   <div class="min-w-0">
                     <div class="flex items-center gap-2">
                       <p class="font-semibold text-lg truncate">{issue.title}</p>
-                      <Badge variant={issue.status === 'open' ? 'secondary' : 'outline'}>
+                      <Badge variant={issue.status === "open" ? "secondary" : "outline"}>
                         {issue.status}
                       </Badge>
                     </div>

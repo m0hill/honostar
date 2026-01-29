@@ -1,4 +1,4 @@
-import { registerRuntimePlugin } from '@honostar/core/client'
+import { registerRuntimePlugin } from "@honostar/core/client"
 
 /**
  * Clipboard Plugin
@@ -21,14 +21,14 @@ import { registerRuntimePlugin } from '@honostar/core/client'
  * ```
  */
 
-registerRuntimePlugin('clipboard', async (ctx, text: string) => {
+registerRuntimePlugin("clipboard", async (ctx, text: string) => {
   if (!navigator.clipboard) {
-    return ctx.error('Clipboard API not supported in this browser')
+    return ctx.error("Clipboard API not supported in this browser")
   }
 
   try {
     await navigator.clipboard.writeText(text)
   } catch (err) {
-    ctx.error(err instanceof Error ? err : new Error('Failed to copy to clipboard'))
+    ctx.error(err instanceof Error ? err : new Error("Failed to copy to clipboard"))
   }
 })

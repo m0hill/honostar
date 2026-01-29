@@ -2,14 +2,14 @@
  * UI rendering functions for the inspector
  */
 
-import { getDatastarSignals, getPersistedSignals } from './state'
+import { getDatastarSignals, getPersistedSignals } from "./state"
 import type {
   InspectorEvent,
   InspectorPosition,
   InspectorState,
   InspectorTab,
   InspectorViewMode,
-} from './types'
+} from "./types"
 
 /**
  * Format data as JSON string
@@ -24,7 +24,7 @@ function formatJSON(obj: unknown): string {
 function formatTable(obj: Record<string, unknown>): string {
   const rows = Object.entries(obj)
     .map(([key, value]) => {
-      const valueStr = typeof value === 'string' ? value : JSON.stringify(value)
+      const valueStr = typeof value === "string" ? value : JSON.stringify(value)
       return `
         <tr style="border-bottom: 1px solid #333;" onmouseover="this.style.background='rgba(255, 255, 255, 0.05)'" onmouseout="this.style.background='transparent'">
           <td style="padding: 8px 12px; font-family: monospace; font-size: 13px; color: #3b82f6;">${key}</td>
@@ -32,7 +32,7 @@ function formatTable(obj: Record<string, unknown>): string {
         </tr>
       `
     })
-    .join('')
+    .join("")
 
   return `
     <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
@@ -73,7 +73,7 @@ function getFilteredSignals(state: InspectorState): Record<string, unknown> {
 function renderSignalsTab(state: InspectorState): string {
   const signals = getFilteredSignals(state)
   const content =
-    state.viewMode === 'json'
+    state.viewMode === "json"
       ? `<pre style="font-family: monospace; font-size: 12px; overflow: auto; margin: 0; white-space: pre-wrap;">${formatJSON(signals)}</pre>`
       : formatTable(signals)
 
@@ -120,9 +120,9 @@ function renderSignalsTab(state: InspectorState): string {
  * Render the Patches tab
  */
 function renderPatchesTab(events: InspectorEvent[]): string {
-  const patchEvents = events.filter(e => e.type === 'signal-patch')
+  const patchEvents = events.filter((e) => e.type === "signal-patch")
   const items = patchEvents
-    .map(e => {
+    .map((e) => {
       const time = new Date(e.timestamp).toLocaleTimeString()
       return `
         <div style="padding: 12px 16px; border-bottom: 1px solid #333; font-size: 14px;" onmouseover="this.style.background='rgba(255, 255, 255, 0.05)'" onmouseout="this.style.background='transparent'">
@@ -134,7 +134,7 @@ function renderPatchesTab(events: InspectorEvent[]): string {
         </div>
       `
     })
-    .join('')
+    .join("")
 
   return `
     <div style="display: flex; flex-direction: column; height: 100%;">
@@ -149,9 +149,9 @@ function renderPatchesTab(events: InspectorEvent[]): string {
  * Render the SSE tab
  */
 function renderSSETab(events: InspectorEvent[]): string {
-  const sseEvents = events.filter(e => e.type === 'sse')
+  const sseEvents = events.filter((e) => e.type === "sse")
   const items = sseEvents
-    .map(e => {
+    .map((e) => {
       const time = new Date(e.timestamp).toLocaleTimeString()
       return `
         <div style="padding: 12px 16px; border-bottom: 1px solid #333; font-size: 14px;" onmouseover="this.style.background='rgba(255, 255, 255, 0.05)'" onmouseout="this.style.background='transparent'">
@@ -160,7 +160,7 @@ function renderSSETab(events: InspectorEvent[]): string {
         </div>
       `
     })
-    .join('')
+    .join("")
 
   return `
     <div style="display: flex; flex-direction: column; height: 100%;">
@@ -177,7 +177,7 @@ function renderSSETab(events: InspectorEvent[]): string {
 function renderPersistedTab(state: InspectorState): string {
   const persisted = getPersistedSignals(state.storageType)
   const content =
-    state.viewMode === 'json'
+    state.viewMode === "json"
       ? `<pre style="font-family: monospace; font-size: 12px; overflow: auto; margin: 0; white-space: pre-wrap;">${formatJSON(persisted)}</pre>`
       : formatTable(persisted)
 
@@ -190,14 +190,14 @@ function renderPersistedTab(state: InspectorState): string {
             padding: 6px 12px;
             font-size: 14px;
             border-radius: 6px;
-            border: 1px solid ${state.storageType === 'localStorage' ? '#3b82f6' : '#333'};
-            background: ${state.storageType === 'localStorage' ? '#3b82f6' : 'transparent'};
-            color: ${state.storageType === 'localStorage' ? '#ffffff' : '#fafafa'};
+            border: 1px solid ${state.storageType === "localStorage" ? "#3b82f6" : "#333"};
+            background: ${state.storageType === "localStorage" ? "#3b82f6" : "transparent"};
+            color: ${state.storageType === "localStorage" ? "#ffffff" : "#fafafa"};
             cursor: pointer;
             transition: all 0.2s;
           "
-          onmouseover="this.style.background='${state.storageType === 'localStorage' ? '#3b82f6' : 'rgba(255, 255, 255, 0.05)'}'"
-          onmouseout="this.style.background='${state.storageType === 'localStorage' ? '#3b82f6' : 'transparent'}'"
+          onmouseover="this.style.background='${state.storageType === "localStorage" ? "#3b82f6" : "rgba(255, 255, 255, 0.05)"}'"
+          onmouseout="this.style.background='${state.storageType === "localStorage" ? "#3b82f6" : "transparent"}'"
         >
           localStorage
         </button>
@@ -207,14 +207,14 @@ function renderPersistedTab(state: InspectorState): string {
             padding: 6px 12px;
             font-size: 14px;
             border-radius: 6px;
-            border: 1px solid ${state.storageType === 'sessionStorage' ? '#3b82f6' : '#333'};
-            background: ${state.storageType === 'sessionStorage' ? '#3b82f6' : 'transparent'};
-            color: ${state.storageType === 'sessionStorage' ? '#ffffff' : '#fafafa'};
+            border: 1px solid ${state.storageType === "sessionStorage" ? "#3b82f6" : "#333"};
+            background: ${state.storageType === "sessionStorage" ? "#3b82f6" : "transparent"};
+            color: ${state.storageType === "sessionStorage" ? "#ffffff" : "#fafafa"};
             cursor: pointer;
             transition: all 0.2s;
           "
-          onmouseover="this.style.background='${state.storageType === 'sessionStorage' ? '#3b82f6' : 'rgba(255, 255, 255, 0.05)'}'"
-          onmouseout="this.style.background='${state.storageType === 'sessionStorage' ? '#3b82f6' : 'transparent'}'"
+          onmouseover="this.style.background='${state.storageType === "sessionStorage" ? "#3b82f6" : "rgba(255, 255, 255, 0.05)"}'"
+          onmouseout="this.style.background='${state.storageType === "sessionStorage" ? "#3b82f6" : "transparent"}'"
         >
           sessionStorage
         </button>
@@ -249,16 +249,16 @@ function renderPersistedTab(state: InspectorState): string {
  */
 function renderCurrentTab(state: InspectorState): string {
   switch (state.currentTab) {
-    case 'signals':
+    case "signals":
       return renderSignalsTab(state)
-    case 'patches':
+    case "patches":
       return renderPatchesTab(state.events)
-    case 'sse':
+    case "sse":
       return renderSSETab(state.events)
-    case 'persisted':
+    case "persisted":
       return renderPersistedTab(state)
     default:
-      return ''
+      return ""
   }
 }
 
@@ -276,13 +276,13 @@ function tabButton(tab: InspectorTab, label: string, currentTab: InspectorTab): 
         font-weight: 500;
         border-radius: 4px;
         border: none;
-        background: ${isActive ? 'rgba(255, 255, 255, 0.15)' : 'transparent'};
-        color: ${isActive ? '#ffffff' : '#a1a1aa'};
+        background: ${isActive ? "rgba(255, 255, 255, 0.15)" : "transparent"};
+        color: ${isActive ? "#ffffff" : "#a1a1aa"};
         cursor: pointer;
         transition: all 0.2s;
       "
-      onmouseover="this.style.background='${isActive ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.05)'}'; this.style.color='${isActive ? '#ffffff' : '#fafafa'}'"
-      onmouseout="this.style.background='${isActive ? 'rgba(255, 255, 255, 0.15)' : 'transparent'}'; this.style.color='${isActive ? '#ffffff' : '#a1a1aa'}'"
+      onmouseover="this.style.background='${isActive ? "rgba(255, 255, 255, 0.15)" : "rgba(255, 255, 255, 0.05)"}'; this.style.color='${isActive ? "#ffffff" : "#fafafa"}'"
+      onmouseout="this.style.background='${isActive ? "rgba(255, 255, 255, 0.15)" : "transparent"}'; this.style.color='${isActive ? "#ffffff" : "#a1a1aa"}'"
     >
       ${label}
     </button>
@@ -305,14 +305,14 @@ function viewModeButton(
         padding: 4px 6px;
         font-size: 11px;
         border-radius: 3px;
-        border: 1px solid ${isActive ? 'transparent' : '#333'};
-        background: ${isActive ? '#3b82f6' : 'transparent'};
-        color: ${isActive ? '#ffffff' : '#fafafa'};
+        border: 1px solid ${isActive ? "transparent" : "#333"};
+        background: ${isActive ? "#3b82f6" : "transparent"};
+        color: ${isActive ? "#ffffff" : "#fafafa"};
         cursor: pointer;
         transition: all 0.2s;
       "
-      onmouseover="this.style.background='${isActive ? '#3b82f6' : 'rgba(255, 255, 255, 0.05)'}'"
-      onmouseout="this.style.background='${isActive ? '#3b82f6' : 'transparent'}'"
+      onmouseover="this.style.background='${isActive ? "#3b82f6" : "rgba(255, 255, 255, 0.05)"}'"
+      onmouseout="this.style.background='${isActive ? "#3b82f6" : "transparent"}'"
     >
       ${label}
     </button>
@@ -335,14 +335,14 @@ function positionButton(
         padding: 6px;
         border-radius: 4px;
         border: none;
-        background: ${isActive ? '#3b82f6' : 'transparent'};
-        color: ${isActive ? '#ffffff' : '#fafafa'};
+        background: ${isActive ? "#3b82f6" : "transparent"};
+        color: ${isActive ? "#ffffff" : "#fafafa"};
         cursor: pointer;
         transition: all 0.2s;
         font-size: 12px;
       "
-      onmouseover="this.style.background='${isActive ? '#3b82f6' : 'rgba(255, 255, 255, 0.05)'}'"
-      onmouseout="this.style.background='${isActive ? '#3b82f6' : 'transparent'}'"
+      onmouseover="this.style.background='${isActive ? "#3b82f6" : "rgba(255, 255, 255, 0.05)"}'"
+      onmouseout="this.style.background='${isActive ? "#3b82f6" : "transparent"}'"
       title="Position: ${pos}"
     >
       ${icon}
@@ -354,7 +354,7 @@ function positionButton(
  * Get position styles based on inspector position
  */
 export function getPositionStyles(state: InspectorState): string {
-  const isHorizontal = state.position === 'bottom' || state.position === 'top'
+  const isHorizontal = state.position === "bottom" || state.position === "top"
   const size = isHorizontal ? state.height : state.width
 
   const positions: Record<InspectorPosition, string> = {
@@ -476,29 +476,29 @@ export function createOverlayHTML(state: InspectorState): string {
             <span style="font-weight: 600; font-size: 14px;">Honostar Devtools</span>
           </div>
           <div style="display: flex; gap: 4px; background: rgba(255, 255, 255, 0.1); border-radius: 6px; padding: 2px;">
-            ${tabButton('signals', 'Signals', state.currentTab)}
-            ${tabButton('patches', 'Patches', state.currentTab)}
-            ${tabButton('sse', 'SSE', state.currentTab)}
-            ${tabButton('persisted', 'Persisted', state.currentTab)}
+            ${tabButton("signals", "Signals", state.currentTab)}
+            ${tabButton("patches", "Patches", state.currentTab)}
+            ${tabButton("sse", "SSE", state.currentTab)}
+            ${tabButton("persisted", "Persisted", state.currentTab)}
           </div>
         </div>
         <div style="display: flex; align-items: center; gap: 8px;">
           ${
-            state.currentTab === 'signals' || state.currentTab === 'persisted'
+            state.currentTab === "signals" || state.currentTab === "persisted"
               ? `
             <div style="display: flex; gap: 4px;">
-              ${viewModeButton('json', 'JSON', state.viewMode)}
-              ${viewModeButton('table', 'Table', state.viewMode)}
+              ${viewModeButton("json", "JSON", state.viewMode)}
+              ${viewModeButton("table", "Table", state.viewMode)}
             </div>
             <div style="width: 1px; height: 16px; background: #333;"></div>
             `
-              : ''
+              : ""
           }
           <div style="display: flex; gap: 2px;">
-            ${positionButton('left', '⬅', state.position)}
-            ${positionButton('bottom', '⬇', state.position)}
-            ${positionButton('right', '➡', state.position)}
-            ${positionButton('top', '⬆', state.position)}
+            ${positionButton("left", "⬅", state.position)}
+            ${positionButton("bottom", "⬇", state.position)}
+            ${positionButton("right", "➡", state.position)}
+            ${positionButton("top", "⬆", state.position)}
           </div>
           <div style="width: 1px; height: 16px; background: #333;"></div>
           <button

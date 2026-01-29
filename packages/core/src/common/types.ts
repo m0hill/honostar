@@ -10,7 +10,7 @@ import {
   DefaultPatchSignalsOnlyIfMissing,
   ElementPatchModes,
   EventTypes,
-} from './constants'
+} from "./constants"
 
 export type Jsonifiable =
   | string
@@ -46,7 +46,7 @@ export interface PatchElementsOptions extends ElementOptions {
 }
 
 export interface patchElementsEvent {
-  event: 'datastar-patch-elements'
+  event: "datastar-patch-elements"
   options: PatchElementsOptions
   [DatastarDatalineElements]: string
 }
@@ -65,15 +65,15 @@ export interface ExecuteScriptOptions extends DatastarEventOptions {
 }
 
 export interface patchSignalsEvent {
-  event: 'datastar-patch-signals'
+  event: "datastar-patch-signals"
   options: PatchSignalsOptions
   [DatastarDatalineSignals]: Record<string, Jsonifiable>
 }
 
 export const sseHeaders = {
-  'Cache-Control': 'no-cache',
-  Connection: 'keep-alive',
-  'Content-Type': 'text/event-stream',
+  "Cache-Control": "no-cache",
+  Connection: "keep-alive",
+  "Content-Type": "text/event-stream",
 } as const
 
 export type MultilineDatalinePrefix =

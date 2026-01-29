@@ -1,4 +1,4 @@
-import type { RouteLoader } from './types'
+import type { RouteLoader } from "./types"
 
 export type RouteManifestEntry = {
   routePath: string

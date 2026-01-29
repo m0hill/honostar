@@ -1,11 +1,11 @@
-import { createHandler } from '@honostar/core/server'
-import { like } from 'drizzle-orm'
-import { z } from 'zod'
-import IssuesList from '@/components/IssuesList'
+import { createHandler } from "@honostar/core/server"
+import { like } from "drizzle-orm"
+import { z } from "zod"
+import IssuesList from "@/components/IssuesList"
 
 const searchSchema = z.object({
-  search: z.string().optional().default(''),
-  status: z.enum(['open', 'closed', 'all']).optional().default('open'),
+  search: z.string().optional().default(""),
+  status: z.enum(["open", "closed", "all"]).optional().default("open"),
 })
 
 export const GET = createHandler({
@@ -21,20 +21,20 @@ export const GET = createHandler({
         with: {
           author: true,
         },
-        ...(status !== 'all' && {
+        ...(status !== "all" && {
           where: (i, { eq }) => eq(i.status, status),
         }),
         orderBy: (issues, { desc }) => [desc(issues.createdAt)],
       })
       return c.var.fx.reply([
-        ['patch-elements', <IssuesList issues={allIssues} />, { selector: '#issues-list' }],
+        ["patch-elements", <IssuesList issues={allIssues} />, { selector: "#issues-list" }],
       ])
     }
 
     // Search issues by title
     const searchResults = await c.var.db.query.issues.findMany({
       where: (i, { and, eq }) =>
-        and(like(i.title, `%${searchQuery}%`), ...(status === 'all' ? [] : [eq(i.status, status)])),
+        and(like(i.title, `%${searchQuery}%`), ...(status === "all" ? [] : [eq(i.status, status)])),
       with: {
         author: true,
       },
@@ -42,7 +42,7 @@ export const GET = createHandler({
     })
 
     return c.var.fx.reply([
-      ['patch-elements', <IssuesList issues={searchResults} />, { selector: '#issues-list' }],
+      ["patch-elements", <IssuesList issues={searchResults} />, { selector: "#issues-list" }],
     ])
   },
 })

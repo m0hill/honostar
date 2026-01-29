@@ -11,7 +11,7 @@ Without custom effects, your handlers can become verbose with repeated patterns:
 export const POST = defineCommand({
   async handler(c) {
     const issue = await createIssue(c)
-    
+
     // Every time you create an issue, you repeat this pattern:
     c.var.fx.publish(topics.issues.list(), 'issue:created', { id: issue.id })
     return c.var.fx.reply([
@@ -30,11 +30,9 @@ With custom effects, you can create semantic, reusable abstractions:
 export const POST = defineCommand({
   async handler(c) {
     const issue = await createIssue(c)
-    
-    return c.var.fx.reply([
-      ['issue:created', issue]
-    ])
-  }
+
+    return c.var.fx.reply([["issue:created", issue]])
+  },
 })
 ```
 
@@ -68,18 +66,21 @@ Register effects early in your middleware chain (before route handlers):
 
 ```typescript
 // In src/index.ts
-import { registerEffect, registerEffects } from '@/core'
+import { registerEffect, registerEffects } from "@/core"
 
 // Register a single effect
-app.use('*', registerEffect('toast:show', toastShow))
+app.use("*", registerEffect("toast:show", toastShow))
 
 // Or register multiple effects at once
-app.use('*', registerEffects({
-  'toast:show': toastShow,
-  'modal:close': modalClose,
-  'analytics:track': analyticsTrack,
-  'issue:created': issueCreated
-}))
+app.use(
+  "*",
+  registerEffects({
+    "toast:show": toastShow,
+    "modal:close": modalClose,
+    "analytics:track": analyticsTrack,
+    "issue:created": issueCreated,
+  })
+)
 ```
 
 ### 3. Use Your Effects
@@ -91,11 +92,11 @@ export const POST = defineCommand({
   async handler(c) {
     // Use your custom effects
     return c.var.fx.reply([
-      ['toast:show', 'Success!', 'success'],
-      ['modal:close', 'my-modal'],
-      ['analytics:track', 'user:action', { action: 'submit-form' }]
+      ["toast:show", "Success!", "success"],
+      ["modal:close", "my-modal"],
+      ["analytics:track", "user:action", { action: "submit-form" }],
     ])
-  }
+  },
 })
 ```
 
@@ -108,8 +109,8 @@ Most custom effects compose built-in effects:
 ```typescript
 const modalClose: EffectHandler<[modalId: string]> = async (c, modalId) => {
   await c.var.fx.reply([
-    ['patch-elements', '', { selector: `#${modalId}`, mode: 'remove' }],
-    ['patch-signals', { [`${modalId}.open`]: false }]
+    ["patch-elements", "", { selector: `#${modalId}`, mode: "remove" }],
+    ["patch-signals", { [`${modalId}.open`]: false }],
   ])
 }
 ```
@@ -119,10 +120,14 @@ const modalClose: EffectHandler<[modalId: string]> = async (c, modalId) => {
 Some effects don't update the UI at all:
 
 ```typescript
-const analyticsTrack: EffectHandler<[event: string, properties?: Record<string, unknown>]> = async (c, event, properties = {}) => {
-  await fetch('https://analytics.example.com/track', {
-    method: 'POST',
-    body: JSON.stringify({ event, properties, timestamp: Date.now() })
+const analyticsTrack: EffectHandler<[event: string, properties?: Record<string, unknown>]> = async (
+  c,
+  event,
+  properties = {}
+) => {
+  await fetch("https://analytics.example.com/track", {
+    method: "POST",
+    body: JSON.stringify({ event, properties, timestamp: Date.now() }),
   })
 }
 ```
@@ -134,16 +139,16 @@ Create effects that encapsulate complex domain logic:
 ```typescript
 const issueCreated: EffectHandler<[issue: Issue]> = async (c, issue) => {
   // CQRS: publish domain event; queries re-render canonical HTML on SSE.
-  c.var.fx.publish(topics.issues.list(), 'issue:created', { id: issue.id })
-  
+  c.var.fx.publish(topics.issues.list(), "issue:created", { id: issue.id })
+
   // Show success toast to creator
   await c.var.fx.reply([
-    ['toast:show', `Issue "${issue.title}" created!`, 'success'],
-    ['modal:close', 'create-issue-modal']
+    ["toast:show", `Issue "${issue.title}" created!`, "success"],
+    ["modal:close", "create-issue-modal"],
   ])
-  
+
   // Track analytics
-  await analyticsTrack(c, 'issue:created', { issueId: issue.id })
+  await analyticsTrack(c, "issue:created", { issueId: issue.id })
 }
 ```
 
@@ -154,8 +159,8 @@ Effects can call other custom effects:
 ```typescript
 const issueDeleted: EffectHandler<[issueId: number]> = async (c, issueId) => {
   // Use another custom effect
-  await toastShow(c, 'Issue deleted', 'success')
-  await analyticsTrack(c, 'issue:deleted', { issueId })
+  await toastShow(c, "Issue deleted", "success")
+  await analyticsTrack(c, "issue:deleted", { issueId })
 }
 ```
 
@@ -191,10 +196,10 @@ Use namespaced names to organize your effects:
 For maximum type safety, use `TypedEffectHandler`:
 
 ```typescript
-import type { TypedEffectHandler } from '@/core'
+import type { TypedEffectHandler } from "@/core"
 
 // Define your effect signature
-type MyEffect = ['my:effect', arg1: string, arg2: number, arg3?: boolean]
+type MyEffect = ["my:effect", arg1: string, arg2: number, arg3?: boolean]
 
 // TypeScript enforces the signature
 const myEffect: TypedEffectHandler<MyEffect> = async (c, arg1, arg2, arg3) => {
@@ -208,16 +213,16 @@ You can access the effect registry directly via `c.var.fx.effectRegistry`:
 
 ```typescript
 // Check if effect exists
-if (c.var.fx.effectRegistry.has('toast:show')) {
-  console.log('Toast effect is registered')
+if (c.var.fx.effectRegistry.has("toast:show")) {
+  console.log("Toast effect is registered")
 }
 
 // Get all registered effects
 const effects = c.var.fx.effectRegistry.getEffectNames()
-console.log('Available effects:', effects)
+console.log("Available effects:", effects)
 
 // Unregister an effect (rare)
-c.var.fx.effectRegistry.unregister('toast:show')
+c.var.fx.effectRegistry.unregister("toast:show")
 
 // Clone the registry (useful for testing)
 const cloned = c.var.fx.effectRegistry.clone()

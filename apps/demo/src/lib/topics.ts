@@ -1,9 +1,9 @@
 export const topics = {
   issues: {
-    list: () => 'issues:list',
+    list: () => "issues:list",
   },
   labels: {
-    list: () => 'labels:list',
+    list: () => "labels:list",
   },
   issue: (id: number | string) => ({
     detail: () => `issue:${id}:detail`,

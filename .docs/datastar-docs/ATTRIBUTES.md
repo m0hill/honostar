@@ -95,11 +95,11 @@ The resulting signal is in the format `{ name: string, contents: string, mime: s
 
 Modifiers allow you to modify behavior when binding signals using a key.
 
-*   `__case` – Converts the casing of the signal name.
-    *   `.camel` – Camel case: `mySignal` (default)
-    *   `.kebab` – Kebab case: `my-signal`
-    *   `.snake` – Snake case: `my_signal`
-    *   `.pascal` – Pascal case: `MySignal`
+- `__case` – Converts the casing of the signal name.
+  - `.camel` – Camel case: `mySignal` (default)
+  - `.kebab` – Kebab case: `my-signal`
+  - `.snake` – Snake case: `my_signal`
+  - `.pascal` – Pascal case: `MySignal`
 
 Copied!
 
@@ -125,11 +125,11 @@ Copied!
 
 Modifiers allow you to modify behavior when defining a class name using a key.
 
-*   `__case` – Converts the casing of the class.
-    *   `.camel` – Camel case: `myClass`
-    *   `.kebab` – Kebab case: `my-class` (default)
-    *   `.snake` – Snake case: `my_class`
-    *   `.pascal` – Pascal case: `MyClass`
+- `__case` – Converts the casing of the class.
+  - `.camel` – Camel case: `myClass`
+  - `.kebab` – Kebab case: `my-class` (default)
+  - `.snake` – Snake case: `my_class`
+  - `.pascal` – Pascal case: `MyClass`
 
 Copied!
 
@@ -164,11 +164,11 @@ Copied!
 
 Modifiers allow you to modify behavior when defining computed signals using a key.
 
-*   `__case` – Converts the casing of the signal name.
-    *   `.camel` – Camel case: `mySignal` (default)
-    *   `.kebab` – Kebab case: `my-signal`
-    *   `.snake` – Snake case: `my_signal`
-    *   `.pascal` – Pascal case: `MySignal`
+- `__case` – Converts the casing of the signal name.
+  - `.camel` – Camel case: `mySignal` (default)
+  - `.kebab` – Kebab case: `my-signal`
+  - `.snake` – Snake case: `my_signal`
+  - `.pascal` – Pascal case: `MySignal`
 
 Copied!
 
@@ -198,7 +198,7 @@ Copied!
 
 #### Modifiers
 
-*   `__self` – Only ignore the element itself, not its descendants.
+- `__self` – Only ignore the element itself, not its descendants.
 
 ### `data-ignore-morph`[#](https://data-star.dev/reference/attributes#data-ignore-morph)
 
@@ -254,11 +254,11 @@ Copied!
 
 Modifiers allow you to modify behavior when defining indicator signals using a key.
 
-*   `__case` – Converts the casing of the signal name.
-    *   `.camel` – Camel case: `mySignal` (default)
-    *   `.kebab` – Kebab case: `my-signal`
-    *   `.snake` – Snake case: `my_signal`
-    *   `.pascal` – Pascal case: `MySignal`
+- `__case` – Converts the casing of the signal name.
+  - `.camel` – Camel case: `mySignal` (default)
+  - `.kebab` – Kebab case: `my-signal`
+  - `.snake` – Snake case: `my_signal`
+  - `.pascal` – Pascal case: `MySignal`
 
 ### `data-init`[#](https://data-star.dev/reference/attributes#data-init)
 
@@ -274,11 +274,11 @@ Copied!
 
 Modifiers allow you to add a delay to the event listener.
 
-*   `__delay` – Delay the event listener.
-    *   `.500ms` – Delay for 500 milliseconds (accepts any integer).
-    *   `.1s` – Delay for 1 second (accepts any integer).
+- `__delay` – Delay the event listener.
+  - `.500ms` – Delay for 500 milliseconds (accepts any integer).
+  - `.1s` – Delay for 1 second (accepts any integer).
 
-*   `__viewtransition` – Wraps the expression in `document.startViewTransition()` when the View Transition API is available.
+- `__viewtransition` – Wraps the expression in `document.startViewTransition()` when the View Transition API is available.
 
 Copied!
 
@@ -314,7 +314,7 @@ Copied!
 
 Modifiers allow you to modify the output format.
 
-*   `__terse` – Outputs a more compact JSON format without extra whitespace. Useful for displaying filtered data inline.
+- `__terse` – Outputs a more compact JSON format without extra whitespace. Useful for displaying filtered data inline.
 
 Copied!
 
@@ -343,38 +343,38 @@ The `data-on` attribute works with [events](https://developer.mozilla.org/en-US/
 
 Modifiers allow you to modify behavior when events are triggered. Some modifiers have tags to further modify the behavior.
 
-*   `__once` * – Only trigger the event listener once.
-*   `__passive` * – Do not call `preventDefault` on the event listener.
-*   `__capture` * – Use a capture event listener.
-*   `__case` – Converts the casing of the event.
-    *   `.camel` – Camel case: `myEvent`
-    *   `.kebab` – Kebab case: `my-event` (default)
-    *   `.snake` – Snake case: `my_event`
-    *   `.pascal` – Pascal case: `MyEvent`
+- `__once` \* – Only trigger the event listener once.
+- `__passive` \* – Do not call `preventDefault` on the event listener.
+- `__capture` \* – Use a capture event listener.
+- `__case` – Converts the casing of the event.
+  - `.camel` – Camel case: `myEvent`
+  - `.kebab` – Kebab case: `my-event` (default)
+  - `.snake` – Snake case: `my_event`
+  - `.pascal` – Pascal case: `MyEvent`
 
-*   `__delay` – Delay the event listener.
-    *   `.500ms` – Delay for 500 milliseconds (accepts any integer).
-    *   `.1s` – Delay for 1 second (accepts any integer).
+- `__delay` – Delay the event listener.
+  - `.500ms` – Delay for 500 milliseconds (accepts any integer).
+  - `.1s` – Delay for 1 second (accepts any integer).
 
-*   `__debounce` – Debounce the event listener.
-    *   `.500ms` – Debounce for 500 milliseconds (accepts any integer).
-    *   `.1s` – Debounce for 1 second (accepts any integer).
-    *   `.leading` – Debounce with leading edge (must come after timing).
-    *   `.notrailing` – Debounce without trailing edge (must come after timing).
+- `__debounce` – Debounce the event listener.
+  - `.500ms` – Debounce for 500 milliseconds (accepts any integer).
+  - `.1s` – Debounce for 1 second (accepts any integer).
+  - `.leading` – Debounce with leading edge (must come after timing).
+  - `.notrailing` – Debounce without trailing edge (must come after timing).
 
-*   `__throttle` – Throttle the event listener.
-    *   `.500ms` – Throttle for 500 milliseconds (accepts any integer).
-    *   `.1s` – Throttle for 1 second (accepts any integer).
-    *   `.noleading` – Throttle without leading edge (must come after timing).
-    *   `.trailing` – Throttle with trailing edge (must come after timing).
+- `__throttle` – Throttle the event listener.
+  - `.500ms` – Throttle for 500 milliseconds (accepts any integer).
+  - `.1s` – Throttle for 1 second (accepts any integer).
+  - `.noleading` – Throttle without leading edge (must come after timing).
+  - `.trailing` – Throttle with trailing edge (must come after timing).
 
-*   `__viewtransition` – Wraps the expression in `document.startViewTransition()` when the View Transition API is available.
-*   `__window` – Attaches the event listener to the `window` element.
-*   `__outside` – Triggers when the event is outside the element.
-*   `__prevent` – Calls `preventDefault` on the event listener.
-*   `__stop` – Calls `stopPropagation` on the event listener.
+- `__viewtransition` – Wraps the expression in `document.startViewTransition()` when the View Transition API is available.
+- `__window` – Attaches the event listener to the `window` element.
+- `__outside` – Triggers when the event is outside the element.
+- `__prevent` – Calls `preventDefault` on the event listener.
+- `__stop` – Calls `stopPropagation` on the event listener.
 
-_* Only works with built-in events._
+_\* Only works with built-in events._
 
 Copied!
 
@@ -395,26 +395,26 @@ Copied!
 
 Modifiers allow you to modify the element intersection behavior and the timing of the event listener.
 
-*   `__once` – Only triggers the event once.
-*   `__half` – Triggers when half of the element is visible.
-*   `__full` – Triggers when the full element is visible.
-*   `__delay` – Delay the event listener.
-    *   `.500ms` – Delay for 500 milliseconds (accepts any integer).
-    *   `.1s` – Delay for 1 second (accepts any integer).
+- `__once` – Only triggers the event once.
+- `__half` – Triggers when half of the element is visible.
+- `__full` – Triggers when the full element is visible.
+- `__delay` – Delay the event listener.
+  - `.500ms` – Delay for 500 milliseconds (accepts any integer).
+  - `.1s` – Delay for 1 second (accepts any integer).
 
-*   `__debounce` – Debounce the event listener.
-    *   `.500ms` – Debounce for 500 milliseconds (accepts any integer).
-    *   `.1s` – Debounce for 1 second (accepts any integer).
-    *   `.leading` – Debounce with leading edge (must come after timing).
-    *   `.notrailing` – Debounce without trailing edge (must come after timing).
+- `__debounce` – Debounce the event listener.
+  - `.500ms` – Debounce for 500 milliseconds (accepts any integer).
+  - `.1s` – Debounce for 1 second (accepts any integer).
+  - `.leading` – Debounce with leading edge (must come after timing).
+  - `.notrailing` – Debounce without trailing edge (must come after timing).
 
-*   `__throttle` – Throttle the event listener.
-    *   `.500ms` – Throttle for 500 milliseconds (accepts any integer).
-    *   `.1s` – Throttle for 1 second (accepts any integer).
-    *   `.noleading` – Throttle without leading edge (must come after timing).
-    *   `.trailing` – Throttle with trailing edge (must come after timing).
+- `__throttle` – Throttle the event listener.
+  - `.500ms` – Throttle for 500 milliseconds (accepts any integer).
+  - `.1s` – Throttle for 1 second (accepts any integer).
+  - `.noleading` – Throttle without leading edge (must come after timing).
+  - `.trailing` – Throttle with trailing edge (must come after timing).
 
-*   `__viewtransition` – Wraps the expression in `document.startViewTransition()` when the View Transition API is available.
+- `__viewtransition` – Wraps the expression in `document.startViewTransition()` when the View Transition API is available.
 
 Copied!
 
@@ -432,12 +432,12 @@ Copied!
 
 Modifiers allow you to modify the interval duration.
 
-*   `__duration` – Sets the interval duration.
-    *   `.500ms` – Interval duration of 500 milliseconds (accepts any integer).
-    *   `.1s` – Interval duration of 1 second (default).
-    *   `.leading` – Execute the first interval immediately.
+- `__duration` – Sets the interval duration.
+  - `.500ms` – Interval duration of 500 milliseconds (accepts any integer).
+  - `.1s` – Interval duration of 1 second (default).
+  - `.leading` – Execute the first interval immediately.
 
-*   `__viewtransition` – Wraps the expression in `document.startViewTransition()` when the View Transition API is available.
+- `__viewtransition` – Wraps the expression in `document.startViewTransition()` when the View Transition API is available.
 
 Copied!
 
@@ -463,21 +463,21 @@ You can filter which signals to watch using the [`data-on-signal-patch-filter`](
 
 Modifiers allow you to modify the timing of the event listener.
 
-*   `__delay` – Delay the event listener.
-    *   `.500ms` – Delay for 500 milliseconds (accepts any integer).
-    *   `.1s` – Delay for 1 second (accepts any integer).
+- `__delay` – Delay the event listener.
+  - `.500ms` – Delay for 500 milliseconds (accepts any integer).
+  - `.1s` – Delay for 1 second (accepts any integer).
 
-*   `__debounce` – Debounce the event listener.
-    *   `.500ms` – Debounce for 500 milliseconds (accepts any integer).
-    *   `.1s` – Debounce for 1 second (accepts any integer).
-    *   `.leading` – Debounce with leading edge (must come after timing).
-    *   `.notrailing` – Debounce without trailing edge (must come after timing).
+- `__debounce` – Debounce the event listener.
+  - `.500ms` – Debounce for 500 milliseconds (accepts any integer).
+  - `.1s` – Debounce for 1 second (accepts any integer).
+  - `.leading` – Debounce with leading edge (must come after timing).
+  - `.notrailing` – Debounce without trailing edge (must come after timing).
 
-*   `__throttle` – Throttle the event listener.
-    *   `.500ms` – Throttle for 500 milliseconds (accepts any integer).
-    *   `.1s` – Throttle for 1 second (accepts any integer).
-    *   `.noleading` – Throttle without leading edge (must come after timing).
-    *   `.trailing` – Throttle with trailing edge (must come after timing).
+- `__throttle` – Throttle the event listener.
+  - `.500ms` – Throttle for 500 milliseconds (accepts any integer).
+  - `.1s` – Throttle for 1 second (accepts any integer).
+  - `.noleading` – Throttle without leading edge (must come after timing).
+  - `.trailing` – Throttle with trailing edge (must come after timing).
 
 Copied!
 
@@ -550,11 +550,11 @@ Copied!
 
 Modifiers allow you to modify behavior when defining references using a key.
 
-*   `__case` – Converts the casing of the signal name.
-    *   `.camel` – Camel case: `mySignal` (default)
-    *   `.kebab` – Kebab case: `my-signal`
-    *   `.snake` – Snake case: `my_signal`
-    *   `.pascal` – Pascal case: `MySignal`
+- `__case` – Converts the casing of the signal name.
+  - `.camel` – Camel case: `mySignal` (default)
+  - `.kebab` – Kebab case: `my-signal`
+  - `.snake` – Snake case: `my_signal`
+  - `.pascal` – Pascal case: `MySignal`
 
 Copied!
 
@@ -612,13 +612,13 @@ Signals beginning with an underscore are _not_ included in requests to the backe
 
 Modifiers allow you to modify behavior when patching signals using a key.
 
-*   `__case` – Converts the casing of the signal name.
-    *   `.camel` – Camel case: `mySignal` (default)
-    *   `.kebab` – Kebab case: `my-signal`
-    *   `.snake` – Snake case: `my_signal`
-    *   `.pascal` – Pascal case: `MySignal`
+- `__case` – Converts the casing of the signal name.
+  - `.camel` – Camel case: `mySignal` (default)
+  - `.kebab` – Kebab case: `my-signal`
+  - `.snake` – Snake case: `my_signal`
+  - `.pascal` – Pascal case: `MySignal`
 
-*   `__ifmissing` Only patches signals if their keys do not already exist. This is useful for setting defaults without overwriting existing values.
+- `__ifmissing` Only patches signals if their keys do not already exist. This is useful for setting defaults without overwriting existing values.
 
 Copied!
 
@@ -675,8 +675,7 @@ Copied!
 
 `1<div data-text="$foo"></div>`
 
-Pro Attributes [#](https://data-star.dev/reference/attributes#pro-attributes)
------------------------------------------------------------------------------
+## Pro Attributes [#](https://data-star.dev/reference/attributes#pro-attributes)
 
 The Pro attributes add functionality to the free open source Datastar framework. These attributes are available under a [commercial license](https://data-star.dev/reference/datastar_pro#license) that helps fund our open source work.
 
@@ -712,11 +711,11 @@ Copied!
 
 Modifiers allow you to modify the timing of the event listener.
 
-*   `__throttle` – Throttle the event listener.
-    *   `.500ms` – Throttle for 500 milliseconds (accepts any integer).
-    *   `.1s` – Throttle for 1 second (accepts any integer).
-    *   `.noleading` – Throttle without leading edge (must come after timing).
-    *   `.trailing` – Throttle with trailing edge (must come after timing).
+- `__throttle` – Throttle the event listener.
+  - `.500ms` – Throttle for 500 milliseconds (accepts any integer).
+  - `.1s` – Throttle for 1 second (accepts any integer).
+  - `.noleading` – Throttle without leading edge (must come after timing).
+  - `.trailing` – Throttle with trailing edge (must come after timing).
 
 Copied!
 
@@ -734,17 +733,17 @@ Copied!
 
 Modifiers allow you to modify the timing of the event listener.
 
-*   `__debounce` – Debounce the event listener.
-    *   `.500ms` – Debounce for 500 milliseconds (accepts any integer).
-    *   `.1s` – Debounce for 1 second (accepts any integer).
-    *   `.leading` – Debounce with leading edge (must come after timing).
-    *   `.notrailing` – Debounce without trailing edge (must come after timing).
+- `__debounce` – Debounce the event listener.
+  - `.500ms` – Debounce for 500 milliseconds (accepts any integer).
+  - `.1s` – Debounce for 1 second (accepts any integer).
+  - `.leading` – Debounce with leading edge (must come after timing).
+  - `.notrailing` – Debounce without trailing edge (must come after timing).
 
-*   `__throttle` – Throttle the event listener.
-    *   `.500ms` – Throttle for 500 milliseconds (accepts any integer).
-    *   `.1s` – Throttle for 1 second (accepts any integer).
-    *   `.noleading` – Throttle without leading edge (must come after timing).
-    *   `.trailing` – Throttle with trailing edge (must come after timing).
+- `__throttle` – Throttle the event listener.
+  - `.500ms` – Throttle for 500 milliseconds (accepts any integer).
+  - `.1s` – Throttle for 1 second (accepts any integer).
+  - `.noleading` – Throttle without leading edge (must come after timing).
+  - `.trailing` – Throttle with trailing edge (must come after timing).
 
 Copied!
 
@@ -774,7 +773,7 @@ Copied!
 
 Modifiers allow you to modify the storage target.
 
-*   `__session` – Persists signals in [session storage](https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage) instead of local storage.
+- `__session` – Persists signals in [session storage](https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage) instead of local storage.
 
 Copied!
 
@@ -801,8 +800,8 @@ Copied!
 
 Modifiers allow you to enable history support.
 
-*   `__filter` – Filters out empty values when syncing signal values to query string params.
-*   `__history` – Enables history support – each time a matching signal changes, a new entry is added to the browser’s history stack. Signal values are restored from the query string params on popstate events.
+- `__filter` – Filters out empty values when syncing signal values to query string params.
+- `__history` – Enables history support – each time a matching signal changes, a new entry is added to the browser’s history stack. Signal values are restored from the query string params on popstate events.
 
 Copied!
 
@@ -828,18 +827,18 @@ Copied!
 
 Modifiers allow you to modify scrolling behavior.
 
-*   `__smooth` – Scrolling is animated smoothly.
-*   `__instant` – Scrolling is instant.
-*   `__auto` – Scrolling is determined by the computed `scroll-behavior` CSS property.
-*   `__hstart` – Scrolls to the left of the element.
-*   `__hcenter` – Scrolls to the horizontal center of the element.
-*   `__hend` – Scrolls to the right of the element.
-*   `__hnearest` – Scrolls to the nearest horizontal edge of the element.
-*   `__vstart` – Scrolls to the top of the element.
-*   `__vcenter` – Scrolls to the vertical center of the element.
-*   `__vend` – Scrolls to the bottom of the element.
-*   `__vnearest` – Scrolls to the nearest vertical edge of the element.
-*   `__focus` – Focuses the element after scrolling.
+- `__smooth` – Scrolling is animated smoothly.
+- `__instant` – Scrolling is instant.
+- `__auto` – Scrolling is determined by the computed `scroll-behavior` CSS property.
+- `__hstart` – Scrolls to the left of the element.
+- `__hcenter` – Scrolls to the horizontal center of the element.
+- `__hend` – Scrolls to the right of the element.
+- `__hnearest` – Scrolls to the nearest horizontal edge of the element.
+- `__vstart` – Scrolls to the top of the element.
+- `__vcenter` – Scrolls to the vertical center of the element.
+- `__vend` – Scrolls to the bottom of the element.
+- `__vnearest` – Scrolls to the nearest vertical edge of the element.
+- `__focus` – Focuses the element after scrolling.
 
 Copied!
 
@@ -855,8 +854,7 @@ Copied!
 
 Page level transitions are automatically handled by an injected meta tag. Inter-page elements are automatically transitioned if the [View Transition API](https://developer.mozilla.org/en-US/docs/Web/API/View_Transitions_API) is available in the browser and `useViewTransitions` is `true`.
 
-Attribute Order [#](https://data-star.dev/reference/attributes#attribute-order)
--------------------------------------------------------------------------------
+## Attribute Order [#](https://data-star.dev/reference/attributes#attribute-order)
 
 Elements are evaluated by walking the DOM in a depth-first manner, and attributes are processed in the order they appear in the element. This is important in some cases, such as when using `data-indicator` with a fetch request initiated in a `data-init` attribute, in which the indicator signal must be created before the fetch request is initialized.
 
@@ -864,22 +862,20 @@ Copied!
 
 `1<div data-indicator:fetching data-init="@get('/endpoint')"></div>`
 
-Attribute Casing [#](https://data-star.dev/reference/attributes#attribute-casing)
----------------------------------------------------------------------------------
+## Attribute Casing [#](https://data-star.dev/reference/attributes#attribute-casing)
 
 [According to the HTML specification](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/data-*), all `data-*` attributes (not Datastar the framework, but any time a data attribute appears in the DOM) are case in-sensitive, but are converted to [`camelCase`](https://developer.mozilla.org/en-US/docs/Glossary/Camel_case) when accessed from JavaScript by Datastar.
 
 Datastar handles casing of data attributes in two ways:
 
-1.   The keys used in attributes that define signals (`data-signals:*`, `data-computed:*`, etc.), are converted to [`camelCase`](https://developer.mozilla.org/en-US/docs/Glossary/Camel_case). For example, `data-signals:my-signal` defines a signal named `mySignal`. You would use the signal in a [Datastar expression](https://data-star.dev/guide/datastar_expressions) as `$mySignal`.
-2.   The keys used by all other attributes are, by default, converted to [`kebab-case`](https://developer.mozilla.org/en-US/docs/Glossary/Kebab_case). For example, `data-class:text-blue-700` adds or removes the class `text-blue-700`, and `data-on:rocket-launched` would react to the event named `rocket-launched`.
+1.  The keys used in attributes that define signals (`data-signals:*`, `data-computed:*`, etc.), are converted to [`camelCase`](https://developer.mozilla.org/en-US/docs/Glossary/Camel_case). For example, `data-signals:my-signal` defines a signal named `mySignal`. You would use the signal in a [Datastar expression](https://data-star.dev/guide/datastar_expressions) as `$mySignal`.
+2.  The keys used by all other attributes are, by default, converted to [`kebab-case`](https://developer.mozilla.org/en-US/docs/Glossary/Kebab_case). For example, `data-class:text-blue-700` adds or removes the class `text-blue-700`, and `data-on:rocket-launched` would react to the event named `rocket-launched`.
 
 You can use the `__case` modifier to convert between `camelCase`, `kebab-case`, `snake_case`, and `PascalCase`, or alternatively use object syntax when available.
 
 For example, if listening for an event called `widgetLoaded`, you would use `data-on:widget-loaded__case.camel`.
 
-Aliasing Attributes [#](https://data-star.dev/reference/attributes#aliasing-attributes)
----------------------------------------------------------------------------------------
+## Aliasing Attributes [#](https://data-star.dev/reference/attributes#aliasing-attributes)
 
 It is possible to alias `data-*` attributes to a custom alias (`data-foo-*`, for example) using the [bundler](https://data-star.dev/bundler). A custom alias should _only_ be used if you have a conflict with a legacy library and [`data-ignore`](https://data-star.dev/reference/attributes#data-ignore) cannot be used.
 
@@ -889,8 +885,7 @@ Copied!
 
 `1<script type="module" src="https://cdn.jsdelivr.net/gh/starfederation/datastar@1.0.0-RC.6/bundles/datastar-aliased.js"></script>`
 
-Datastar Expressions [#](https://data-star.dev/reference/attributes#datastar-expressions)
------------------------------------------------------------------------------------------
+## Datastar Expressions [#](https://data-star.dev/reference/attributes#datastar-expressions)
 
 Datastar expressions used in `data-*` attributes can parse signals (prefixed with `$`).
 
@@ -902,8 +897,7 @@ Copied!
 
 Read more about [Datastar expressions](https://data-star.dev/guide/datastar_expressions) in the guide.
 
-Error Handling [#](https://data-star.dev/reference/attributes#error-handling)
------------------------------------------------------------------------------
+## Error Handling [#](https://data-star.dev/reference/attributes#error-handling)
 
 Datastar has built-in error handling and reporting for runtime errors. When a data attribute is used incorrectly, for example `data-text-foo`, the following error message is logged to the browser console.
 

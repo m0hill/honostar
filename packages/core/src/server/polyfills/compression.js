@@ -1,10 +1,10 @@
 // oxlint-disable no-extraneous-class
-import { Readable, Writable } from 'node:stream'
-import zlib from 'node:zlib'
+import { Readable, Writable } from "node:stream"
+import zlib from "node:zlib"
 
 const transformMap = {
   deflate: zlib.createDeflate,
-  'deflate-raw': zlib.createDeflateRaw,
+  "deflate-raw": zlib.createDeflateRaw,
   gzip: zlib.createGzip,
   brotli: zlib.createBrotliCompress,
   zstd: zlib.createZstdCompress,
@@ -12,7 +12,7 @@ const transformMap = {
 
 const decompressMap = {
   deflate: zlib.createInflate,
-  'deflate-raw': zlib.createInflateRaw,
+  "deflate-raw": zlib.createInflateRaw,
   gzip: zlib.createGunzip,
   brotli: zlib.createBrotliDecompress,
   zstd: zlib.createZstdDecompress,

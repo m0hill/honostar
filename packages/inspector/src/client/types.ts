@@ -2,10 +2,10 @@
  * Type definitions for the Honostar Devtools
  */
 
-export type InspectorTab = 'signals' | 'patches' | 'sse' | 'persisted'
-export type InspectorViewMode = 'json' | 'table'
-export type InspectorStorageType = 'localStorage' | 'sessionStorage'
-export type InspectorPosition = 'bottom' | 'right' | 'left' | 'top'
+export type InspectorTab = "signals" | "patches" | "sse" | "persisted"
+export type InspectorViewMode = "json" | "table"
+export type InspectorStorageType = "localStorage" | "sessionStorage"
+export type InspectorPosition = "bottom" | "right" | "left" | "top"
 
 export type SignalFilter = {
   include?: RegExp
@@ -14,9 +14,9 @@ export type SignalFilter = {
 
 export type InspectorEvent = {
   timestamp: number
-  type: 'signal-patch' | 'sse' | 'signal-update'
+  type: "signal-patch" | "sse" | "signal-update"
   data: unknown
-  source: 'frontend' | 'backend'
+  source: "frontend" | "backend"
 }
 
 export type InspectorConfig = {

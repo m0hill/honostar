@@ -3,36 +3,36 @@ export const DefaultSseRetryDurationMs = 1000
 export const DefaultElementsUseViewTransitions = true
 
 export const DefaultPatchSignalsOnlyIfMissing = false
-export const DatastarDatalineSelector = 'selector'
-export const DatastarDatalinePatchMode = 'mode'
-export const DatastarDatalineElements = 'elements'
-export const DatastarDatalineUseViewTransition = 'useViewTransition'
-export const DatastarDatalineSignals = 'signals'
-export const DatastarDatalineOnlyIfMissing = 'onlyIfMissing'
-export const DatastarDatalinePaths = 'paths'
+export const DatastarDatalineSelector = "selector"
+export const DatastarDatalinePatchMode = "mode"
+export const DatastarDatalineElements = "elements"
+export const DatastarDatalineUseViewTransition = "useViewTransition"
+export const DatastarDatalineSignals = "signals"
+export const DatastarDatalineOnlyIfMissing = "onlyIfMissing"
+export const DatastarDatalinePaths = "paths"
 
 export const ElementPatchModes = [
-  'outer',
+  "outer",
 
-  'inner',
+  "inner",
 
-  'replace',
+  "replace",
 
-  'prepend',
+  "prepend",
 
-  'append',
+  "append",
 
-  'before',
+  "before",
 
-  'after',
+  "after",
 
-  'remove',
+  "remove",
 ] as const
 
-export const DefaultElementPatchMode = 'outer'
+export const DefaultElementPatchMode = "outer"
 
 export const EventTypes = [
-  'datastar-patch-elements',
+  "datastar-patch-elements",
 
-  'datastar-patch-signals',
+  "datastar-patch-signals",
 ] as const

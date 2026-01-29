@@ -1,14 +1,14 @@
-import type { JSX } from 'hono/jsx/jsx-runtime'
-import { cn } from '@/lib/utils'
+import type { JSX } from "hono/jsx/jsx-runtime"
+import { cn } from "@/lib/utils"
 
-type CardProps = JSX.IntrinsicElements['div']
+type CardProps = JSX.IntrinsicElements["div"]
 
 export function Card({ class: className, ...props }: CardProps) {
   return (
     <div
       data-slot="card"
       class={cn(
-        'bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm',
+        "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm",
         className
       )}
       {...props}
@@ -21,7 +21,7 @@ export function CardHeader({ class: className, ...props }: CardProps) {
     <div
       data-slot="card-header"
       class={cn(
-        '@container/card-header grid auto-rows-min grid-rows-[auto_auto] items-start gap-2 px-6 has-data-[slot=card-action]:grid-cols-[1fr_auto] [.border-b]:pb-6',
+        "@container/card-header grid auto-rows-min grid-rows-[auto_auto] items-start gap-2 px-6 has-data-[slot=card-action]:grid-cols-[1fr_auto] [.border-b]:pb-6",
         className
       )}
       {...props}
@@ -31,7 +31,7 @@ export function CardHeader({ class: className, ...props }: CardProps) {
 
 export function CardTitle({ class: className, ...props }: CardProps) {
   return (
-    <div data-slot="card-title" class={cn('leading-none font-semibold', className)} {...props} />
+    <div data-slot="card-title" class={cn("leading-none font-semibold", className)} {...props} />
   )
 }
 
@@ -39,7 +39,7 @@ export function CardDescription({ class: className, ...props }: CardProps) {
   return (
     <div
       data-slot="card-description"
-      class={cn('text-muted-foreground text-sm', className)}
+      class={cn("text-muted-foreground text-sm", className)}
       {...props}
     />
   )
@@ -49,21 +49,21 @@ export function CardAction({ class: className, ...props }: CardProps) {
   return (
     <div
       data-slot="card-action"
-      class={cn('col-start-2 row-span-2 row-start-1 self-start justify-self-end', className)}
+      class={cn("col-start-2 row-span-2 row-start-1 self-start justify-self-end", className)}
       {...props}
     />
   )
 }
 
 export function CardContent({ class: className, ...props }: CardProps) {
-  return <div data-slot="card-content" class={cn('px-6', className)} {...props} />
+  return <div data-slot="card-content" class={cn("px-6", className)} {...props} />
 }
 
 export function CardFooter({ class: className, ...props }: CardProps) {
   return (
     <div
       data-slot="card-footer"
-      class={cn('flex items-center px-6 [.border-t]:pt-6', className)}
+      class={cn("flex items-center px-6 [.border-t]:pt-6", className)}
       {...props}
     />
   )

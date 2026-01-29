@@ -2,14 +2,14 @@ import type {
   ExecuteScriptOptions,
   PatchElementsOptions,
   PatchSignalsOptions,
-} from '../../../common/types'
+} from "../../../common/types"
 
 export type SSEPayload =
-  | { event: 'datastar-patch-elements'; html: string; options: PatchElementsOptions }
-  | { event: 'datastar-patch-signals'; signals: string; options: PatchSignalsOptions }
-  | { event: 'execute-script'; script: string; options?: ExecuteScriptOptions }
-  | { event: 'honostar-event'; name: string; payload: string }
-  | { event: 'close' }
+  | { event: "datastar-patch-elements"; html: string; options: PatchElementsOptions }
+  | { event: "datastar-patch-signals"; signals: string; options: PatchSignalsOptions }
+  | { event: "execute-script"; script: string; options?: ExecuteScriptOptions }
+  | { event: "honostar-event"; name: string; payload: string }
+  | { event: "close" }
 
 export type Sink = (msg: SSEPayload) => void
 
@@ -40,7 +40,7 @@ class Channel {
       try {
         s(msg)
       } catch (e) {
-        console.error('SSE sink error:', e)
+        console.error("SSE sink error:", e)
       }
     }
   }
@@ -48,11 +48,11 @@ class Channel {
 
 function canRetain(
   msg: SSEPayload
-): msg is Extract<SSEPayload, { event: 'datastar-patch-elements' }> {
-  if (msg.event !== 'datastar-patch-elements') return false
-  const mode = msg.options?.mode ?? 'outer'
+): msg is Extract<SSEPayload, { event: "datastar-patch-elements" }> {
+  if (msg.event !== "datastar-patch-elements") return false
+  const mode = msg.options?.mode ?? "outer"
   // Only retain idempotent modes; append/prepend/before/after are order-dependent.
-  return mode === 'outer' || mode === 'inner' || mode === 'replace'
+  return mode === "outer" || mode === "inner" || mode === "replace"
 }
 
 export class MemoryBus implements PubSubBus {
@@ -60,7 +60,7 @@ export class MemoryBus implements PubSubBus {
   private topics = new Map<string, Channel>()
   private retainedTopics = new Map<
     string,
-    Extract<SSEPayload, { event: 'datastar-patch-elements' }>
+    Extract<SSEPayload, { event: "datastar-patch-elements" }>
   >()
   private retainedOrder: string[] = []
   private maxRetainedTopics = 1000

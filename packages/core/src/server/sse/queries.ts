@@ -1,7 +1,7 @@
-import type { Context } from 'hono'
-import type { Jsonifiable } from '../../common/types'
-import type { AppEnv } from '../context'
-import type { EffectDefinition } from './effect-registry'
+import type { Context } from "hono"
+import type { Jsonifiable } from "../../common/types"
+import type { AppEnv } from "../context"
+import type { EffectDefinition } from "./effect-registry"
 
 export type DomainEvent = {
   name: string
@@ -24,7 +24,7 @@ export class TopicQueryRegistry {
   register(topic: string, handler: QueryHandler): void
   register(pattern: RegExp, handler: QueryHandler): void
   register(topicOrPattern: string | RegExp, handler: QueryHandler): void {
-    if (typeof topicOrPattern === 'string') {
+    if (typeof topicOrPattern === "string") {
       this.exact.set(topicOrPattern, handler)
       return
     }

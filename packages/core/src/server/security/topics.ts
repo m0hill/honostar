@@ -16,12 +16,12 @@
  * - HMAC-SHA256 based signatures provide stateless verification
  */
 
-import type { Context } from 'hono'
-import { getCookie, setCookie } from 'hono/cookie'
-import type { HonostarConfig } from '../config'
+import type { Context } from "hono"
+import { getCookie, setCookie } from "hono/cookie"
+import type { HonostarConfig } from "../config"
 
-const TOPICS_TOKEN_QUERY_PARAM = 'topicsToken'
-const TOPICS_TOKEN_HEADER = 'X-Honostar-Topics'
+const TOPICS_TOKEN_QUERY_PARAM = "topicsToken"
+const TOPICS_TOKEN_HEADER = "X-Honostar-Topics"
 
 /**
  * Topic token payload structure (versioned for future compatibility)
@@ -50,7 +50,7 @@ export function canonicalizeTopics(topics: string[]): string[] {
  */
 function base64urlEncode(data: Uint8Array): string {
   const base64 = btoa(String.fromCharCode(...data))
-  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+  return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "")
 }
 
 /**
@@ -58,11 +58,11 @@ function base64urlEncode(data: Uint8Array): string {
  */
 function base64urlDecode(str: string): Uint8Array {
   // Add padding back if needed
-  const padded = str + '=='.slice(0, (4 - (str.length % 4)) % 4)
-  const base64 = padded.replace(/-/g, '+').replace(/_/g, '/')
+  const padded = str + "==".slice(0, (4 - (str.length % 4)) % 4)
+  const base64 = padded.replace(/-/g, "+").replace(/_/g, "/")
   const binary = atob(base64)
   // Safe: binary is ASCII string from atob, each char is a single byte
-  return new Uint8Array(Array.from(binary, c => c.charCodeAt(0)))
+  return new Uint8Array(Array.from(binary, (c) => c.charCodeAt(0)))
 }
 
 /**
@@ -71,13 +71,13 @@ function base64urlDecode(str: string): Uint8Array {
 async function hmacSign(secret: string, data: string): Promise<Uint8Array> {
   const encoder = new TextEncoder()
   const key = await crypto.subtle.importKey(
-    'raw',
+    "raw",
     encoder.encode(secret),
-    { name: 'HMAC', hash: 'SHA-256' },
+    { name: "HMAC", hash: "SHA-256" },
     false,
-    ['sign']
+    ["sign"]
   )
-  const signature = await crypto.subtle.sign('HMAC', key, encoder.encode(data))
+  const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(data))
   return new Uint8Array(signature)
 }
 
@@ -87,15 +87,15 @@ async function hmacSign(secret: string, data: string): Promise<Uint8Array> {
 async function hmacVerify(secret: string, data: string, signature: Uint8Array): Promise<boolean> {
   const encoder = new TextEncoder()
   const key = await crypto.subtle.importKey(
-    'raw',
+    "raw",
     encoder.encode(secret),
-    { name: 'HMAC', hash: 'SHA-256' },
+    { name: "HMAC", hash: "SHA-256" },
     false,
-    ['verify']
+    ["verify"]
   )
   // Create a new Uint8Array with ArrayBuffer (not SharedArrayBuffer) backing
   const sig = new Uint8Array(signature)
-  return await crypto.subtle.verify('HMAC', key, sig, encoder.encode(data))
+  return await crypto.subtle.verify("HMAC", key, sig, encoder.encode(data))
 }
 
 /**
@@ -103,22 +103,22 @@ async function hmacVerify(secret: string, data: string, signature: Uint8Array): 
  * Throws if secret is not configured in production
  */
 function getSigningSecret(cfg: HonostarConfig): string | null {
-  const secretEnv = cfg.security.topics?.secretEnv ?? 'HONOSTAR_SIGNING_SECRET'
+  const secretEnv = cfg.security.topics?.secretEnv ?? "HONOSTAR_SIGNING_SECRET"
   const secret = process.env[secretEnv]
 
   if (!secret) {
     // In development, allow missing secret but warn
-    if (process.env.NODE_ENV !== 'production') {
+    if (process.env.NODE_ENV !== "production") {
       console.warn(
         `[Topic Security] No signing secret found in ${secretEnv}. ` +
-          'Topic allowlist enforcement is DISABLED. ' +
-          'Set HONOSTAR_SIGNING_SECRET for production.'
+          "Topic allowlist enforcement is DISABLED. " +
+          "Set HONOSTAR_SIGNING_SECRET for production."
       )
       return null
     }
     throw new Error(
       `[Topic Security] Missing required environment variable: ${secretEnv}. ` +
-        'Topic allowlist enforcement requires a signing secret in production.'
+        "Topic allowlist enforcement requires a signing secret in production."
     )
   }
 
@@ -146,7 +146,7 @@ export async function signTopics(
   }
 
   const topicsCfg = cfg.security.topics ?? {}
-  const cookieName = topicsCfg.cookieName ?? 'honostar_topics'
+  const cookieName = topicsCfg.cookieName ?? "honostar_topics"
   const maxAgeSec = topicsCfg.maxAgeSec ?? 300
   const bindToClientId = topicsCfg.bindToClientId ?? false
 
@@ -160,8 +160,8 @@ export async function signTopics(
   // Include clientId if binding is enabled
   if (bindToClientId) {
     const clientId = c.var.clientId
-    if (!clientId || clientId === 'anonymous') {
-      console.warn('[Topic Security] Cannot bind to clientId - missing or anonymous')
+    if (!clientId || clientId === "anonymous") {
+      console.warn("[Topic Security] Cannot bind to clientId - missing or anonymous")
     } else {
       payload.clientId = clientId
     }
@@ -179,12 +179,12 @@ export async function signTopics(
 
   // Set HttpOnly cookie
   const url = new URL(c.req.url)
-  const isSecure = url.protocol === 'https:' || process.env.NODE_ENV === 'production'
+  const isSecure = url.protocol === "https:" || process.env.NODE_ENV === "production"
 
   setCookie(c, cookieName, token, {
     httpOnly: true,
     secure: isSecure,
-    sameSite: 'Lax',
+    sameSite: "Lax",
     path: cfg.endpoints.sse,
     maxAge: maxAgeSec,
   })
@@ -209,12 +209,12 @@ export async function verifyTopics(
   const secret = getSigningSecret(cfg)
   if (!secret) {
     // Development mode with no secret - allow all requested topics
-    console.warn('[Topic Security] No secret configured - allowing all topics (development only)')
+    console.warn("[Topic Security] No secret configured - allowing all topics (development only)")
     return requestedTopics
   }
 
   const topicsCfg = cfg.security.topics ?? {}
-  const cookieName = topicsCfg.cookieName ?? 'honostar_topics'
+  const cookieName = topicsCfg.cookieName ?? "honostar_topics"
   const bindToClientId = topicsCfg.bindToClientId ?? false
 
   // Prefer a per-request token (query/header) to avoid multi-tab cookie clobbering.
@@ -224,14 +224,14 @@ export async function verifyTopics(
     c.req.query(TOPICS_TOKEN_QUERY_PARAM) ??
     getCookie(c, cookieName)
   if (!token) {
-    console.warn('[Topic Security] No topic token found in request')
+    console.warn("[Topic Security] No topic token found in request")
     return null
   }
 
   // Parse token (format: payload.signature)
-  const parts = token.split('.')
+  const parts = token.split(".")
   if (parts.length !== 2 || !parts[0] || !parts[1]) {
-    console.warn('[Topic Security] Invalid token format')
+    console.warn("[Topic Security] Invalid token format")
     return null
   }
 
@@ -243,11 +243,11 @@ export async function verifyTopics(
     const signature = base64urlDecode(signatureB64)
     const valid = await hmacVerify(secret, payloadB64, signature)
     if (!valid) {
-      console.warn('[Topic Security] Invalid token signature')
+      console.warn("[Topic Security] Invalid token signature")
       return null
     }
   } catch (err) {
-    console.warn('[Topic Security] Signature verification failed:', err)
+    console.warn("[Topic Security] Signature verification failed:", err)
     return null
   }
 
@@ -258,7 +258,7 @@ export async function verifyTopics(
     const payloadJson = new TextDecoder().decode(payloadBytes)
     payload = JSON.parse(payloadJson)
   } catch (err) {
-    console.warn('[Topic Security] Failed to decode payload:', err)
+    console.warn("[Topic Security] Failed to decode payload:", err)
     return null
   }
 
@@ -267,16 +267,16 @@ export async function verifyTopics(
     !payload ||
     payload.v !== 1 ||
     !Array.isArray(payload.topics) ||
-    typeof payload.exp !== 'number'
+    typeof payload.exp !== "number"
   ) {
-    console.warn('[Topic Security] Invalid payload structure')
+    console.warn("[Topic Security] Invalid payload structure")
     return null
   }
 
   // Check expiration
   const now = Math.floor(Date.now() / 1000)
   if (payload.exp < now) {
-    console.warn('[Topic Security] Token expired')
+    console.warn("[Topic Security] Token expired")
     return null
   }
 
@@ -284,14 +284,14 @@ export async function verifyTopics(
   if (bindToClientId && payload.clientId) {
     const currentClientId = c.var.clientId
     if (payload.clientId !== currentClientId) {
-      console.warn('[Topic Security] Token clientId mismatch')
+      console.warn("[Topic Security] Token clientId mismatch")
       return null
     }
   }
 
   // Return intersection of requested and allowed topics
   const allowedSet = new Set(payload.topics)
-  const intersection = requestedTopics.filter(topic => allowedSet.has(topic))
+  const intersection = requestedTopics.filter((topic) => allowedSet.has(topic))
 
   return intersection
 }

@@ -1,14 +1,14 @@
-import type { Context } from 'hono'
-import type { JSX } from 'hono/jsx/jsx-runtime'
-import type { AppEnv } from './context'
+import type { Context } from "hono"
+import type { JSX } from "hono/jsx/jsx-runtime"
+import type { AppEnv } from "./context"
 
 function acceptsHtml(c: Context<AppEnv>): boolean {
-  const accept = c.req.header('accept')?.toLowerCase() ?? ''
-  return accept.includes('text/html') || accept.includes('*/*')
+  const accept = c.req.header("accept")?.toLowerCase() ?? ""
+  return accept.includes("text/html") || accept.includes("*/*")
 }
 
 function isDatastarRequest(c: Context<AppEnv>): boolean {
-  return c.req.header('datastar-request') !== null
+  return c.req.header("datastar-request") !== null
 }
 
 function NotFoundPage(props: { pathname: string }): JSX.Element {
@@ -16,18 +16,18 @@ function NotFoundPage(props: { pathname: string }): JSX.Element {
     <main
       style={{
         fontFamily:
-          'ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji',
-        padding: '48px 20px',
-        maxWidth: '720px',
-        margin: '0 auto',
+          "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji",
+        padding: "48px 20px",
+        maxWidth: "720px",
+        margin: "0 auto",
       }}
     >
-      <h1 style={{ fontSize: '28px', margin: '0 0 8px' }}>Not Found</h1>
-      <p style={{ margin: '0 0 20px', opacity: 0.8 }}>
+      <h1 style={{ fontSize: "28px", margin: "0 0 8px" }}>Not Found</h1>
+      <p style={{ margin: "0 0 20px", opacity: 0.8 }}>
         No route matches <code>{props.pathname}</code>.
       </p>
       <p style={{ margin: 0 }}>
-        <a href="/" style={{ color: 'inherit' }}>
+        <a href="/" style={{ color: "inherit" }}>
           Go home
         </a>
       </p>
@@ -45,18 +45,18 @@ function ErrorPage(props: {
     <main
       style={{
         fontFamily:
-          'ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji',
-        padding: '48px 20px',
-        maxWidth: '720px',
-        margin: '0 auto',
+          "ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji",
+        padding: "48px 20px",
+        maxWidth: "720px",
+        margin: "0 auto",
       }}
     >
-      <h1 style={{ fontSize: '28px', margin: '0 0 8px' }}>Something went wrong</h1>
-      <p style={{ margin: '0 0 20px', opacity: 0.8 }}>
-        {props.message ? props.message : 'An unexpected error occurred.'}
+      <h1 style={{ fontSize: "28px", margin: "0 0 8px" }}>Something went wrong</h1>
+      <p style={{ margin: "0 0 20px", opacity: 0.8 }}>
+        {props.message ? props.message : "An unexpected error occurred."}
         {props.requestId ? (
           <>
-            {' '}
+            {" "}
             (request <code>{props.requestId}</code>)
           </>
         ) : null}
@@ -64,12 +64,12 @@ function ErrorPage(props: {
       {props.showStack && props.stack ? (
         <pre
           style={{
-            whiteSpace: 'pre-wrap',
-            overflowWrap: 'anywhere',
-            padding: '12px',
-            border: '1px solid rgba(127,127,127,0.35)',
-            borderRadius: '8px',
-            background: 'rgba(127,127,127,0.08)',
+            whiteSpace: "pre-wrap",
+            overflowWrap: "anywhere",
+            padding: "12px",
+            border: "1px solid rgba(127,127,127,0.35)",
+            borderRadius: "8px",
+            background: "rgba(127,127,127,0.08)",
           }}
         >
           {props.stack}
@@ -82,9 +82,9 @@ function ErrorPage(props: {
 export function createNotFoundHandler() {
   return (c: Context<AppEnv>) => {
     if (!acceptsHtml(c) || isDatastarRequest(c)) {
-      return c.text('Not Found', 404)
+      return c.text("Not Found", 404)
     }
-    c.set('pageHead', { title: 'Not Found', elements: [] })
+    c.set("pageHead", { title: "Not Found", elements: [] })
     c.status(404)
     return c.render(<NotFoundPage pathname={new URL(c.req.url).pathname} />)
   }
@@ -98,13 +98,13 @@ export function createOnErrorHandler(opts?: {
     const requestId = opts?.getRequestId?.(c)
 
     if (!acceptsHtml(c) || isDatastarRequest(c)) {
-      return c.text('Internal Server Error', 500)
+      return c.text("Internal Server Error", 500)
     }
 
     const message = err instanceof Error ? err.message : undefined
     const stack = err instanceof Error ? err.stack : undefined
 
-    c.set('pageHead', { title: 'Server Error', elements: [] })
+    c.set("pageHead", { title: "Server Error", elements: [] })
     c.status(500)
     return c.render(
       <ErrorPage

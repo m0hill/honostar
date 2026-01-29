@@ -1,4 +1,4 @@
-import { registerRuntimePlugin } from '@honostar/core/client'
+import { registerRuntimePlugin } from "@honostar/core/client"
 
 /**
  * Scroll Plugin
@@ -24,12 +24,12 @@ import { registerRuntimePlugin } from '@honostar/core/client'
  * ```
  */
 
-type ScrollBehavior = 'auto' | 'smooth'
-type ScrollBlock = 'start' | 'center' | 'end' | 'nearest'
+type ScrollBehavior = "auto" | "smooth"
+type ScrollBlock = "start" | "center" | "end" | "nearest"
 
 registerRuntimePlugin(
-  'scroll',
-  (ctx, selector: string, behavior: ScrollBehavior = 'smooth', block: ScrollBlock = 'start') => {
+  "scroll",
+  (ctx, selector: string, behavior: ScrollBehavior = "smooth", block: ScrollBlock = "start") => {
     const target = document.querySelector(selector)
 
     if (!target) {
@@ -40,10 +40,10 @@ registerRuntimePlugin(
       target.scrollIntoView({
         behavior,
         block,
-        inline: 'nearest',
+        inline: "nearest",
       })
     } catch (err) {
-      ctx.error(err instanceof Error ? err : new Error('Failed to scroll to element'))
+      ctx.error(err instanceof Error ? err : new Error("Failed to scroll to element"))
     }
   }
 )

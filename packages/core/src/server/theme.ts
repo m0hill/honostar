@@ -3,24 +3,24 @@ import type {
   ThemeProviderArtifacts,
   ThemeRuntimeConfig,
   ThemeValue,
-} from '../common/theme'
+} from "../common/theme"
 
 const DEFAULT_THEME_CONFIG: ThemeRuntimeConfig = {
-  attribute: 'class',
-  defaultTheme: 'system',
-  storageKey: 'honostar-ui-theme',
+  attribute: "class",
+  defaultTheme: "system",
+  storageKey: "honostar-ui-theme",
   respectSystemPreference: true,
-  disableTransitionClass: 'theme-is-changing',
-  rootSelector: 'html',
-  systemFallback: 'dark',
+  disableTransitionClass: "theme-is-changing",
+  rootSelector: "html",
+  systemFallback: "dark",
 }
 
 function sanitizeInlineScript(payload: string): string {
-  return payload.replace(/<\//g, '<\\/').replace(/<!--/g, '\\u003c!--')
+  return payload.replace(/<\//g, "<\\/").replace(/<!--/g, "\\u003c!--")
 }
 
 function createThemeBootstrapScript(config: ThemeRuntimeConfig): string {
-  const serializedConfig = JSON.stringify(config).replace(/</g, '\\u003c')
+  const serializedConfig = JSON.stringify(config).replace(/</g, "\\u003c")
   return sanitizeInlineScript(`
 ;(() => {
   const cfg = ${serializedConfig};
@@ -80,15 +80,15 @@ export function resolveThemeProvider(
   // Use cookie preference if available and valid, otherwise use config default
   let effectiveDefault = config.defaultTheme
   if (
-    cookiePreference === 'light' ||
-    cookiePreference === 'dark' ||
-    cookiePreference === 'system'
+    cookiePreference === "light" ||
+    cookiePreference === "dark" ||
+    cookiePreference === "system"
   ) {
     effectiveDefault = cookiePreference
   }
 
   const initialClass: ThemeValue =
-    effectiveDefault === 'system' ? config.systemFallback : effectiveDefault
+    effectiveDefault === "system" ? config.systemFallback : effectiveDefault
 
   return {
     config,

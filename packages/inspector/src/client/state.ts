@@ -2,9 +2,9 @@
  * State management for the inspector
  */
 
-import type { InspectorConfig, InspectorState } from './types'
+import type { InspectorConfig, InspectorState } from "./types"
 
-export const STORAGE_KEY = 'honostar-inspector-state'
+export const STORAGE_KEY = "honostar-inspector-state"
 
 export function loadState(): Partial<InspectorState> {
   try {
@@ -40,7 +40,7 @@ export function createInitialState(config: InspectorConfig): InspectorState {
     viewMode: savedState.viewMode ?? config.defaultViewMode,
     filter: {},
     events: [],
-    storageType: 'localStorage',
+    storageType: "localStorage",
     position: savedState.position ?? config.defaultPosition,
     height: savedState.height ?? 400,
     width: savedState.width ?? 600,
@@ -52,16 +52,16 @@ export function createInitialState(config: InspectorConfig): InspectorState {
  */
 export function getDatastarSignals(): Record<string, unknown> {
   try {
-    const signalsEl = document.getElementById('ds-inspector-signals')
+    const signalsEl = document.getElementById("ds-inspector-signals")
     if (!signalsEl) {
-      console.warn('[Inspector] #ds-inspector-signals element not found')
+      console.warn("[Inspector] #ds-inspector-signals element not found")
       return {}
     }
 
-    const content = signalsEl.textContent || '{}'
+    const content = signalsEl.textContent || "{}"
     return JSON.parse(content)
   } catch (err) {
-    console.error('[Inspector] Failed to parse signals:', err)
+    console.error("[Inspector] Failed to parse signals:", err)
     return {}
   }
 }
@@ -70,11 +70,11 @@ export function getDatastarSignals(): Record<string, unknown> {
  * Get persisted signals from localStorage or sessionStorage
  */
 export function getPersistedSignals(
-  storageType: 'localStorage' | 'sessionStorage'
+  storageType: "localStorage" | "sessionStorage"
 ): Record<string, unknown> {
   try {
-    const storage = storageType === 'localStorage' ? localStorage : sessionStorage
-    const storageKey = 'datastar'
+    const storage = storageType === "localStorage" ? localStorage : sessionStorage
+    const storageKey = "datastar"
     const raw = storage.getItem(storageKey)
     if (!raw) return {}
     return JSON.parse(raw)

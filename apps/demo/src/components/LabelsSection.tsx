@@ -1,14 +1,14 @@
-import { routes } from '@/routes'
-import type { Label } from '@/types'
-import { Button } from './ui/button'
-import { Input } from './ui/input'
+import { routes } from "@/routes"
+import type { Label } from "@/types"
+import { Button } from "./ui/button"
+import { Input } from "./ui/input"
 
 export default function LabelsSection({ labels }: { labels: Label[] }) {
   return (
     <div id="labels-section">
       <div class="max-h-40 overflow-y-auto pr-2">
         <div class="flex flex-wrap gap-2">
-          {labels.map(l => (
+          {labels.map((l) => (
             <label class="inline-flex items-center gap-2 cursor-pointer" key={l.id}>
               <input
                 type="checkbox"

@@ -1,47 +1,47 @@
-import type { Context, Hono, MiddlewareHandler } from 'hono'
-import type { AppEnv } from '../context'
+import type { Context, Hono, MiddlewareHandler } from "hono"
+import type { AppEnv } from "../context"
 import {
   type HandlerDefinition,
   type PageDefinition,
   resolvePageHead,
   resolvePageLayouts,
-} from '../page'
-import type { FxResponse } from '../sse/middleware'
-import type { QueryHandler, QueryRegistration } from '../sse/queries'
-import type { RouteLoader } from './types'
+} from "../page"
+import type { FxResponse } from "../sse/middleware"
+import type { QueryHandler, QueryRegistration } from "../sse/queries"
+import type { RouteLoader } from "./types"
 
-type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'OPTIONS'
+type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "OPTIONS"
 type HandlerLike =
   | HandlerDefinition
   | ((c: Context<AppEnv>) => Promise<Response | void> | Response | void)
 
 function isFxResponse(value: unknown): value is FxResponse {
-  if (typeof value !== 'object' || value === null || value instanceof Response) {
+  if (typeof value !== "object" || value === null || value instanceof Response) {
     return false
   }
-  return 'fx' in value && Array.isArray((value as { fx?: unknown }).fx)
+  return "fx" in value && Array.isArray((value as { fx?: unknown }).fx)
 }
 
 function isPageDefinition(value: unknown): value is PageDefinition {
   return (
-    typeof value === 'object' &&
+    typeof value === "object" &&
     value !== null &&
-    'component' in value &&
-    typeof (value as Record<string, unknown>).component === 'function'
+    "component" in value &&
+    typeof (value as Record<string, unknown>).component === "function"
   )
 }
 
 function isHandlerDefinition(value: unknown): value is HandlerDefinition {
   return (
-    typeof value === 'object' &&
+    typeof value === "object" &&
     value !== null &&
-    'handler' in value &&
-    typeof (value as Record<string, unknown>).handler === 'function'
+    "handler" in value &&
+    typeof (value as Record<string, unknown>).handler === "function"
   )
 }
 
 function isHandlerLike(value: unknown): value is HandlerLike {
-  return typeof value === 'function' || isHandlerDefinition(value)
+  return typeof value === "function" || isHandlerDefinition(value)
 }
 
 function wrapHandler(handler: HandlerLike): MiddlewareHandler<AppEnv> {
@@ -50,7 +50,7 @@ function wrapHandler(handler: HandlerLike): MiddlewareHandler<AppEnv> {
     const result = await finalHandler(c)
 
     if (isFxResponse(result)) {
-      c.set('fxResponse', result)
+      c.set("fxResponse", result)
       return c.res
     }
 
@@ -65,7 +65,7 @@ type MountRoutesOptions = {
 }
 
 function queryKey(topicOrPattern: string | RegExp): string {
-  if (typeof topicOrPattern === 'string') return `s:${topicOrPattern}`
+  if (typeof topicOrPattern === "string") return `s:${topicOrPattern}`
   return `r:${topicOrPattern.source}/${topicOrPattern.flags}`
 }
 
@@ -105,7 +105,7 @@ function inferTopicsFromQueries(registrations: QueryRegistration[] | undefined):
   let hasPattern = false
 
   for (const [topicOrPattern] of registrations) {
-    if (typeof topicOrPattern === 'string') {
+    if (typeof topicOrPattern === "string") {
       topics.push(topicOrPattern)
     } else {
       hasPattern = true
@@ -122,7 +122,7 @@ async function registerModule(
   options: MountRoutesOptions | undefined,
   queryDedupe: Map<string, QueryHandler>
 ) {
-  const methods: HttpMethod[] = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
+  const methods: HttpMethod[] = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
 
   for (const method of methods) {
     const handlerExport = mod[method]
@@ -132,7 +132,7 @@ async function registerModule(
     const handlers = asArray.filter(isHandlerLike)
     if (handlers.length === 0) continue
 
-    const middlewares = handlers.filter(isHandlerDefinition).flatMap(h => (h.use ? h.use : []))
+    const middlewares = handlers.filter(isHandlerDefinition).flatMap((h) => (h.use ? h.use : []))
 
     if (Array.isArray(handlerExport)) {
       // Hono's handler typings are heavily tuple-overloaded; spreading arrays often makes TS
@@ -162,23 +162,23 @@ async function registerModule(
     const pageHandler = async (c: Context<AppEnv>) => {
       if (pageDef.topics) {
         const topics =
-          typeof pageDef.topics === 'function' ? await pageDef.topics(c) : pageDef.topics
-        c.set('sseTopics', topics)
+          typeof pageDef.topics === "function" ? await pageDef.topics(c) : pageDef.topics
+        c.set("sseTopics", topics)
       } else if (pageDef.queries && pageDef.queries.length > 0) {
         const inferred = inferTopicsFromQueries(pageDef.queries)
         if (inferred.topics.length > 0) {
-          c.set('sseTopics', inferred.topics)
+          c.set("sseTopics", inferred.topics)
         } else if (inferred.hasPattern) {
           console.warn(
             `[CQRS] Page "${routePath}" declares pattern-based queries but no explicit topics; ` +
-              'SSE will not subscribe to any topics. Add `topics: [...]` to the page definition.'
+              "SSE will not subscribe to any topics. Add `topics: [...]` to the page definition."
           )
         }
       }
       if (pageDef.sseParams) {
         const sseParams =
-          typeof pageDef.sseParams === 'function' ? await pageDef.sseParams(c) : pageDef.sseParams
-        c.set('sseParams', sseParams)
+          typeof pageDef.sseParams === "function" ? await pageDef.sseParams(c) : pageDef.sseParams
+        c.set("sseParams", sseParams)
       }
 
       const loaderResult = (await pageDef.loader?.(c)) ?? {}
@@ -187,7 +187,7 @@ async function registerModule(
       }
 
       if (pageDef.head) {
-        c.set('pageHead', await resolvePageHead(pageDef.head, loaderResult, c))
+        c.set("pageHead", await resolvePageHead(pageDef.head, loaderResult, c))
       }
 
       let pageComponent = pageDef.component(loaderResult)

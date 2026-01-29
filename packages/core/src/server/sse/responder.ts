@@ -1,35 +1,35 @@
-import type { Context } from 'hono'
-import type { JSX } from 'hono/jsx/jsx-runtime'
-import type { StatusCode } from 'hono/utils/http-status'
+import type { Context } from "hono"
+import type { JSX } from "hono/jsx/jsx-runtime"
+import type { StatusCode } from "hono/utils/http-status"
 import type {
   ExecuteScriptOptions,
   Jsonifiable,
   PatchElementsOptions,
   PatchSignalsOptions,
-} from '../../common/types'
-import type { AppEnv } from '../context'
-import { factory } from '../middleware'
-import type { EffectDefinition } from './effect-registry'
-import { EffectRegistry } from './effect-registry'
+} from "../../common/types"
+import type { AppEnv } from "../context"
+import { factory } from "../middleware"
+import type { EffectDefinition } from "./effect-registry"
+import { EffectRegistry } from "./effect-registry"
 
 const isPatchElementsEffect = (
   fx: EffectDefinition
-): fx is ['patch-elements', JSX.Element | JSX.Element[] | string, PatchElementsOptions?] =>
-  fx[0] === 'patch-elements'
+): fx is ["patch-elements", JSX.Element | JSX.Element[] | string, PatchElementsOptions?] =>
+  fx[0] === "patch-elements"
 
 const isPatchElementsSeqEffect = (
   fx: EffectDefinition
-): fx is ['patch-elements-seq', Array<JSX.Element | string>, PatchElementsOptions?] =>
-  fx[0] === 'patch-elements-seq'
+): fx is ["patch-elements-seq", Array<JSX.Element | string>, PatchElementsOptions?] =>
+  fx[0] === "patch-elements-seq"
 
 const isPatchSignalsEffect = (
   fx: EffectDefinition
-): fx is ['patch-signals', Record<string, Jsonifiable>, PatchSignalsOptions?] =>
-  fx[0] === 'patch-signals'
+): fx is ["patch-signals", Record<string, Jsonifiable>, PatchSignalsOptions?] =>
+  fx[0] === "patch-signals"
 
 const isExecuteScriptEffect = (
   fx: EffectDefinition
-): fx is ['execute-script', string, ExecuteScriptOptions?] => fx[0] === 'execute-script'
+): fx is ["execute-script", string, ExecuteScriptOptions?] => fx[0] === "execute-script"
 
 export class FxResponder {
   private c: Context<AppEnv>
@@ -43,7 +43,7 @@ export class FxResponder {
   }
 
   private isDatastarRequest(): boolean {
-    return this.c.req.header('datastar-request') !== null
+    return this.c.req.header("datastar-request") !== null
   }
 
   private shouldAttemptHttpReply(toClient: boolean | undefined, topics?: string[]): boolean {
@@ -66,17 +66,17 @@ export class FxResponder {
     base?: Record<string, string>
   ): Record<string, string> {
     const headers: Record<string, string> = this.mergeHeaders(base, {
-      'Content-Type': 'text/html; charset=utf-8',
+      "Content-Type": "text/html; charset=utf-8",
     })
 
     if (opts?.selector) {
-      headers['datastar-selector'] = opts.selector
+      headers["datastar-selector"] = opts.selector
     }
     if (opts?.mode) {
-      headers['datastar-mode'] = opts.mode
+      headers["datastar-mode"] = opts.mode
     }
-    if (typeof opts?.useViewTransition === 'boolean') {
-      headers['datastar-use-view-transition'] = String(opts.useViewTransition)
+    if (typeof opts?.useViewTransition === "boolean") {
+      headers["datastar-use-view-transition"] = String(opts.useViewTransition)
     }
 
     return headers
@@ -87,19 +87,19 @@ export class FxResponder {
     base?: Record<string, string>
   ): Record<string, string> {
     const headers: Record<string, string> = this.mergeHeaders(base, {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     })
 
-    if (typeof opts?.onlyIfMissing === 'boolean') {
-      headers['datastar-only-if-missing'] = String(opts.onlyIfMissing)
+    if (typeof opts?.onlyIfMissing === "boolean") {
+      headers["datastar-only-if-missing"] = String(opts.onlyIfMissing)
     }
 
     return headers
   }
 
   private async renderNode(node: JSX.Element | string | null | undefined): Promise<string> {
-    if (node === null || node === undefined) return ''
-    if (typeof node === 'string') return node
+    if (node === null || node === undefined) return ""
+    if (typeof node === "string") return node
     return await this.c.var.renderFragmentToString(node)
   }
 
@@ -107,15 +107,15 @@ export class FxResponder {
     payload: JSX.Element | JSX.Element[] | string
   ): Promise<string> {
     if (Array.isArray(payload)) {
-      const html = await Promise.all(payload.map(part => this.renderNode(part)))
-      return html.join('\n')
+      const html = await Promise.all(payload.map((part) => this.renderNode(part)))
+      return html.join("\n")
     }
     return await this.renderNode(payload)
   }
 
   private async renderElementsSeqPayload(payload: Array<JSX.Element | string>): Promise<string> {
-    const html = await Promise.all(payload.map(part => this.renderNode(part)))
-    return html.join('\n')
+    const html = await Promise.all(payload.map((part) => this.renderNode(part)))
+    return html.join("\n")
   }
 
   private async tryCreateHttpResponse(
@@ -169,7 +169,7 @@ export class FxResponder {
   private registerBuiltInEffects(): void {
     // patch-elements: Render JSX and send HTML patch
     this.effectRegistry.register(
-      'patch-elements',
+      "patch-elements",
       async (_c, _payload: JSX.Element | JSX.Element[] | string, _opts?: PatchElementsOptions) => {
         // Placeholder - actual logic in fx() switch statement
       }
@@ -177,7 +177,7 @@ export class FxResponder {
 
     // patch-elements-seq: Similar to patch-elements but for sequences
     this.effectRegistry.register(
-      'patch-elements-seq',
+      "patch-elements-seq",
       async (_c, _payload: Array<JSX.Element | string>, _opts?: PatchElementsOptions) => {
         // Placeholder - actual logic in fx() switch statement
       }
@@ -185,7 +185,7 @@ export class FxResponder {
 
     // patch-signals: Update reactive signals
     this.effectRegistry.register(
-      'patch-signals',
+      "patch-signals",
       async (_c, _payload: Record<string, Jsonifiable>, _opts?: PatchSignalsOptions) => {
         // Placeholder - actual logic in fx() switch statement
       }
@@ -193,21 +193,21 @@ export class FxResponder {
 
     // execute-script: Execute JavaScript code
     this.effectRegistry.register(
-      'execute-script',
+      "execute-script",
       async (_c, _script: string, _opts?: ExecuteScriptOptions) => {
         // Placeholder - actual logic in fx() switch statement
       }
     )
 
     // close-sse: Close the SSE connection
-    this.effectRegistry.register('close-sse', async _c => {
+    this.effectRegistry.register("close-sse", async (_c) => {
       // Placeholder - actual logic in fx() switch statement
     })
   }
 
   private patchElements(topic: string, html: string, options: PatchElementsOptions) {
     this.c.var.bus.toTopic(topic, {
-      event: 'datastar-patch-elements',
+      event: "datastar-patch-elements",
       html,
       options,
     })
@@ -219,7 +219,7 @@ export class FxResponder {
     options?: PatchSignalsOptions
   ) {
     this.c.var.bus.toTopic(topic, {
-      event: 'datastar-patch-signals',
+      event: "datastar-patch-signals",
       signals: JSON.stringify(signals),
       options: options ?? {},
     })
@@ -227,7 +227,7 @@ export class FxResponder {
 
   private executeScript(topic: string, script: string, options?: ExecuteScriptOptions) {
     this.c.var.bus.toTopic(topic, {
-      event: 'execute-script',
+      event: "execute-script",
       script,
       ...(options && { options }),
     })
@@ -243,7 +243,7 @@ export class FxResponder {
       this.patchSignals(topic, signals)
     }
 
-    const fragment = component ? await this.c.var.renderFragmentToString(component) : ''
+    const fragment = component ? await this.c.var.renderFragmentToString(component) : ""
     this.patchElements(topic, fragment, options)
   }
 
@@ -253,7 +253,7 @@ export class FxResponder {
     component: JSX.Element,
     signals?: Record<string, Jsonifiable>
   ) {
-    return this.renderAndPatch(topic, component, { mode: 'append', selector }, signals)
+    return this.renderAndPatch(topic, component, { mode: "append", selector }, signals)
   }
 
   prepend(
@@ -262,7 +262,7 @@ export class FxResponder {
     component: JSX.Element,
     signals?: Record<string, Jsonifiable>
   ) {
-    return this.renderAndPatch(topic, component, { mode: 'prepend', selector }, signals)
+    return this.renderAndPatch(topic, component, { mode: "prepend", selector }, signals)
   }
 
   update(topic: string, component: JSX.Element, signals?: Record<string, Jsonifiable>) {
@@ -274,7 +274,7 @@ export class FxResponder {
     if (signals) {
       this.patchSignals(topic, signals)
     }
-    this.patchElements(topic, '', { mode: 'remove', selector })
+    this.patchElements(topic, "", { mode: "remove", selector })
   }
 
   removeSignals(topic: string, keys: string | string[]) {
@@ -327,8 +327,8 @@ export class FxResponder {
         continue
       }
 
-      if (effectName === 'close-sse') {
-        this.c.var.bus.toTopic(topic, { event: 'close' })
+      if (effectName === "close-sse") {
+        this.c.var.bus.toTopic(topic, { event: "close" })
       }
     }
   }
@@ -344,7 +344,7 @@ export class FxResponder {
     const effects = args.effects
 
     if (args.topics) {
-      await Promise.all(args.topics.map(t => this.fx(t, effects)))
+      await Promise.all(args.topics.map((t) => this.fx(t, effects)))
     }
 
     const httpResponse =
@@ -364,7 +364,7 @@ export class FxResponder {
           !isPatchElementsSeqEffect(fx) &&
           !isPatchSignalsEffect(fx) &&
           !isExecuteScriptEffect(fx) &&
-          effectName !== 'close-sse'
+          effectName !== "close-sse"
         ) {
           // Custom effect - call the registered handler
 
@@ -386,7 +386,7 @@ export class FxResponder {
           const [, payload, opts] = fx
           const html = await this.renderElementsPayload(payload)
           this.c.var.bus.toClient(clientId, {
-            event: 'datastar-patch-elements',
+            event: "datastar-patch-elements",
             html,
             options: opts ?? {},
           })
@@ -397,7 +397,7 @@ export class FxResponder {
           const [, payload, opts] = fx
           const html = await this.renderElementsSeqPayload(payload)
           this.c.var.bus.toClient(clientId, {
-            event: 'datastar-patch-elements',
+            event: "datastar-patch-elements",
             html,
             options: opts ?? {},
           })
@@ -407,7 +407,7 @@ export class FxResponder {
         if (isPatchSignalsEffect(fx)) {
           const [, payload, opts] = fx
           this.c.var.bus.toClient(clientId, {
-            event: 'datastar-patch-signals',
+            event: "datastar-patch-signals",
             signals: JSON.stringify(payload),
             options: opts ?? {},
           })
@@ -417,21 +417,21 @@ export class FxResponder {
         if (isExecuteScriptEffect(fx)) {
           const [, script, opts] = fx
           this.c.var.bus.toClient(clientId, {
-            event: 'execute-script',
+            event: "execute-script",
             script,
             ...(opts && { options: opts }),
           })
           continue
         }
 
-        if (effectName === 'close-sse') {
-          this.c.var.bus.toClient(clientId, { event: 'close' })
+        if (effectName === "close-sse") {
+          this.c.var.bus.toClient(clientId, { event: "close" })
         }
       }
     }
 
     if (args.close && args.topics) {
-      for (const t of args.topics) this.c.var.bus.toTopic(t, { event: 'close' })
+      for (const t of args.topics) this.c.var.bus.toTopic(t, { event: "close" })
     }
 
     if (httpResponse) {
@@ -477,12 +477,12 @@ export class FxResponder {
     const topics = Array.isArray(topic) ? topic : [topic]
     const encoded = JSON.stringify(payload ?? null)
     for (const t of topics) {
-      this.c.var.bus.toTopic(t, { event: 'honostar-event', name, payload: encoded })
+      this.c.var.bus.toTopic(t, { event: "honostar-event", name, payload: encoded })
     }
   }
 }
 
 export const fxResponder = factory.createMiddleware(async (c, next) => {
-  c.set('fx', new FxResponder(c))
+  c.set("fx", new FxResponder(c))
   await next()
 })

@@ -6,16 +6,14 @@ Markdown Content:
 [](https://data-star.dev/how_tos/bind_keydown_events_to_specific_keys)[Next →](https://data-star.dev/how_tos/keep_datastar_code_dry)
 The [`data-on`](https://data-star.dev/reference/attributes#data-on) attribute allows us to attach an event listener to any element, and run an expression whenever the event is triggered. We can use this to listen for keydown events and run an expression only when a specific key or key combination is pressed.
 
-Goal [#](https://data-star.dev/how_tos/bind_keydown_events_to_specific_keys#goal)
----------------------------------------------------------------------------------
+## Goal [#](https://data-star.dev/how_tos/bind_keydown_events_to_specific_keys#goal)
 
 Our goal is to show an alert whenever the user presses the `Enter` key, or a combination of the `Ctrl` and `L` keys.
 
 Demo
 Press `Enter` or `Ctrl + L`
 
-Steps [#](https://data-star.dev/how_tos/bind_keydown_events_to_specific_keys#steps)
------------------------------------------------------------------------------------
+## Steps [#](https://data-star.dev/how_tos/bind_keydown_events_to_specific_keys#steps)
 
 The `data-on:keydown` attribute will listen for keydown events only on the element on which it is placed, by default. We can listen for events on the `window` element to capture keydown events globally, by adding the `__window` modifier.
 
@@ -47,8 +45,7 @@ Copied!
 
 `1<div data-on:keydown__window="evt.key === 'Enter' && (evt.preventDefault(), alert('Key pressed'))"></div>`
 
-Conclusion [#](https://data-star.dev/how_tos/bind_keydown_events_to_specific_keys#conclusion)
----------------------------------------------------------------------------------------------
+## Conclusion [#](https://data-star.dev/how_tos/bind_keydown_events_to_specific_keys#conclusion)
 
 The `evt` variable is always available in [`data-on`](https://data-star.dev/reference/attributes#data-on) attribute expressions. In the case of the [`keydown`](https://developer.mozilla.org/en-US/docs/Web/API/Element/keydown_event) event, which is a [`KeyboardEvent`](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent), we can perform actions conditionally, based on any of the event’s properties.
 
@@ -131,17 +128,15 @@ Markdown Content:
 [← Previous](https://data-star.dev/how_tos/keep_datastar_code_dry)[Next →](https://data-star.dev/how_tos/poll_the_backend_at_regular_intervals)
 Loading more list items into the DOM from the backend is a common alternative to pagination. What makes it different is that we need to append the new items to the existing list, rather than replace them.
 
-Goal [#](https://data-star.dev/how_tos/load_more_list_items#goal)
------------------------------------------------------------------
+## Goal [#](https://data-star.dev/how_tos/load_more_list_items#goal)
 
 Our goal is to incrementally append list items into a specific part of the DOM, each time a button is clicked. Once five items are visible, the button should be removed.
 
 Demo
 
-*   Item 1
+- Item 1
 
-Steps [#](https://data-star.dev/how_tos/load_more_list_items#steps)
--------------------------------------------------------------------
+## Steps [#](https://data-star.dev/how_tos/load_more_list_items#steps)
 
 We’ll give the list item container and the button unique IDs, so that we can target them individually.
 
@@ -419,8 +414,7 @@ No example found for Rust
 
 No example found for TypeScript
 
-Conclusion [#](https://data-star.dev/how_tos/load_more_list_items#conclusion)
------------------------------------------------------------------------------
+## Conclusion [#](https://data-star.dev/how_tos/load_more_list_items#conclusion)
 
 While using the default mode of `outer` is generally recommended, appending to a list is a good example of when to use the `append` mode.
 
@@ -438,13 +432,11 @@ This in contrast to a push-based mechanism, in which a long-lived SSE connection
 
 In PHP, for example, keeping long-lived SSE connections is fine for a dashboard in which users are authenticated, as the number of connections are limited. For a public-facing website, however, it is not recommended to open many long-lived connections, due to the architecture of most PHP servers.
 
-Goal [#](https://data-star.dev/how_tos/poll_the_backend_at_regular_intervals#goal)
-----------------------------------------------------------------------------------
+## Goal [#](https://data-star.dev/how_tos/poll_the_backend_at_regular_intervals#goal)
 
 Our goal is to poll the backend at regular intervals (starting at 5 second intervals) and update the UI accordingly. The backend will determine changes to the DOM and be able to control the rate at which the frontend polls based on some criteria. For this example, we will simply output the server time, increasing the polling frequency to 1 second during the last 10 seconds of every minute. The criteria could of course be anything such as the number of times previously polled, the user’s role, load on the server, etc.
 
-Steps [#](https://data-star.dev/how_tos/poll_the_backend_at_regular_intervals#steps)
-------------------------------------------------------------------------------------
+## Steps [#](https://data-star.dev/how_tos/poll_the_backend_at_regular_intervals#steps)
 
 The `data-on-interval` attribute allows us to run an expression at a regular interval. We’ll use it to send a `GET` request to the backend, and use the `__duration` modifier to set the interval duration.
 
@@ -862,8 +854,7 @@ Copied!
 17});
 ```
 
-Conclusion [#](https://data-star.dev/how_tos/poll_the_backend_at_regular_intervals#conclusion)
-----------------------------------------------------------------------------------------------
+## Conclusion [#](https://data-star.dev/how_tos/poll_the_backend_at_regular_intervals#conclusion)
 
 Using this approach, we not only end up with a way to poll the backend at regular intervals, but we can also control the rate at which the frontend polls based on whatever criteria our backend requires.
 
@@ -908,14 +899,14 @@ Markdown Content:
 [← Previous](https://data-star.dev/how_tos/prevent_sse_connections_closing)[](https://data-star.dev/how_tos/redirect_the_page_from_the_backend)
 Redirecting to another page is a common task that can be done from the backend by patching a `script` tag into the DOM using a [`datastar-patch-elements`](https://data-star.dev/reference/sse_events#datastar-patch-elements) SSE event. Since this results in a browser redirect, existing signals will _not_ persist to the new page.
 
-Goal [#](https://data-star.dev/how_tos/redirect_the_page_from_the_backend#goal)
--------------------------------------------------------------------------------
+## Goal [#](https://data-star.dev/how_tos/redirect_the_page_from_the_backend#goal)
 
 Our goal is to indicate to the user that they will be redirected, wait 3 seconds, and then redirect them to `/guide`, all from the backend.
 
 Demo
 Steps [#](https://data-star.dev/how_tos/redirect_the_page_from_the_backend#steps)
----------------------------------------------------------------------------------
+
+---
 
 We’ll place a `data-on:click` attribute on a button and use the `get` action to send a `GET` request to the backend. We’ll include an empty indicator `div` to show the user that they will be redirected.
 
@@ -1367,8 +1358,7 @@ No example found for Rust
 
 No example found for TypeScript
 
-Conclusion [#](https://data-star.dev/how_tos/redirect_the_page_from_the_backend#conclusion)
--------------------------------------------------------------------------------------------
+## Conclusion [#](https://data-star.dev/how_tos/redirect_the_page_from_the_backend#conclusion)
 
 Redirecting to another page can be done from the backend thanks to the ability to patch `script` tags into the DOM using the [`datastar-patch-elements`](https://data-star.dev/reference/sse_events#datastar-patch-elements) SSE event, or to execute JavaScript using an SDK.
 

@@ -1,6 +1,10 @@
 {
   "name": "honostar",
   "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
   "type": "module",
   "scripts": {
     "dev": "pnpm --filter honostar-starter dev",
@@ -10,12 +14,12 @@
     "typecheck": "pnpm -r --if-present typecheck",
     "test": "pnpm -r --if-present test",
     "lint": "pnpm -r --if-present lint",
-    "format": "biome check --write .",
+    "format": "oxfmt",
     "check": "pnpm format && pnpm lint && pnpm typecheck && pnpm test"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.3.5",
     "@types/node": "^22.10.1",
+    "oxfmt": "^0.27.0",
     "oxlint": "^1.28.0",
     "oxlint-tsgolint": "^0.6.0",
     "typescript": "^5.9.3"

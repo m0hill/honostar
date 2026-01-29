@@ -1,1 +1,1 @@
-import '@honostar/core/client/bootstrap/minimal'
+import "@honostar/core/client/bootstrap/minimal"

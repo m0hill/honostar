@@ -1,9 +1,9 @@
-import { defineQueryPage } from '@honostar/core/server'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { requireAuth } from '@/lib/auth-middleware'
-import { routes } from '@/routes'
-import type { User } from '@/types'
+import { defineQueryPage } from "@honostar/core/server"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { requireAuth } from "@/lib/auth-middleware"
+import { routes } from "@/routes"
+import type { User } from "@/types"
 
 function ProfilePage({ user }: { user: User }) {
   return (
@@ -44,7 +44,7 @@ function ProfilePage({ user }: { user: User }) {
   )
 }
 
-export default defineQueryPage<{ user: import('@/types').User }>({
+export default defineQueryPage<{ user: import("@/types").User }>({
   use: [requireAuth],
   head: ({ user }) => ({
     title: `${user.username} • Honostar`,

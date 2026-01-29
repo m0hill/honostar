@@ -1,8 +1,8 @@
-import { installFetchAugmentation } from '../runtime/fetch'
-import { ensureHonostar } from '../runtime/global'
-import { readRuntimeData } from '../runtime/runtime-data'
-import { ensureTabId } from '../runtime/tab'
-import { createThemeController, installThemeActions } from '../theme'
+import { installFetchAugmentation } from "../runtime/fetch"
+import { ensureHonostar } from "../runtime/global"
+import { readRuntimeData } from "../runtime/runtime-data"
+import { ensureTabId } from "../runtime/tab"
+import { createThemeController, installThemeActions } from "../theme"
 
 ;(function bootstrap() {
   const data = readRuntimeData()

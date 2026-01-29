@@ -1,21 +1,21 @@
-import { renderToString } from 'hono/jsx/dom/server'
-import type { JSX } from 'hono/jsx/jsx-runtime'
-import { jsxRenderer } from 'hono/jsx-renderer'
-import { resolveThemeProvider } from '../common/theme'
-import type { HonostarConfig } from './config'
-import { createConfig } from './config'
-import { factory } from './middleware'
-import { signTopics } from './security/topics'
+import { renderToString } from "hono/jsx/dom/server"
+import type { JSX } from "hono/jsx/jsx-runtime"
+import { jsxRenderer } from "hono/jsx-renderer"
+import { resolveThemeProvider } from "../common/theme"
+import type { HonostarConfig } from "./config"
+import { createConfig } from "./config"
+import { factory } from "./middleware"
+import { signTopics } from "./security/topics"
 
 function stripDoctype(html: string): string {
-  return html.replace(/^\s*<!DOCTYPE html>\s*/i, '')
+  return html.replace(/^\s*<!DOCTYPE html>\s*/i, "")
 }
 
 function withAssetVersion(path: string, version: string | undefined): string {
   if (!version) return path
   const trimmed = version.trim()
   if (!trimmed) return path
-  return path.includes('?')
+  return path.includes("?")
     ? `${path}&v=${encodeURIComponent(trimmed)}`
     : `${path}?v=${encodeURIComponent(trimmed)}`
 }
@@ -35,8 +35,8 @@ export const renderer = (userConfig?: Partial<HonostarConfig>) => {
 
   return factory.createMiddleware(async (c, next) => {
     // Read theme preference from cookie if available
-    const cookieHeader = c.req.header('cookie')
-    const storageKey = c.var.theme?.storageKey ?? 'honostar-ui-theme'
+    const cookieHeader = c.req.header("cookie")
+    const storageKey = c.var.theme?.storageKey ?? "honostar-ui-theme"
     let cookiePreference: string | null = null
 
     if (cookieHeader) {
@@ -57,14 +57,14 @@ export const renderer = (userConfig?: Partial<HonostarConfig>) => {
       const topics = c.var.sseTopics ?? []
       const sseParams = c.var.sseParams ?? {}
       const params = new URLSearchParams()
-      if (topics.length > 0) params.set('topics', topics.join(','))
+      if (topics.length > 0) params.set("topics", topics.join(","))
       for (const [key, value] of Object.entries(sseParams)) {
         if (value !== undefined && value !== null && String(value).length > 0) {
           params.set(key, String(value))
         }
       }
-      if (topicsToken) params.set('topicsToken', topicsToken)
-      const topicsQuery = params.size > 0 ? `?${params.toString()}` : ''
+      if (topicsToken) params.set("topicsToken", topicsToken)
+      const topicsQuery = params.size > 0 ? `?${params.toString()}` : ""
       const runtimeData = {
         csrfToken: c.var.csrfToken ?? null,
         theme: theme.config,
@@ -72,7 +72,7 @@ export const renderer = (userConfig?: Partial<HonostarConfig>) => {
           css: withAssetVersion(config.assets.css, config.assets.version),
           runtime: withAssetVersion(config.assets.runtime, config.assets.version),
           datastar: withAssetVersion(config.assets.datastar, config.assets.version),
-          plugins: (config.assets.plugins ?? []).map(p =>
+          plugins: (config.assets.plugins ?? []).map((p) =>
             withAssetVersion(p, config.assets.version)
           ),
         },
@@ -80,10 +80,10 @@ export const renderer = (userConfig?: Partial<HonostarConfig>) => {
           inspector: config.devtools?.inspector ?? null,
         },
       }
-      const runtimeDataJson = JSON.stringify(runtimeData).replace(/</g, '\\u003c')
-      const csp = config.security.csp.replace('${nonce}', scriptNonce)
-      const title = pageHead?.title ?? config.document?.title ?? 'Honostar'
-      const lang = pageHead?.lang ?? config.document?.lang ?? 'en'
+      const runtimeDataJson = JSON.stringify(runtimeData).replace(/</g, "\\u003c")
+      const csp = config.security.csp.replace("${nonce}", scriptNonce)
+      const title = pageHead?.title ?? config.document?.title ?? "Honostar"
+      const lang = pageHead?.lang ?? config.document?.lang ?? "en"
       return (
         <html
           lang={lang}
@@ -100,7 +100,7 @@ export const renderer = (userConfig?: Partial<HonostarConfig>) => {
             />
             {/* Datastar evaluates expressions with Function(), so CSP must allow unsafe-eval */}
             <meta httpEquiv="Content-Security-Policy" content={csp} />
-            <meta name="csrf-token" content={c.var.csrfToken ?? ''} />
+            <meta name="csrf-token" content={c.var.csrfToken ?? ""} />
             <script
               id="runtime-data"
               type="application/json"
@@ -204,12 +204,12 @@ export const renderer = (userConfig?: Partial<HonostarConfig>) => {
     })
 
     await base(c, async () => {
-      c.set('renderToString', async (node: JSX.Element) => {
+      c.set("renderToString", async (node: JSX.Element) => {
         const res = await c.render(node)
         const html = await res.text()
         return stripDoctype(html)
       })
-      c.set('renderFragmentToString', async (node: JSX.Element) => {
+      c.set("renderFragmentToString", async (node: JSX.Element) => {
         return renderToString(node)
       })
       await next()

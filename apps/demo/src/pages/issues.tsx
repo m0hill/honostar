@@ -1,10 +1,10 @@
-import { defineCommand } from '@honostar/core/server'
-import { z } from 'zod'
-import { issues, issuesToLabels, labels as labelsTable } from '@/db/schema'
-import { requireAuth } from '@/lib/auth-middleware'
-import { saveBase64Image } from '@/lib/images'
-import { topics } from '@/lib/topics'
-import { routes } from '@/routes'
+import { defineCommand } from "@honostar/core/server"
+import { z } from "zod"
+import { issues, issuesToLabels, labels as labelsTable } from "@/db/schema"
+import { requireAuth } from "@/lib/auth-middleware"
+import { saveBase64Image } from "@/lib/images"
+import { topics } from "@/lib/topics"
+import { routes } from "@/routes"
 
 /**
  * Define the schema for the incoming JSON payload from Datastar.
@@ -12,10 +12,10 @@ import { routes } from '@/routes'
  */
 const issueSchema = z.object({
   issue: z.object({
-    title: z.string().trim().min(1, 'Title is required'),
+    title: z.string().trim().min(1, "Title is required"),
     description: z.string().optional(),
     labels: z.preprocess(
-      v => (v === undefined ? [] : Array.isArray(v) ? v : [v]),
+      (v) => (v === undefined ? [] : Array.isArray(v) ? v : [v]),
       z.array(z.string())
     ),
     newLabel: z.string().trim().optional(),
@@ -27,12 +27,12 @@ export const POST = defineCommand({
   schema: issueSchema,
   use: [requireAuth],
   hook: (result, c) => {
-    const error = result.error[0]?.message || 'Invalid input'
-    if (c.req.header('datastar-request') !== null) {
+    const error = result.error[0]?.message || "Invalid input"
+    if (c.req.header("datastar-request") !== null) {
       return c.var.fx.reply(
         [
           [
-            'patch-signals',
+            "patch-signals",
             {
               createIssueModal: { error },
               issueForm: { error },
@@ -62,7 +62,7 @@ export const POST = defineCommand({
       if (!exists) {
         const [inserted] = await c.var.db
           .insert(labelsTable)
-          .values({ name: newLabel, color: '#999999' })
+          .values({ name: newLabel, color: "#999999" })
           .returning()
         if (inserted) {
           createdNewLabel = true
@@ -78,7 +78,7 @@ export const POST = defineCommand({
       try {
         imageUrl = await saveBase64Image(issue.image)
       } catch (error) {
-        console.error('Failed to save image:', error)
+        console.error("Failed to save image:", error)
       }
     }
 
@@ -93,12 +93,12 @@ export const POST = defineCommand({
       .returning()
 
     if (!created) {
-      const error = 'Failed to create issue'
-      if (c.req.header('datastar-request') !== null) {
+      const error = "Failed to create issue"
+      if (c.req.header("datastar-request") !== null) {
         return c.var.fx.reply(
           [
             [
-              'patch-signals',
+              "patch-signals",
               {
                 createIssueModal: { error },
                 issueForm: { error },
@@ -114,35 +114,35 @@ export const POST = defineCommand({
     if (created && labelIds.length) {
       await c.var.db
         .insert(issuesToLabels)
-        .values(labelIds.map(labelId => ({ issueId: created.id, labelId })))
+        .values(labelIds.map((labelId) => ({ issueId: created.id, labelId })))
     }
 
     // CQRS: command publishes domain events; queries re-render subscribed regions on SSE.
-    c.var.fx.publish(topics.issues.list(), 'issue:created', { id: created.id })
+    c.var.fx.publish(topics.issues.list(), "issue:created", { id: created.id })
     if (createdNewLabel && newLabel) {
-      c.var.fx.publish(topics.labels.list(), 'label:created', { name: newLabel })
+      c.var.fx.publish(topics.labels.list(), "label:created", { name: newLabel })
     }
 
-    if (c.req.header('datastar-request') !== null) {
+    if (c.req.header("datastar-request") !== null) {
       return c.var.fx.reply(
         [
-          ['toast:show', `Issue "${created.title}" created successfully!`, 'success'],
+          ["toast:show", `Issue "${created.title}" created successfully!`, "success"],
           [
-            'patch-elements',
-            '',
+            "patch-elements",
+            "",
             {
               selector: '#ds-overlays [data-modal-id="create-issue"]',
-              mode: 'remove',
+              mode: "remove",
             },
           ],
           [
-            'patch-signals',
+            "patch-signals",
             {
               issue: {
-                title: '',
-                description: '',
+                title: "",
+                description: "",
                 labels: [],
-                newLabel: '',
+                newLabel: "",
                 image: null,
               },
             },

@@ -1,4 +1,4 @@
-import type { PubSubBus, Sink, SSEPayload } from './memory'
+import type { PubSubBus, Sink, SSEPayload } from "./memory"
 
 export interface NatsConnection {
   subscribe(
@@ -25,24 +25,24 @@ export type NatsBusOptions = {
 }
 
 function isSsePayload(value: unknown): value is SSEPayload {
-  if (typeof value !== 'object' || value === null) return false
+  if (typeof value !== "object" || value === null) return false
   const event = (value as { event?: unknown }).event
-  if (typeof event !== 'string') return false
+  if (typeof event !== "string") return false
   switch (event) {
-    case 'datastar-patch-elements':
-      return typeof (value as { html?: unknown }).html === 'string'
-    case 'datastar-patch-signals':
-      return typeof (value as { signals?: unknown }).signals === 'string'
-    case 'execute-script': {
+    case "datastar-patch-elements":
+      return typeof (value as { html?: unknown }).html === "string"
+    case "datastar-patch-signals":
+      return typeof (value as { signals?: unknown }).signals === "string"
+    case "execute-script": {
       const script = (value as { script?: unknown }).script
-      return typeof script === 'string'
+      return typeof script === "string"
     }
-    case 'honostar-event': {
+    case "honostar-event": {
       const name = (value as { name?: unknown }).name
       const payload = (value as { payload?: unknown }).payload
-      return typeof name === 'string' && typeof payload === 'string'
+      return typeof name === "string" && typeof payload === "string"
     }
-    case 'close':
+    case "close":
       return true
     default:
       return false
@@ -55,7 +55,7 @@ function safeJsonParse(payload: string): SSEPayload | null {
     if (!isSsePayload(parsed)) return null
     return parsed
   } catch (err) {
-    console.error('[NatsBus] Failed to parse payload', err)
+    console.error("[NatsBus] Failed to parse payload", err)
     return null
   }
 }
@@ -69,35 +69,35 @@ export class NatsBus implements PubSubBus {
   private subscriptions = new Map<string, NatsSubscription>()
   private retainedTopics = new Map<
     string,
-    Extract<SSEPayload, { event: 'datastar-patch-elements' }>
+    Extract<SSEPayload, { event: "datastar-patch-elements" }>
   >()
 
   constructor(options: NatsBusOptions) {
     this.connection = options.connection
-    this.subjectPrefix = options.subjectPrefix ?? 'honostar.bus'
-    this.broadcastSubject = this.subjectName('broadcast', 'all')
+    this.subjectPrefix = options.subjectPrefix ?? "honostar.bus"
+    this.broadcastSubject = this.subjectName("broadcast", "all")
 
     // Subscribe to broadcast subject
     this.subscribeToBroadcast()
   }
 
   subscribeClient(clientId: string, sink: Sink) {
-    const subject = this.subjectName('client', clientId)
+    const subject = this.subjectName("client", clientId)
     return this.registerSink(subject, sink)
   }
 
   subscribeTopic(topic: string, sink: Sink) {
-    const subject = this.subjectName('topic', topic)
+    const subject = this.subjectName("topic", topic)
     return this.registerSink(subject, sink)
   }
 
   toClient(clientId: string, msg: SSEPayload) {
-    const subject = this.subjectName('client', clientId)
+    const subject = this.subjectName("client", clientId)
     this.publish(subject, msg)
   }
 
   toTopic(topic: string, msg: SSEPayload) {
-    const subject = this.subjectName('topic', topic)
+    const subject = this.subjectName("topic", topic)
     this.maybeRetainTopic(topic, msg)
     this.publish(subject, msg)
   }
@@ -106,16 +106,16 @@ export class NatsBus implements PubSubBus {
     this.publish(this.broadcastSubject, msg)
   }
 
-  private subjectName(kind: 'client' | 'topic' | 'broadcast', id: string) {
+  private subjectName(kind: "client" | "topic" | "broadcast", id: string) {
     return `${this.subjectPrefix}.${kind}.${id}`
   }
 
   private canRetain(
     msg: SSEPayload
-  ): msg is Extract<SSEPayload, { event: 'datastar-patch-elements' }> {
-    if (msg.event !== 'datastar-patch-elements') return false
-    const mode = msg.options?.mode ?? 'outer'
-    return mode === 'outer' || mode === 'inner' || mode === 'replace'
+  ): msg is Extract<SSEPayload, { event: "datastar-patch-elements" }> {
+    if (msg.event !== "datastar-patch-elements") return false
+    const mode = msg.options?.mode ?? "outer"
+    return mode === "outer" || mode === "inner" || mode === "replace"
   }
 
   private maybeRetainTopic(topic: string, msg: SSEPayload) {
@@ -195,7 +195,7 @@ export class NatsBus implements PubSubBus {
       const sub = this.connection.subscribe(this.broadcastSubject, {
         callback: (err, msg) => {
           if (err) {
-            console.error('[NatsBus] Broadcast subscription error', err)
+            console.error("[NatsBus] Broadcast subscription error", err)
             return
           }
           this.handleBroadcastMessage(msg.data)
@@ -203,7 +203,7 @@ export class NatsBus implements PubSubBus {
       })
       this.subscriptions.set(this.broadcastSubject, sub)
     } catch (err) {
-      console.error('[NatsBus] Failed to subscribe to broadcast subject', err)
+      console.error("[NatsBus] Failed to subscribe to broadcast subject", err)
     }
   }
 
@@ -237,7 +237,7 @@ export class NatsBus implements PubSubBus {
       try {
         sink(parsed)
       } catch (err) {
-        console.error('[NatsBus] Sink handler failed', err)
+        console.error("[NatsBus] Sink handler failed", err)
       }
     }
   }
@@ -256,7 +256,7 @@ export class NatsBus implements PubSubBus {
       try {
         sink(msg)
       } catch (err) {
-        console.error('[NatsBus] Sink handler failed', err)
+        console.error("[NatsBus] Sink handler failed", err)
       }
     }
   }

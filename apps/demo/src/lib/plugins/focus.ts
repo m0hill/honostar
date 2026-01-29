@@ -1,4 +1,4 @@
-import { registerRuntimePlugin } from '@honostar/core/client'
+import { registerRuntimePlugin } from "@honostar/core/client"
 
 /**
  * Focus Plugin
@@ -19,7 +19,7 @@ import { registerRuntimePlugin } from '@honostar/core/client'
  * ```
  */
 
-registerRuntimePlugin('focus', (ctx, selector: string) => {
+registerRuntimePlugin("focus", (ctx, selector: string) => {
   const target = document.querySelector(selector)
 
   if (!target) {
@@ -33,6 +33,6 @@ registerRuntimePlugin('focus', (ctx, selector: string) => {
   try {
     target.focus()
   } catch (err) {
-    ctx.error(err instanceof Error ? err : new Error('Failed to focus element'))
+    ctx.error(err instanceof Error ? err : new Error("Failed to focus element"))
   }
 })

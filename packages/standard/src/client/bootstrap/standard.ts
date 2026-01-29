@@ -1,15 +1,18 @@
-import type { InspectorConfig } from '../inspector'
-import { createInspector } from '../inspector'
-import { createPrefetchClient } from '../prefetch'
-import { installFetchAugmentation } from '../runtime/fetch'
-import { onPageRevealFocusApp } from '../runtime/focus'
-import { ensureHonostar, freeze } from '../runtime/global'
-import { installImageEnhancements } from '../runtime/image'
-import { createModalHost } from '../runtime/modals'
-import { installPluginSystem } from '../runtime/plugins'
-import { readRuntimeData } from '../runtime/runtime-data'
-import { ensureTabId } from '../runtime/tab'
-import { createThemeController, installThemeActions } from '../theme'
+import {
+  createModalHost,
+  createPrefetchClient,
+  createThemeController,
+  ensureHonostar,
+  ensureTabId,
+  freeze,
+  installFetchAugmentation,
+  installImageEnhancements,
+  installPluginSystem,
+  installThemeActions,
+  onPageRevealFocusApp,
+  readRuntimeData,
+} from "@honostar/core/client"
+import { createInspector, type InspectorConfig } from "@honostar/inspector"
 
 /**
  * Dynamically loads plugin entry points provided from the server config.
@@ -52,7 +55,7 @@ void (async function bootstrap() {
   const prefetch = createPrefetchClient({
     enabled: true,
     attachAllAnchors: true,
-    defaultStrategy: 'hover',
+    defaultStrategy: "hover",
     respectDataSaver: true,
     respectSlowConnections: true,
   })

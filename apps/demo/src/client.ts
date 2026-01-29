@@ -1,1 +1,1 @@
-import '@honostar/core/client/bootstrap/standard'
+import "@honostar/standard/client/bootstrap/standard"

@@ -2,14 +2,14 @@
  * Main orchestrator for the Honostar Devtools
  */
 
-import { freeze } from '../runtime/global'
-import { setupFetchListener, setupSignalObserver, setupSignalPatchListener } from './datastar'
+import { setupFetchListener, setupSignalObserver, setupSignalPatchListener } from "./datastar"
+import { freeze } from "./global"
 import {
   attachEventListeners,
   attachToggleButtonListeners,
   setupGlobalMouseHandlers,
-} from './handlers'
-import { createInitialState, getDatastarSignals, saveState } from './state'
+} from "./handlers"
+import { createInitialState, getDatastarSignals, saveState } from "./state"
 import type {
   InspectorApi,
   InspectorConfig,
@@ -18,8 +18,8 @@ import type {
   InspectorStorageType,
   InspectorTab,
   InspectorViewMode,
-} from './types'
-import { createOverlayHTML, createToggleButton, getPositionStyles } from './ui'
+} from "./types"
+import { createOverlayHTML, createToggleButton, getPositionStyles } from "./ui"
 
 /**
  * Creates the Honostar Devtools
@@ -101,8 +101,8 @@ export function createInspector(config: InspectorConfig): InspectorApi {
         renderOverlay()
       },
       onStorageClear: () => {
-        const storage = state.storageType === 'localStorage' ? localStorage : sessionStorage
-        storage.removeItem('datastar')
+        const storage = state.storageType === "localStorage" ? localStorage : sessionStorage
+        storage.removeItem("datastar")
         renderOverlay()
       },
       onResizeStart: startResize || (() => {}),
@@ -121,8 +121,8 @@ export function createInspector(config: InspectorConfig): InspectorApi {
     state.isOpen = true
     saveState(state)
 
-    overlayElement = document.createElement('div')
-    overlayElement.setAttribute('data-inspector-overlay', '')
+    overlayElement = document.createElement("div")
+    overlayElement.setAttribute("data-inspector-overlay", "")
     applyOverlayStyles()
     overlayElement.innerHTML = createOverlayHTML(state)
     document.body.appendChild(overlayElement)
@@ -156,8 +156,8 @@ export function createInspector(config: InspectorConfig): InspectorApi {
         renderOverlay()
       },
       onStorageClear: () => {
-        const storage = state.storageType === 'localStorage' ? localStorage : sessionStorage
-        storage.removeItem('datastar')
+        const storage = state.storageType === "localStorage" ? localStorage : sessionStorage
+        storage.removeItem("datastar")
         renderOverlay()
       },
       onResizeStart: startResize || (() => {}),
@@ -187,22 +187,22 @@ export function createInspector(config: InspectorConfig): InspectorApi {
   const setupDatastarIntegration = (): void => {
     // Signal patch listener
     listeners.set(
-      'signal-patch',
+      "signal-patch",
       setupSignalPatchListener(addEvent, () => {
-        if (state.isOpen && state.currentTab === 'signals') {
+        if (state.isOpen && state.currentTab === "signals") {
           renderOverlay()
         }
       })
     )
 
     // Fetch/SSE listener
-    listeners.set('fetch', setupFetchListener(addEvent))
+    listeners.set("fetch", setupFetchListener(addEvent))
 
     // Signal observer
     listeners.set(
-      'signal-observer',
+      "signal-observer",
       setupSignalObserver(() => {
-        if (state.isOpen && state.currentTab === 'signals') {
+        if (state.isOpen && state.currentTab === "signals") {
           renderOverlay()
         }
       })
@@ -220,14 +220,14 @@ export function createInspector(config: InspectorConfig): InspectorApi {
       }
     )
   startResize = startResizeHandler
-  listeners.set('mouse-handlers', cleanupMouseHandlers)
+  listeners.set("mouse-handlers", cleanupMouseHandlers)
 
   // Initialize
   if (config.enabled) {
     const initialize = () => {
       // Create toggle button
-      toggleButton = document.createElement('div')
-      toggleButton.setAttribute('data-inspector-toggle', '')
+      toggleButton = document.createElement("div")
+      toggleButton.setAttribute("data-inspector-toggle", "")
       document.body.appendChild(toggleButton)
       renderToggleButton()
 
@@ -238,11 +238,11 @@ export function createInspector(config: InspectorConfig): InspectorApi {
         open()
       }
 
-      console.log('[Inspector] Initialized')
+      console.log("[Inspector] Initialized")
     }
 
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initialize)
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initialize)
     } else {
       initialize()
     }
@@ -279,7 +279,7 @@ export function createInspector(config: InspectorConfig): InspectorApi {
         toggleButton.remove()
         toggleButton = null
       }
-      listeners.forEach(cleanup => cleanup())
+      listeners.forEach((cleanup) => cleanup())
       listeners.clear()
     },
   })
