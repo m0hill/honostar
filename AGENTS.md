@@ -73,3 +73,22 @@ pnpm routes:generate  # Regenerate routes (in app dirs)
 - Docs: `docs/README.md` (framework), `docs/IMPLEMENTATION.md` (commenting standards), `docs/VISION.md` (product roadmap).
 - Pre-commit hooks run lint-staged (oxfmt + oxlint).
 - Security: CSRF default, CSP with nonces, HMAC topic signing. Set `HONOSTAR_SIGNING_SECRET` in production.
+
+## The North Star
+
+Make **server-rendered HTML + events** feel as powerful (and more reliable) than SPA state management.
+
+If we get this right, the default way to build apps becomes:
+
+- Render the page on the server (canonical truth)
+- Mutations publish domain events
+- Queries re-render _fat patches_ over SSE (self-healing UI)
+- Client JS is mostly progressive enhancement + ergonomics (not state ownership)
+
+## What Makes HonoStar Unique (Keep This Sacred)
+
+- **Server authority**: client state is ephemeral; shared state is always server truth.
+- **Fat patches**: broadcast whole regions to auto-heal on reconnect/missed events.
+- **CQRS you can actually use**: commands publish, queries re-render, pages subscribe.
+- **Hypermedia-first**: real links, real forms, real URLs—JS upgrades, doesn’t replace.
+- **Operational simplicity**: correctness beats cleverness; degrade gracefully.
