@@ -1,5 +1,4 @@
-import type { QueryHandler } from "@honostar/core/server"
-import { defineQueryPage } from "@honostar/core/server"
+import { defineQueryPage, patchRegion, type QueryHandler } from "@honostar/core/server"
 import IssuesList from "@/components/IssuesList"
 import LabelsSection from "@/components/LabelsSection"
 import { ModeToggle } from "@/components/ModeToggle"
@@ -38,12 +37,12 @@ const issuesListQuery: QueryHandler = async ({ c }) => {
     }),
     orderBy: (issues, { desc }) => [desc(issues.createdAt)],
   })
-  return [["patch-elements", <IssuesList issues={issues} />]]
+  return [patchRegion(topics.issues.list(), <IssuesList issues={issues} />)]
 }
 
 const labelsListQuery: QueryHandler = async ({ c }) => {
   const allLabels = await c.var.db.select().from(labels)
-  return [["patch-elements", <LabelsSection labels={allLabels} />]]
+  return [patchRegion(topics.labels.list(), <LabelsSection labels={allLabels} />)]
 }
 
 function IndexPage({

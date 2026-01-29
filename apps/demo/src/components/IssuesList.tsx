@@ -5,7 +5,12 @@ import { Card } from "./ui/card"
 
 export default function IssuesList({ issues }: { issues: IssueWithAuthor[] }) {
   return (
-    <Card id="issues-list" class="gap-0 py-0">
+    <Card
+      id="issues-list"
+      class="gap-0 py-0"
+      data-honostar-region="issues:list"
+      data-honostar-region-kind="list"
+    >
       <ul class="divide-y divide-border">
         {issues.length > 0 ? (
           issues.map((issue) => (

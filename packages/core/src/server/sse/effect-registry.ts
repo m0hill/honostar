@@ -7,6 +7,7 @@ import type {
   PatchSignalsOptions,
 } from "../../common/types"
 import type { AppEnv } from "../context"
+import type { RegionPatch, RegionPatchSeq } from "../regions"
 
 /**
  * Effect handler function signature.
@@ -22,6 +23,8 @@ export type EffectHandler<TArgs extends unknown[] = unknown[]> = {
 export type BuiltInEffectName =
   | "patch-elements"
   | "patch-elements-seq"
+  | "patch-region"
+  | "patch-region-seq"
   | "patch-signals"
   | "execute-script"
   | "close-sse"
@@ -33,6 +36,8 @@ export type BuiltInEffectName =
 export type EffectDefinition =
   | ["patch-elements", JSX.Element | JSX.Element[] | string, PatchElementsOptions?]
   | ["patch-elements-seq", Array<JSX.Element | string>, PatchElementsOptions?]
+  | ["patch-region", RegionPatch]
+  | ["patch-region-seq", RegionPatchSeq]
   | ["patch-signals", Record<string, Jsonifiable>, PatchSignalsOptions?]
   | ["execute-script", string, ExecuteScriptOptions?]
   | ["close-sse"]

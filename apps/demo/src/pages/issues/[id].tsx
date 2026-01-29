@@ -1,5 +1,4 @@
-import type { QueryHandler } from "@honostar/core/server"
-import { defineQueryPage } from "@honostar/core/server"
+import { defineQueryPage, patchRegion, type QueryHandler } from "@honostar/core/server"
 import { z } from "zod"
 import { CommentsSection } from "@/components/CommentsSection"
 import { Badge } from "@/components/ui/badge"
@@ -61,7 +60,7 @@ const issueDetailQuery: QueryHandler = async ({ c, match, topic }) => {
 
   const issue = await fetchIssueWithDetails(c, issueId)
   if (!issue) return
-  return [["patch-elements", <IssueDetailCard issue={issue} />]]
+  return [patchRegion(topic, <IssueDetailCard issue={issue} />)]
 }
 
 const issueCommentsQuery: QueryHandler = async ({ c, match, topic }) => {
@@ -78,7 +77,7 @@ const issueCommentsQuery: QueryHandler = async ({ c, match, topic }) => {
     orderBy: (comments, { asc }) => [asc(comments.createdAt)],
   })
 
-  return [["patch-elements", <CommentsSection comments={updatedComments} />]]
+  return [patchRegion(topic, <CommentsSection comments={updatedComments} regionId={topic} />)]
 }
 
 function IssueDetailCard({ issue }: { issue: IssueWithDetails }) {
@@ -87,7 +86,11 @@ function IssueDetailCard({ issue }: { issue: IssueWithDetails }) {
   const toggleLabel = issue.status === "open" ? "Close issue" : "Reopen issue"
 
   return (
-    <Card id="issue-detail">
+    <Card
+      id="issue-detail"
+      data-honostar-region={`issue:${issue.id}:detail`}
+      data-honostar-region-kind="card"
+    >
       <CardHeader class="border-b">
         <div class="flex items-start justify-between gap-4">
           <div class="min-w-0">
@@ -260,7 +263,7 @@ function IssueDetailPage({
               </Button>
             )}
           </div>
-          <CommentsSection comments={issue.comments} />
+          <CommentsSection comments={issue.comments} regionId={`issue:${issue.id}:comments`} />
         </div>
 
         <div id="comment-form">

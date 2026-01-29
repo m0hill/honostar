@@ -2,6 +2,7 @@ import type { StandardSchemaV1 } from "@standard-schema/spec"
 import type { Context, MiddlewareHandler } from "hono"
 import type { JSX } from "hono/jsx/jsx-runtime"
 import type { AppEnv } from "./context"
+import type { RegionDeclaration } from "./regions"
 import type { FxResponse } from "./sse/middleware"
 import type { QueryRegistration } from "./sse/queries"
 
@@ -100,6 +101,15 @@ export interface PageDefinition<T extends Record<string, unknown> = {}> {
   use?: MiddlewareHandler<AppEnv>[]
   loader?: PageLoader<T>
   component: PageComponent<T>
+  /**
+   * Observable HTML: declare named patch regions and optional policies.
+   *
+   * Regions are rendered in the DOM using `regionAttrs(...)` / `<Region .../>` and can be patched
+   * using `["patch-region", { region, html, options }]` effects (instead of string selectors).
+   *
+   * Note: `kind` is currently semantics-only (devtools/docs), not runtime behavior.
+   */
+  regions?: RegionDeclaration[]
   topics?: PageTopics
   /**
    * Convenience: if `topics` is omitted and `queries` contains string topic registrations,

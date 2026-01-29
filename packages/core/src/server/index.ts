@@ -29,6 +29,26 @@ export { createManifestRouteLoader } from "./router/manifest-route-loader"
 export type { RouteLoader } from "./router/types"
 // Security
 export { csrf } from "./security"
+// Observable HTML (regions)
+export type {
+  RegionDeclaration,
+  RegionId,
+  RegionKind,
+  RegionPatch,
+  RegionPatchOptions,
+  RegionPatchSeq,
+} from "./regions"
+export {
+  HonostarRegionAttr,
+  HonostarRegionKindAttr,
+  Region,
+  createRegionRegistry,
+  patchRegion,
+  patchRegionSeq,
+  regionAttrs,
+  regionDomId,
+  regionSelector,
+} from "./regions"
 // Effect System
 export type { EffectHandler } from "./sse/effect-registry"
 // SSE

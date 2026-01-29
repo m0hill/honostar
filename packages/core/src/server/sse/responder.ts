@@ -25,6 +25,8 @@ import type {
 } from "../../common/types"
 import type { AppEnv } from "../context"
 import { factory } from "../middleware"
+import type { RegionPatch, RegionPatchSeq } from "../regions"
+import { patchRegion, patchRegionSeq, resolveRegionPatchOptions } from "../regions"
 import type { EffectDefinition } from "./effect-registry"
 import { EffectRegistry } from "./effect-registry"
 
@@ -37,6 +39,12 @@ const isPatchElementsSeqEffect = (
   fx: EffectDefinition
 ): fx is ["patch-elements-seq", Array<JSX.Element | string>, PatchElementsOptions?] =>
   fx[0] === "patch-elements-seq"
+
+const isPatchRegionEffect = (fx: EffectDefinition): fx is ["patch-region", RegionPatch] =>
+  fx[0] === "patch-region"
+
+const isPatchRegionSeqEffect = (fx: EffectDefinition): fx is ["patch-region-seq", RegionPatchSeq] =>
+  fx[0] === "patch-region-seq"
 
 const isPatchSignalsEffect = (
   fx: EffectDefinition
@@ -163,6 +171,26 @@ export class FxResponder {
     if (isPatchElementsSeqEffect(effect)) {
       const [, payload, opts] = effect
       const html = await this.renderElementsSeqPayload(payload)
+      return new Response(html, {
+        status,
+        headers: this.buildElementsHeaders(opts, headers),
+      })
+    }
+
+    if (isPatchRegionEffect(effect)) {
+      const [, patch] = effect
+      const html = await this.renderElementsPayload(patch.html)
+      const opts = resolveRegionPatchOptions(patch, this.c.var.regionRegistry)
+      return new Response(html, {
+        status,
+        headers: this.buildElementsHeaders(opts, headers),
+      })
+    }
+
+    if (isPatchRegionSeqEffect(effect)) {
+      const [, patch] = effect
+      const html = await this.renderElementsSeqPayload(patch.html)
+      const opts = resolveRegionPatchOptions(patch, this.c.var.regionRegistry)
       return new Response(html, {
         status,
         headers: this.buildElementsHeaders(opts, headers),
@@ -339,6 +367,22 @@ export class FxResponder {
         continue
       }
 
+      if (isPatchRegionEffect(fx)) {
+        const [, patch] = fx
+        const html = await this.renderElementsPayload(patch.html)
+        const opts = resolveRegionPatchOptions(patch, this.c.var.regionRegistry)
+        this.patchElements(topic, html, opts)
+        continue
+      }
+
+      if (isPatchRegionSeqEffect(fx)) {
+        const [, patch] = fx
+        const html = await this.renderElementsSeqPayload(patch.html)
+        const opts = resolveRegionPatchOptions(patch, this.c.var.regionRegistry)
+        this.patchElements(topic, html, opts)
+        continue
+      }
+
       if (isPatchSignalsEffect(fx)) {
         const [, payload, opts] = fx
         this.patchSignals(topic, payload, opts)
@@ -439,6 +483,30 @@ export class FxResponder {
           continue
         }
 
+        if (isPatchRegionEffect(fx)) {
+          const [, patch] = fx
+          const html = await this.renderElementsPayload(patch.html)
+          const opts = resolveRegionPatchOptions(patch, this.c.var.regionRegistry)
+          this.c.var.bus.toClient(clientId, {
+            event: "datastar-patch-elements",
+            html,
+            options: opts,
+          })
+          continue
+        }
+
+        if (isPatchRegionSeqEffect(fx)) {
+          const [, patch] = fx
+          const html = await this.renderElementsSeqPayload(patch.html)
+          const opts = resolveRegionPatchOptions(patch, this.c.var.regionRegistry)
+          this.c.var.bus.toClient(clientId, {
+            event: "datastar-patch-elements",
+            html,
+            options: opts,
+          })
+          continue
+        }
+
         if (isPatchSignalsEffect(fx)) {
           const [, payload, opts] = fx
           this.c.var.bus.toClient(clientId, {
@@ -498,6 +566,24 @@ export class FxResponder {
     })
   }
 
+  public async replyRegion(
+    region: string,
+    html: JSX.Element | JSX.Element[] | string,
+    options?: Parameters<typeof patchRegion>[2],
+    response?: { status?: StatusCode; headers?: Record<string, string> }
+  ) {
+    return this.reply([patchRegion(region, html, options)], response)
+  }
+
+  public async replyRegionSeq(
+    region: string,
+    html: Array<JSX.Element | string>,
+    options?: Parameters<typeof patchRegionSeq>[2],
+    response?: { status?: StatusCode; headers?: Record<string, string> }
+  ) {
+    return this.reply([patchRegionSeq(region, html, options)], response)
+  }
+
   /**
    * Broadcast effects to one or more topics (topic-scoped).
    *
@@ -519,6 +605,16 @@ export class FxResponder {
       topics,
       ...options,
     })
+  }
+
+  public async broadcastRegion(
+    topic: string | string[],
+    region: string,
+    html: JSX.Element | JSX.Element[] | string,
+    options?: Parameters<typeof patchRegion>[2],
+    response?: { status?: StatusCode; headers?: Record<string, string>; close?: boolean }
+  ) {
+    return this.broadcast(topic, [patchRegion(region, html, options)], response)
   }
 
   /**

@@ -18,14 +18,10 @@ export const GET = createHandler({
     }
 
     const allLabels = await c.var.db.select().from(labels)
-    return c.var.fx.reply(
-      [
-        [
-          "patch-elements",
-          <IssueModal labels={allLabels} />,
-          { selector: "#ds-overlays", mode: "append" },
-        ],
-      ],
+    return c.var.fx.replyRegion(
+      "ui:overlays",
+      <IssueModal labels={allLabels} />,
+      { mode: "append" },
       { status: 200 }
     )
   },

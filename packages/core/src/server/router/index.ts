@@ -160,6 +160,9 @@ async function registerModule(
     collectQueries(options?.collect?.queries, pageDef.queries, queryDedupe)
 
     const pageHandler = async (c: Context<AppEnv>) => {
+      if (pageDef.regions && pageDef.regions.length > 0) {
+        c.var.regionRegistry.registerAll(pageDef.regions)
+      }
       if (pageDef.topics) {
         const topics =
           typeof pageDef.topics === "function" ? await pageDef.topics(c) : pageDef.topics

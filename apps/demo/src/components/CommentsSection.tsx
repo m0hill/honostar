@@ -8,9 +8,21 @@ const formatDate = (date: Date) =>
     day: "numeric",
   }).format(date)
 
-export function CommentsSection({ comments }: { comments: CommentWithAuthor[] }) {
+export function CommentsSection({
+  comments,
+  regionId,
+}: {
+  comments: CommentWithAuthor[]
+  regionId?: string
+}) {
   return (
-    <div id="comments-section" class="mt-8 space-y-4">
+    <div
+      id="comments-section"
+      class="mt-8 space-y-4"
+      {...(regionId
+        ? { "data-honostar-region": regionId, "data-honostar-region-kind": "list" }
+        : {})}
+    >
       {comments.map((comment) => (
         <Card key={comment.id} class="gap-0">
           <CardContent class="pt-6">

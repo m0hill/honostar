@@ -25,6 +25,8 @@ import type {
 } from "../../common/types"
 import type { HonostarConfig } from "../config"
 import { createConfig } from "../config"
+import type { RegionPatch, RegionPatchSeq } from "../regions"
+import { resolveRegionPatchOptions } from "../regions"
 import { verifyTopics } from "../security/topics"
 import type { EffectDefinition } from "./effect-registry"
 import { SseFormatter } from "./generator"
@@ -43,6 +45,12 @@ const isPatchElementsSeqEffect = (
   fx: EffectDefinition
 ): fx is ["patch-elements-seq", Array<JSX.Element | string>, PatchElementsOptions?] =>
   fx[0] === "patch-elements-seq"
+
+const isPatchRegionEffect = (fx: EffectDefinition): fx is ["patch-region", RegionPatch] =>
+  fx[0] === "patch-region"
+
+const isPatchRegionSeqEffect = (fx: EffectDefinition): fx is ["patch-region-seq", RegionPatchSeq] =>
+  fx[0] === "patch-region-seq"
 
 const isPatchSignalsEffect = (
   fx: EffectDefinition
@@ -161,6 +169,22 @@ export const createSseEndpoint = (
             const [, payload, opts] = fx
             const html = await renderElementsSeqPayload(payload)
             await stream.write(formatter.patchElements(html, opts ?? {}))
+            continue
+          }
+
+          if (isPatchRegionEffect(fx)) {
+            const [, patch] = fx
+            const html = await renderElementsPayload(patch.html)
+            const opts = resolveRegionPatchOptions(patch, c.var.regionRegistry)
+            await stream.write(formatter.patchElements(html, opts))
+            continue
+          }
+
+          if (isPatchRegionSeqEffect(fx)) {
+            const [, patch] = fx
+            const html = await renderElementsSeqPayload(patch.html)
+            const opts = resolveRegionPatchOptions(patch, c.var.regionRegistry)
+            await stream.write(formatter.patchElements(html, opts))
             continue
           }
 

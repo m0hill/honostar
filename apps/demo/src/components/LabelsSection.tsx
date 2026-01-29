@@ -5,7 +5,7 @@ import { Input } from "./ui/input"
 
 export default function LabelsSection({ labels }: { labels: Label[] }) {
   return (
-    <div id="labels-section">
+    <div id="labels-section" data-honostar-region="labels:list" data-honostar-region-kind="list">
       <div class="max-h-40 overflow-y-auto pr-2">
         <div class="flex flex-wrap gap-2">
           {labels.map((l) => (

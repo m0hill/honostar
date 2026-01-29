@@ -33,13 +33,9 @@ export const toastShow: EffectHandler<[message: string, type: ToastType]> = asyn
   message,
   type
 ) => {
-  await c.var.fx.reply([
-    [
-      "patch-elements",
-      <Toast message={message} type={type} />,
-      { selector: "#toast-container", mode: "append" },
-    ],
-  ])
+  await c.var.fx.replyRegion("ui:toasts", <Toast message={message} type={type} />, {
+    mode: "append",
+  })
 }
 
 export const toastSuccess: EffectHandler<[message: string]> = async (c, message) => {
