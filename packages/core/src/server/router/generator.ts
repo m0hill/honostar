@@ -91,11 +91,16 @@ async function buildEntries(pagesDir: string, manifestPath: string): Promise<Man
     entries.push({ routePath, importPath })
   }
 
+  // Sort routes so specific/static paths win over dynamic ones.
+  // Priority:
+  // 1) Fewer dynamic segments (static paths first)
+  // 2) Longer paths (more specific routes first)
+  // 3) Alphabetical fallback
   return entries.toSorted((a, b) => {
     const aDynamic = countDynamicSegments(a.routePath)
     const bDynamic = countDynamicSegments(b.routePath)
     if (aDynamic !== bDynamic) return aDynamic - bDynamic
-    // When dynamics equal, prefer longer/static paths first so `/issues/new` beats `/issues/:id`
+    // When dynamics equal, prefer longer paths so `/issues/new` beats `/issues/:id`.
     if (a.routePath.length !== b.routePath.length) return b.routePath.length - a.routePath.length
     return a.routePath.localeCompare(b.routePath)
   })

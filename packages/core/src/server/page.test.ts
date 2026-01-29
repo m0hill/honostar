@@ -126,8 +126,7 @@ describe("createHandler request parsing", () => {
         }
 
         const tagsRaw = data.tags
-        const tags =
-          typeof tagsRaw === "string" ? [tagsRaw] : Array.isArray(tagsRaw) ? tagsRaw : []
+        const tags = typeof tagsRaw === "string" ? [tagsRaw] : Array.isArray(tagsRaw) ? tagsRaw : []
         if (tags.some((t) => typeof t !== "string")) {
           return { issues: [{ message: "tags must be strings", path: ["tags"] }] }
         }

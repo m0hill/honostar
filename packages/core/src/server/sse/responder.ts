@@ -1,3 +1,19 @@
+/**
+ * SSE Responder (`FxResponder`)
+ *
+ * This module is responsible for taking "effects" (patch-elements, patch-signals, execute-script, etc.)
+ * and delivering them either:
+ *
+ * - as an **HTTP reply** (only for simple single-effect Datastar requests), or
+ * - as an **SSE message** via the PubSub bus (client-scoped or topic-scoped).
+ *
+ * Architecture Notes:
+ * - `reply()` is **tab-scoped** feedback: validation errors, UI state, toasts, etc.
+ * - `broadcast()` is **topic-scoped**: it updates all subscribers (canonical UI patches).
+ * - `publish()` emits a **domain event** (CQRS trigger). It does not patch the DOM directly.
+ * - HTTP reply optimization only applies when we can represent the response as a single Datastar patch
+ *   using headers (`datastar-*`). Otherwise we fall back to bus/SSE.
+ */
 import type { Context } from "hono"
 import type { JSX } from "hono/jsx/jsx-runtime"
 import type { StatusCode } from "hono/utils/http-status"
@@ -31,6 +47,11 @@ const isExecuteScriptEffect = (
   fx: EffectDefinition
 ): fx is ["execute-script", string, ExecuteScriptOptions?] => fx[0] === "execute-script"
 
+/**
+ * Effect responder exposed on `c.var.fx`.
+ *
+ * Most apps should not instantiate this directly; use the `fxResponder` middleware.
+ */
 export class FxResponder {
   private c: Context<AppEnv>
   private isExecutingEffect = false
@@ -333,6 +354,17 @@ export class FxResponder {
     }
   }
 
+  /**
+   * Execute a list of effects and produce the appropriate transport response.
+   *
+   * - If `topics` is provided, effects are broadcast to those topics (SSE via the bus).
+   * - If `toClient` is true, effects are sent only to the initiating tab (clientId).
+   * - If the current request is a Datastar request and the effects are representable as a
+   *   single built-in patch, this will return an HTTP response with the required `datastar-*`
+   *   headers so the client can apply it without an SSE connection.
+   *
+   * @returns A `Response` (HTTP patch when possible, otherwise an empty response).
+   */
   async respond(args: {
     effects: EffectDefinition[]
     topics?: string[]
@@ -443,6 +475,15 @@ export class FxResponder {
     return this.c.body(null, status, headers)
   }
 
+  /**
+   * Reply to the initiating tab (client-scoped).
+   *
+   * Use this for validation errors, toasts, modal open/close, or any UI feedback that should only
+   * affect the user who triggered the request.
+   *
+   * @param effects - Datastar-compatible effects (patch-elements, patch-signals, execute-script, etc.)
+   * @returns A Promise resolving to a `Response` or an HTTP patch response when possible.
+   */
   public async reply(
     effects: EffectDefinition[],
     options?: { status?: StatusCode; headers?: Record<string, string> }
@@ -454,6 +495,16 @@ export class FxResponder {
     })
   }
 
+  /**
+   * Broadcast effects to one or more topics (topic-scoped).
+   *
+   * Prefer this for canonical UI updates ("fat patches") that should update all connected clients
+   * subscribed to the topic.
+   *
+   * @param topic - Topic or list of topics to fan out to.
+   * @param effects - Effects to emit to subscribers.
+   * @returns A Promise resolving to a `Response` (typically empty; the work happens via SSE).
+   */
   public async broadcast(
     topic: string | string[],
     effects: EffectDefinition[],
@@ -472,6 +523,14 @@ export class FxResponder {
    *
    * Intended for CQRS: commands publish events, and queries re-render on the SSE connection.
    * This does not directly patch any DOM.
+   *
+   * @param topic - Topic(s) to publish to (e.g. `topics.issues.list()`).
+   * @param name - Event name (e.g. `"issue:created"`).
+   * @param payload - JSON-serializable event payload.
+   *
+   * @example
+   * // Trigger a refresh of the issue list for all connected clients
+   * c.var.fx.publish(topics.issues.list(), "issue:created", { id: 123 })
    */
   public publish(topic: string | string[], name: string, payload?: Jsonifiable | null): void {
     const topics = Array.isArray(topic) ? topic : [topic]
@@ -482,6 +541,9 @@ export class FxResponder {
   }
 }
 
+/**
+ * Installs `c.var.fx` for downstream handlers/pages.
+ */
 export const fxResponder = factory.createMiddleware(async (c, next) => {
   c.set("fx", new FxResponder(c))
   await next()

@@ -51,10 +51,12 @@ export type HonostarConfig = {
    */
   security: {
     /**
-     * Content Security Policy for scripts
-     * Template string where `${nonce}` will be replaced with the per-request nonce
-     * MUST include `'unsafe-eval'` (Datastar expressions use Function())
-     * (default: "script-src 'self' 'unsafe-eval' 'nonce-${nonce}';")
+     * Content Security Policy (CSP) string.
+     *
+     * Must include `'unsafe-eval'` because Datastar relies on `new Function()` for expression evaluation.
+     * Use `${nonce}` as a placeholder to inject the per-request nonce.
+     *
+     * @default "script-src 'self' 'unsafe-eval' 'nonce-${nonce}';"
      */
     csp: string
     /**

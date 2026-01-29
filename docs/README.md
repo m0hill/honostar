@@ -56,6 +56,10 @@ pnpm dev:demo
 # Open http://localhost:3000
 ```
 
+## Maintainers
+
+Implementation / commenting standards live in `docs/IMPLEMENTATION.md`.
+
 ## Core Concepts
 
 ### Pages & Handlers

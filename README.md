@@ -18,4 +18,6 @@ pnpm dev
 
 ## Docs
 
-Framework docs live in `.docs/README.md`.
+Framework docs live in `docs/README.md`.
+
+Maintainer implementation notes (commenting/annotation standards) live in `docs/IMPLEMENTATION.md`.

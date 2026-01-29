@@ -368,6 +368,9 @@ export function defineQueryPage<T extends Record<string, unknown>>(
  * - No validation, no data extraction
  * - Full manual control
  *
+ * @template Schema - A StandardSchemaV1 compatible validator (Zod, Valibot, ArkType, etc.). The handler
+ * `data` argument is inferred from `StandardSchemaV1.InferOutput<Schema>`.
+ *
  * @example
  * ```typescript
  * // Validated handler with Zod (recommended for Datastar endpoints)

@@ -44,6 +44,25 @@ export type BuildRoutes<Defs extends RouteDefinitionGroup> = {
       : never
 }
 
+/**
+ * Build a type-safe nested route helper object.
+ *
+ * Route patterns use `:param` segments and the returned `href()` function enforces params at compile-time.
+ *
+ * @example
+ * ```ts
+ * const routes = route({
+ *   home: "/",
+ *   issues: {
+ *     list: "/issues",
+ *     detail: "/issues/:id",
+ *   },
+ * })
+ *
+ * routes.home.href() // "/"
+ * routes.issues.detail.href({ id: 123 }) // "/issues/123"
+ * ```
+ */
 export function route<const Defs extends RouteDefinitionGroup>(defs: Defs): BuildRoutes<Defs> {
   // TypeScript cannot perfectly correlate the runtime builder with the conditional type,
   // so we assert at the public boundary after constructing the structure.

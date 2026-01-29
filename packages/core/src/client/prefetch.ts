@@ -1,3 +1,15 @@
+/**
+ * Client Prefetch
+ *
+ * Implements lightweight link prefetching for MPAs:
+ * - Adds prefetch hints (via `<link rel="prefetch">`) or uses `fetch()` depending on policy.
+ * - Uses conservative defaults: respects Data Saver, throttles on slow connections, same-origin only.
+ * - Uses intent signals (hover/intent/visibility) to avoid wasteful prefetching.
+ *
+ * Architecture Notes:
+ * - The cache is time-based (`ttlMs`) and bounded (`maxEntries`) to avoid unbounded growth.
+ * - We keep behavior "best-effort": failures are cached briefly to avoid tight retry loops.
+ */
 type PrefetchStrategy = "none" | "hover" | "intent" | "visible" | "immediate" | "tap"
 type PrefetchDisable = "off"
 
@@ -8,9 +20,24 @@ type PrefetchPriority = "high" | "low" | "auto"
 const PREFETCH_DISABLE_VALUE: PrefetchDisable = "off"
 
 export interface PrefetchOptions {
+  /**
+   * Override the prefetch transport for a single request.
+   *
+   * - `"link"` uses `<link rel="prefetch">` (cheap hint; browser decides).
+   * - `"fetch"` issues a fetch immediately (more eager, heavier).
+   */
   method?: PrefetchMethod
+  /**
+   * Resource type hint (`as=`) when using `<link rel="prefetch">`.
+   */
   kind?: PrefetchTarget
+  /**
+   * Importance hint for the browser (`importance=`).
+   */
   priority?: PrefetchPriority
+  /**
+   * Cache time-to-live for this URL.
+   */
   ttlMs?: number
   signal?: AbortSignal
   allowCrossOrigin?: boolean
@@ -18,9 +45,21 @@ export interface PrefetchOptions {
 }
 
 export interface PrefetchPolicy {
+  /**
+   * Global enable/disable switch.
+   */
   enabled: boolean
+  /**
+   * If true, only prefetch same-origin URLs (recommended default).
+   */
   onlySameOrigin: boolean
+  /**
+   * If true, do not prefetch when the user has Data Saver enabled.
+   */
   respectDataSaver: boolean
+  /**
+   * If true, do not prefetch on slow connections (`2g` / `slow-2g`).
+   */
   respectSlowConnections: boolean
   defaultStrategy: PrefetchStrategy
   attachAllAnchors: boolean
@@ -146,10 +185,16 @@ export class PrefetchClient {
     }
   }
 
+  /**
+   * Update the global prefetch policy at runtime.
+   */
   configure(config: Partial<PrefetchPolicy>) {
     this.policy = { ...this.policy, ...config }
   }
 
+  /**
+   * Returns true if the URL is cached and not expired.
+   */
   isPrefetched(url: string): boolean {
     const u = absUrl(url)
     if (!u) return false
@@ -158,6 +203,9 @@ export class PrefetchClient {
     return entry.state === "done" && entry.expiresAt > Date.now()
   }
 
+  /**
+   * Evict cached entries for a specific URL or predicate.
+   */
   invalidate(where: string | ((url: string) => boolean)) {
     for (const key of this.cache.keys()) {
       if (typeof where === "string") {
@@ -168,6 +216,9 @@ export class PrefetchClient {
     }
   }
 
+  /**
+   * Add a `<link rel="preconnect">` hint for an origin.
+   */
   preconnect(origin: string) {
     try {
       const url = new URL(origin)
@@ -181,6 +232,9 @@ export class PrefetchClient {
     }
   }
 
+  /**
+   * Prefetch a URL according to policy and options.
+   */
   async prefetch(href: string, opts: PrefetchOptions = {}): Promise<void> {
     if (!this.policy.enabled) return
     const u = absUrl(href)
@@ -449,6 +503,9 @@ export class PrefetchClient {
     this.observeMutations(root)
   }
 
+  /**
+   * Stop observing and clear internal listeners.
+   */
   stop() {
     this.cleanupFns.forEach((fn) => {
       try {
@@ -466,6 +523,19 @@ export class PrefetchClient {
   }
 }
 
+/**
+ * Create a `PrefetchClient` with the provided policy overrides.
+ *
+ * @example
+ * ```ts
+ * const prefetch = createPrefetchClient({
+ *   defaultStrategy: "hover",
+ *   respectDataSaver: true,
+ *   respectSlowConnections: true,
+ * })
+ * prefetch.start()
+ * ```
+ */
 export function createPrefetchClient(config?: Partial<PrefetchPolicy>) {
   return new PrefetchClient(config)
 }

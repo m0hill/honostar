@@ -1,3 +1,19 @@
+/**
+ * SSE Endpoint
+ *
+ * Exposes a single long-lived Server-Sent Events (SSE) connection per tab (clientId).
+ *
+ * Connection lifecycle:
+ * - Always subscribes the client to its own `clientId` channel (tab-scoped replies).
+ * - Optionally verifies `topics` subscriptions using a signed allowlist (`topicsToken` or cookie).
+ * - Replays retained "idempotent" topic patches immediately on connect (self-healing UI).
+ * - Runs CQRS query handlers on connect (initial render) and again on `honostar-event`.
+ * - Sends periodic heartbeats (`ping`) to keep intermediaries from closing the stream.
+ *
+ * Architecture Notes:
+ * - Topic verification is required in production. In development, missing secrets allow all topics.
+ * - We serialize writes through a promise chain to keep SSE event ordering deterministic.
+ */
 import type { Handler } from "hono"
 import type { JSX } from "hono/jsx/jsx-runtime"
 import { streamSSE } from "hono/streaming"
@@ -72,9 +88,17 @@ function safeParseJsonifiable(value: string): Jsonifiable | null {
 }
 
 /**
- * Creates an SSE endpoint handler with optional configuration
- * @param userConfig - Optional partial HonostarConfig (merged with defaults)
- * @param options - Optional CQRS wiring (e.g. query registrations)
+ * Creates an SSE endpoint handler.
+ *
+ * The returned handler is usually mounted at `config.endpoints.sse` (default `/_/events`).
+ *
+ * @param userConfig - Partial config merged with defaults (security policies, ping interval, etc).
+ * @param options - Optional CQRS wiring for query registrations (for small apps / simple setup).
+ *
+ * @example
+ * ```ts
+ * app.get("/_/events", createSseEndpoint(config))
+ * ```
  */
 export const createSseEndpoint = (
   userConfig?: Partial<HonostarConfig>,
@@ -171,7 +195,9 @@ export const createSseEndpoint = (
       if (options?.queries && options.queries.length > 0) {
         const registry = getQueries()
         for (const [topicOrPattern, handler] of options.queries) {
-          registry.register(topicOrPattern, handler)
+          // Narrow for overload resolution (string vs RegExp).
+          if (typeof topicOrPattern === "string") registry.register(topicOrPattern, handler)
+          else registry.register(topicOrPattern, handler)
         }
       }
 
