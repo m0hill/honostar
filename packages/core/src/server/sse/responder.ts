@@ -96,6 +96,9 @@ export class FxResponder {
     if (opts?.mode) {
       headers["datastar-mode"] = opts.mode
     }
+    if (opts?.namespace) {
+      headers["datastar-namespace"] = opts.namespace
+    }
     if (typeof opts?.useViewTransition === "boolean") {
       headers["datastar-use-view-transition"] = String(opts.useViewTransition)
     }

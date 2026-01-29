@@ -36,6 +36,17 @@ describe("SseFormatter", () => {
     expect(result).toContain("append")
   })
 
+  test("formats patch-elements with namespace", () => {
+    const formatter = new SseFormatter()
+    const html = '<circle cx="0" cy="0" r="10"></circle>'
+    const options = { selector: "#icon", namespace: "svg" as const }
+
+    const result = formatter.patchElements(html, options)
+
+    expect(result).toContain("event: datastar-patch-elements")
+    expect(result).toContain("data: namespace svg")
+  })
+
   test("formats patch-signals event", () => {
     const formatter = new SseFormatter()
     const signals = JSON.stringify({ count: 42, message: "hello" })
@@ -149,6 +160,14 @@ describe("SseFormatter", () => {
 
     expect(() => formatter.patchElements("<div></div>", { mode: "invalid" as any })).toThrow(
       /Invalid ElementPatchMode/
+    )
+  })
+
+  test("validates element namespace", () => {
+    const formatter = new SseFormatter()
+
+    expect(() => formatter.patchElements("<div></div>", { namespace: "invalid" as any })).toThrow(
+      /Invalid ElementNamespace/
     )
   })
 

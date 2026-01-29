@@ -1,14 +1,17 @@
 import {
   DatastarDatalineElements,
+  DatastarDatalineNamespace,
   DatastarDatalineOnlyIfMissing,
   DatastarDatalinePatchMode,
   DatastarDatalineSelector,
   DatastarDatalineSignals,
   DatastarDatalineUseViewTransition,
   DefaultElementPatchMode,
+  DefaultElementNamespace,
   DefaultElementsUseViewTransitions,
   DefaultPatchSignalsOnlyIfMissing,
   ElementPatchModes,
+  ElementNamespaces,
   EventTypes,
 } from "./constants"
 
@@ -22,6 +25,7 @@ export type Jsonifiable =
   | { [key: string]: Jsonifiable }
 
 export type ElementPatchMode = (typeof ElementPatchModes)[number]
+export type ElementNamespace = (typeof ElementNamespaces)[number]
 export type EventType = (typeof EventTypes)[number]
 
 export type StreamOptions = Partial<{
@@ -43,6 +47,7 @@ export interface ElementOptions extends DatastarEventOptions {
 export interface PatchElementsOptions extends ElementOptions {
   [DatastarDatalinePatchMode]?: ElementPatchMode
   [DatastarDatalineSelector]?: string
+  [DatastarDatalineNamespace]?: ElementNamespace
 }
 
 export interface patchElementsEvent {
@@ -90,6 +95,7 @@ export type DatastarEvent = patchElementsEvent | patchSignalsEvent
 
 export const DefaultMapping = {
   [DatastarDatalinePatchMode]: DefaultElementPatchMode,
+  [DatastarDatalineNamespace]: DefaultElementNamespace,
   [DatastarDatalineUseViewTransition]: DefaultElementsUseViewTransitions,
   [DatastarDatalineOnlyIfMissing]: DefaultPatchSignalsOnlyIfMissing,
 } as const

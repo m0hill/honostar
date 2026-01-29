@@ -1,16 +1,19 @@
 // oxlint-disable no-useless-fallback-in-spread
 import {
   DatastarDatalineElements,
+  DatastarDatalineNamespace,
   DatastarDatalinePatchMode,
   DatastarDatalineSelector,
   DatastarDatalineSignals,
   DefaultSseRetryDurationMs,
+  ElementNamespaces,
   ElementPatchModes,
 } from "../../common/constants"
 import {
   DatastarEventOptions,
   DefaultMapping,
   type ElementPatchMode,
+  type ElementNamespace,
   type EventType,
   type Jsonifiable,
   type PatchElementsOptions,
@@ -26,6 +29,16 @@ export class SseFormatter {
     if (!(ElementPatchModes as readonly string[]).includes(mode)) {
       throw new Error(
         `Invalid ElementPatchMode: "${mode}". Valid modes are: ${ElementPatchModes.join(", ")}`
+      )
+    }
+  }
+
+  protected validateElementNamespace(namespace: string): asserts namespace is ElementNamespace {
+    if (!(ElementNamespaces as readonly string[]).includes(namespace)) {
+      throw new Error(
+        `Invalid ElementNamespace: "${namespace}". Valid namespaces are: ${ElementNamespaces.join(
+          ", "
+        )}`
       )
     }
   }
@@ -93,6 +106,12 @@ export class SseFormatter {
     const patchMode = renderOptions[DatastarDatalinePatchMode] ?? ""
     if (patchMode) {
       this.validateElementPatchMode(patchMode)
+    }
+
+    if (DatastarDatalineNamespace in renderOptions) {
+      const namespace = String(renderOptions[DatastarDatalineNamespace] ?? "")
+      this.validateRequired(namespace, "namespace")
+      this.validateElementNamespace(namespace)
     }
 
     const selector = renderOptions[DatastarDatalineSelector] ?? ""
