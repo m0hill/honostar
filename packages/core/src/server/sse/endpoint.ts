@@ -243,7 +243,7 @@ export const createSseEndpoint = (
       if (requestedTopics.length > 0) {
         const allowedTopics = await verifyTopics(c, requestedTopics, config)
 
-        if (allowedTopics) {
+        if (allowedTopics && allowedTopics.length > 0) {
           // Subscribe only to allowed topics
           for (const topic of allowedTopics) {
             let hasLiveMessage = false
@@ -280,6 +280,11 @@ export const createSseEndpoint = (
               console.error(`[SSE] Failed to replay retained topic patch for "${topic}"`, err)
             }
           }
+        } else if (allowedTopics && allowedTopics.length === 0) {
+          console.warn(
+            `[SSE] No requested topics were authorized for client ${clientId}. ` +
+              "Only client-specific messages will be delivered."
+          )
         } else {
           // Verification failed - log warning and skip topic subscriptions
           console.warn(

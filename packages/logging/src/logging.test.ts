@@ -74,4 +74,3 @@ describe("@honostar/logging", () => {
     expect(evt.error?.message).toBe("boom")
   })
 })
-

@@ -90,11 +90,7 @@ export const log = {
     return true
   },
 
-  span<T>(
-    name: string,
-    fn: () => T | Promise<T>,
-    meta?: Record<string, unknown>
-  ): Promise<T> {
+  span<T>(name: string, fn: () => T | Promise<T>, meta?: Record<string, unknown>): Promise<T> {
     const started = Date.now()
 
     const run = async () => {

@@ -49,13 +49,11 @@ export const renderer = (userConfig?: Partial<HonostarConfig>) => {
     const theme = resolveThemeProvider(c.var.theme, cookiePreference)
     const scriptNonce = generateNonce()
 
-    // Sign and set topic allowlist cookie before rendering
-    const topics = c.var.sseTopics ?? []
-    const topicsToken = await signTopics(c, topics, config)
     const base = jsxRenderer(({ children }) => {
       const pageHead = c.var.pageHead
       const topics = c.var.sseTopics ?? []
       const sseParams = c.var.sseParams ?? {}
+      const topicsToken = c.var.sseTopicsToken
       const params = new URLSearchParams()
       if (topics.length > 0) params.set("topics", topics.join(","))
       for (const [key, value] of Object.entries(sseParams)) {
@@ -204,6 +202,16 @@ export const renderer = (userConfig?: Partial<HonostarConfig>) => {
     })
 
     await base(c, async () => {
+      const originalRender = c.render?.bind(c)
+      if (originalRender) {
+        ;(c as unknown as { render: typeof originalRender }).render = async (...args) => {
+          const topics = c.var.sseTopics ?? []
+          const token = await signTopics(c, topics, config)
+          if (token) c.set("sseTopicsToken", token)
+          return await originalRender(...args)
+        }
+      }
+
       c.set("renderToString", async (node: JSX.Element) => {
         const res = await c.render(node)
         const html = await res.text()
