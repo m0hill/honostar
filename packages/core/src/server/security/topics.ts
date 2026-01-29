@@ -22,6 +22,13 @@ import type { HonostarConfig } from "../config"
 
 const TOPICS_TOKEN_QUERY_PARAM = "topicsToken"
 const TOPICS_TOKEN_HEADER = "X-Honostar-Topics"
+const warned = new Set<string>()
+
+function warnOnce(key: string, ...args: Parameters<typeof console.warn>) {
+  if (warned.has(key)) return
+  warned.add(key)
+  console.warn(...args)
+}
 
 /**
  * Topic token payload structure (versioned for future compatibility)
@@ -109,7 +116,8 @@ function getSigningSecret(cfg: HonostarConfig): string | null {
   if (!secret) {
     // In development, allow missing secret but warn
     if (process.env.NODE_ENV !== "production") {
-      console.warn(
+      warnOnce(
+        `topics:missing-secret:${secretEnv}`,
         `[Topic Security] No signing secret found in ${secretEnv}. ` +
           "Topic allowlist enforcement is DISABLED. " +
           "Set HONOSTAR_SIGNING_SECRET for production."
@@ -209,7 +217,10 @@ export async function verifyTopics(
   const secret = getSigningSecret(cfg)
   if (!secret) {
     // Development mode with no secret - allow all requested topics
-    console.warn("[Topic Security] No secret configured - allowing all topics (development only)")
+    warnOnce(
+      "topics:no-secret-allow-all",
+      "[Topic Security] No secret configured - allowing all topics (development only)"
+    )
     return requestedTopics
   }
 
