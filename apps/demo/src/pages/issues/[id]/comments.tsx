@@ -4,6 +4,7 @@ import type { SQLiteColumn } from "drizzle-orm/sqlite-core"
 import { z } from "zod"
 import { comments as commentsTable } from "@/db/schema"
 import { requireAuth } from "@/lib/auth-middleware"
+import { commentCreated } from "@/lib/contracts"
 import { topics } from "@/lib/topics"
 import { routes } from "@/routes"
 
@@ -51,7 +52,7 @@ export const POST = defineCommand({
     })
 
     // CQRS: publish domain event for query re-render + success toast
-    c.var.fx.publish(topics.issue(issueId).comments(), "comment:created", { issueId })
+    await c.var.fx.publishTo(topics.issue(issueId).comments(), commentCreated, { issueId })
 
     if (c.req.header("datastar-request") !== null) {
       return c.var.fx.reply(

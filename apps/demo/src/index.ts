@@ -36,6 +36,7 @@ import { auth } from "@/middleware/auth"
 import { attachBus } from "@/middleware/bus"
 import { attachDb } from "@/middleware/db"
 import { routesManifest } from "@/routes.manifest"
+import "@/lib/contracts"
 
 const app = new Hono<AppEnv>()
 
@@ -86,5 +87,16 @@ await mountRoutes(app, createManifestRouteLoader(routesManifest), {
 })
 
 app.get("/_/events", createSseEndpoint(config, { queries: collectedQueries }))
+
+if (import.meta.main) {
+  const port = Number(process.env.PORT ?? 3000)
+  Bun.serve({
+    fetch: app.fetch,
+    port,
+    // SSE connections are long-lived; disable Bun's default 10s idle timeout.
+    idleTimeout: 0,
+  })
+  console.log(`Started development server: http://localhost:${port}`)
+}
 
 export default app

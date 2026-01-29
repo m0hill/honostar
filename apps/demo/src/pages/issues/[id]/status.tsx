@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm"
 import { z } from "zod"
 import { issues } from "@/db/schema"
 import { requireAuth } from "@/lib/auth-middleware"
+import { issueStatusChangedDetail, issueStatusChangedList } from "@/lib/contracts"
 import { topics } from "@/lib/topics"
 import { routes } from "@/routes"
 
@@ -39,11 +40,11 @@ export const POST = defineCommand({
       await c.var.db.update(issues).set({ status: data.status }).where(eq(issues.id, issueId))
     }
 
-    c.var.fx.publish(topics.issues.list(), "issue:status-changed", {
+    await c.var.fx.publishTo(topics.issues.list(), issueStatusChangedList, {
       id: issueId,
       status: data.status,
     })
-    c.var.fx.publish(topics.issue(issueId).detail(), "issue:status-changed", {
+    await c.var.fx.publishTo(topics.issue(issueId).detail(), issueStatusChangedDetail, {
       id: issueId,
       status: data.status,
     })

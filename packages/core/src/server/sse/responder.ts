@@ -24,6 +24,8 @@ import type {
   PatchSignalsOptions,
 } from "../../common/types"
 import type { AppEnv } from "../context"
+import type { EventContract } from "../contracts"
+import { validateEventContract } from "../contracts"
 import { factory } from "../middleware"
 import type { RegionPatch, RegionPatchSeq } from "../regions"
 import { patchRegion, patchRegionSeq, resolveRegionPatchOptions } from "../regions"
@@ -631,11 +633,95 @@ export class FxResponder {
    * // Trigger a refresh of the issue list for all connected clients
    * c.var.fx.publish(topics.issues.list(), "issue:created", { id: 123 })
    */
-  public publish(topic: string | string[], name: string, payload?: Jsonifiable | null): void {
-    const topics = Array.isArray(topic) ? topic : [topic]
+  public async publish(
+    topic: string | string[],
+    name: string,
+    payload?: Jsonifiable | null
+  ): Promise<void>
+  public async publish<T extends EventContract>(
+    contract: T,
+    payload: import("@standard-schema/spec").StandardSchemaV1.InferOutput<T["schema"]>
+  ): Promise<void>
+  public async publish(
+    topicOrContract: string | string[] | EventContract,
+    nameOrPayload: string | Jsonifiable | null | undefined,
+    payloadMaybe?: Jsonifiable | null
+  ): Promise<void> {
+    if (
+      typeof topicOrContract === "object" &&
+      topicOrContract !== null &&
+      "topic" in topicOrContract &&
+      "event" in topicOrContract &&
+      "schema" in topicOrContract
+    ) {
+      const contract = topicOrContract as EventContract
+      const topic = typeof contract.topic === "string" ? contract.topic : null
+      if (!topic) {
+        console.warn(
+          `[Contracts] Cannot publish using a pattern-based contract for event "${contract.event}". ` +
+            "Use the string topic overload instead."
+        )
+        return
+      }
+      const payload = nameOrPayload as Jsonifiable | null | undefined
+      await validateEventContract({
+        topic,
+        event: contract.event,
+        payload: payload ?? null,
+        source: "publish",
+        schema: contract.schema,
+      })
+      this.c.var.bus.toTopic(topic, {
+        event: "honostar-event",
+        name: contract.event,
+        payload: JSON.stringify(payload ?? null),
+      })
+      return
+    }
+
+    const topics = Array.isArray(topicOrContract) ? topicOrContract : [topicOrContract]
+    const name = nameOrPayload as string
+    const payload = payloadMaybe
+
+    await Promise.all(
+      topics.map((t) =>
+        validateEventContract({
+          topic: t,
+          event: name,
+          payload: payload ?? null,
+          source: "publish",
+        })
+      )
+    )
+
     const encoded = JSON.stringify(payload ?? null)
     for (const t of topics) {
       this.c.var.bus.toTopic(t, { event: "honostar-event", name, payload: encoded })
+    }
+  }
+
+  public async publishTo<T extends EventContract>(
+    topic: string | string[],
+    contract: T,
+    payload: import("@standard-schema/spec").StandardSchemaV1.InferOutput<T["schema"]>
+  ): Promise<void> {
+    const topics = Array.isArray(topic) ? topic : [topic]
+    const encoded = JSON.stringify((payload as unknown as Jsonifiable | null | undefined) ?? null)
+
+    await Promise.all(
+      topics.map((t) =>
+        validateEventContract({
+          topic: t,
+          event: contract.event,
+          payload: (payload as unknown) ?? null,
+          source: "publish",
+          schema: contract.schema,
+        })
+      )
+    )
+
+    for (const t of topics) {
+      this.c.var.bus.toTopic(t, { event: "honostar-event", name: contract.event, payload: encoded })
     }
   }
 }

@@ -4,9 +4,10 @@
   "type": "module",
   "scripts": {
     "routes:generate": "pnpm --filter @honostar/core build && tsx scripts/generate-routes.ts",
+    "contracts:generate": "pnpm --filter @honostar/core build && tsx scripts/generate-contracts.ts",
     "build:runtime": "pnpm --filter @honostar/core build && esbuild src/client.ts --bundle --format=esm --platform=browser --outfile=public/runtime.js",
-    "dev": "pnpm --filter @honostar/logging build && pnpm routes:generate && pnpm build:runtime && tsx watch src/index.ts",
-    "start": "pnpm --filter @honostar/logging build && pnpm routes:generate && pnpm build:runtime && tsx src/index.ts",
+    "dev": "pnpm --filter @honostar/logging build && pnpm routes:generate && pnpm contracts:generate && pnpm build:runtime && tsx watch src/index.ts",
+    "start": "pnpm --filter @honostar/logging build && pnpm routes:generate && pnpm contracts:generate && pnpm build:runtime && tsx src/index.ts",
     "lint": "oxlint --type-aware -c ../../.oxlintrc.json",
     "typecheck": "pnpm --filter @honostar/core build && pnpm --filter @honostar/logging build && tsc -p tsconfig.json --noEmit"
   },

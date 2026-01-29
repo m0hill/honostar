@@ -228,81 +228,103 @@ export async function verifyTopics(
   const cookieName = topicsCfg.cookieName ?? "honostar_topics"
   const bindToClientId = topicsCfg.bindToClientId ?? false
 
-  // Prefer a per-request token (query/header) to avoid multi-tab cookie clobbering.
-  // Falls back to the signed cookie for backwards compatibility.
-  const token =
-    c.req.header(TOPICS_TOKEN_HEADER) ??
-    c.req.query(TOPICS_TOKEN_QUERY_PARAM) ??
-    getCookie(c, cookieName)
-  if (!token) {
+  const headerToken = c.req.header(TOPICS_TOKEN_HEADER) ?? null
+  const queryToken = c.req.query(TOPICS_TOKEN_QUERY_PARAM) ?? null
+  const cookieToken = getCookie(c, cookieName) ?? null
+
+  // Prefer a per-request token (query/header) to avoid multi-tab cookie clobbering,
+  // but fall back if that token is expired/invalid and another valid token exists.
+  const candidates: Array<{ token: string; source: "header" | "query" | "cookie" }> = []
+  if (headerToken) candidates.push({ token: headerToken, source: "header" })
+  if (queryToken && queryToken !== headerToken)
+    candidates.push({ token: queryToken, source: "query" })
+  if (cookieToken && cookieToken !== headerToken && cookieToken !== queryToken) {
+    candidates.push({ token: cookieToken, source: "cookie" })
+  }
+
+  if (candidates.length === 0) {
     console.warn("[Topic Security] No topic token found in request")
     return null
   }
 
-  // Parse token (format: payload.signature)
-  const parts = token.split(".")
-  if (parts.length !== 2 || !parts[0] || !parts[1]) {
-    console.warn("[Topic Security] Invalid token format")
-    return null
-  }
-
-  const payloadB64 = parts[0]
-  const signatureB64 = parts[1]
-
-  // Verify signature
-  try {
-    const signature = base64urlDecode(signatureB64)
-    const valid = await hmacVerify(secret, payloadB64, signature)
-    if (!valid) {
-      console.warn("[Topic Security] Invalid token signature")
-      return null
+  const verifyToken = async (
+    token: string
+  ): Promise<{ ok: true; payload: TopicTokenPayload } | { ok: false; message: string }> => {
+    // Parse token (format: payload.signature)
+    const parts = token.split(".")
+    if (parts.length !== 2 || !parts[0] || !parts[1]) {
+      return { ok: false, message: "[Topic Security] Invalid token format" }
     }
-  } catch (err) {
-    console.warn("[Topic Security] Signature verification failed:", err)
-    return null
-  }
 
-  // Decode and validate payload
-  let payload: TopicTokenPayload
-  try {
-    const payloadBytes = base64urlDecode(payloadB64)
-    const payloadJson = new TextDecoder().decode(payloadBytes)
-    payload = JSON.parse(payloadJson)
-  } catch (err) {
-    console.warn("[Topic Security] Failed to decode payload:", err)
-    return null
-  }
+    const payloadB64 = parts[0]
+    const signatureB64 = parts[1]
 
-  // Validate payload structure
-  if (
-    !payload ||
-    payload.v !== 1 ||
-    !Array.isArray(payload.topics) ||
-    typeof payload.exp !== "number"
-  ) {
-    console.warn("[Topic Security] Invalid payload structure")
-    return null
-  }
-
-  // Check expiration
-  const now = Math.floor(Date.now() / 1000)
-  if (payload.exp < now) {
-    console.warn("[Topic Security] Token expired")
-    return null
-  }
-
-  // Verify clientId binding if enabled
-  if (bindToClientId && payload.clientId) {
-    const currentClientId = c.var.clientId
-    if (payload.clientId !== currentClientId) {
-      console.warn("[Topic Security] Token clientId mismatch")
-      return null
+    // Verify signature
+    try {
+      const signature = base64urlDecode(signatureB64)
+      const valid = await hmacVerify(secret, payloadB64, signature)
+      if (!valid) {
+        return { ok: false, message: "[Topic Security] Invalid token signature" }
+      }
+    } catch (err) {
+      return {
+        ok: false,
+        message: `[Topic Security] Signature verification failed: ${String(err)}`,
+      }
     }
+
+    // Decode and validate payload
+    let payload: TopicTokenPayload
+    try {
+      const payloadBytes = base64urlDecode(payloadB64)
+      const payloadJson = new TextDecoder().decode(payloadBytes)
+      payload = JSON.parse(payloadJson)
+    } catch (err) {
+      return { ok: false, message: `[Topic Security] Failed to decode payload: ${String(err)}` }
+    }
+
+    // Validate payload structure
+    if (
+      !payload ||
+      payload.v !== 1 ||
+      !Array.isArray(payload.topics) ||
+      typeof payload.exp !== "number"
+    ) {
+      return { ok: false, message: "[Topic Security] Invalid payload structure" }
+    }
+
+    // Check expiration
+    const now = Math.floor(Date.now() / 1000)
+    if (payload.exp < now) {
+      return { ok: false, message: "[Topic Security] Token expired" }
+    }
+
+    // Verify clientId binding if enabled
+    if (bindToClientId && payload.clientId) {
+      const currentClientId = c.var.clientId
+      if (payload.clientId !== currentClientId) {
+        return { ok: false, message: "[Topic Security] Token clientId mismatch" }
+      }
+    }
+
+    return { ok: true, payload }
   }
 
-  // Return intersection of requested and allowed topics
-  const allowedSet = new Set(payload.topics)
-  const intersection = requestedTopics.filter((topic) => allowedSet.has(topic))
+  // Try tokens in preferred order; only log if we fail to authorize with all options.
+  let lastMessage: string | null = null
+  for (const candidate of candidates) {
+    const res = await verifyToken(candidate.token)
+    if (!res.ok) {
+      // Keep the first error (highest-priority token) for better debuggability.
+      if (lastMessage === null) lastMessage = res.message
+      continue
+    }
+    const payload = res.payload
+    const allowedSet = new Set(payload.topics)
+    return requestedTopics.filter((topic) => allowedSet.has(topic))
+  }
 
-  return intersection
+  if (lastMessage) console.warn(lastMessage)
+
+  return null
 }

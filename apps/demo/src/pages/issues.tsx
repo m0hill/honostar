@@ -2,8 +2,8 @@ import { defineCommand } from "@honostar/core/server"
 import { z } from "zod"
 import { issues, issuesToLabels, labels as labelsTable } from "@/db/schema"
 import { requireAuth } from "@/lib/auth-middleware"
+import { issueCreated, labelCreated } from "@/lib/contracts"
 import { saveBase64Image } from "@/lib/images"
-import { topics } from "@/lib/topics"
 import { routes } from "@/routes"
 
 /**
@@ -118,9 +118,9 @@ export const POST = defineCommand({
     }
 
     // CQRS: command publishes domain events; queries re-render subscribed regions on SSE.
-    c.var.fx.publish(topics.issues.list(), "issue:created", { id: created.id })
+    await c.var.fx.publish(issueCreated, { id: created.id })
     if (createdNewLabel && newLabel) {
-      c.var.fx.publish(topics.labels.list(), "label:created", { name: newLabel })
+      await c.var.fx.publish(labelCreated, { name: newLabel })
     }
 
     if (c.req.header("datastar-request") !== null) {

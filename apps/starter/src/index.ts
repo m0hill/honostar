@@ -20,6 +20,7 @@ import { Hono } from "hono"
 import { compress } from "hono/compress"
 
 import "@honostar/core/server/polyfills/compression.js"
+import "./lib/contracts"
 
 import { fileURLToPath } from "node:url"
 import { routesManifest } from "./routes.manifest"

@@ -27,6 +27,7 @@ import type { HonostarConfig } from "../config"
 import { createConfig } from "../config"
 import type { RegionPatch, RegionPatchSeq } from "../regions"
 import { resolveRegionPatchOptions } from "../regions"
+import { validateEventContract } from "../contracts"
 import { verifyTopics } from "../security/topics"
 import type { EffectDefinition } from "./effect-registry"
 import { SseFormatter } from "./generator"
@@ -226,6 +227,14 @@ export const createSseEndpoint = (
       }
 
       const runQuery = async (topic: string, event?: DomainEvent) => {
+        if (event) {
+          await validateEventContract({
+            topic,
+            event: event.name,
+            payload: event.payload ?? null,
+            source: "receive",
+          })
+        }
         const queries = getQueries()
         const effects = await queries.run({ c, topic, ...(event ? { event } : {}) })
         if (!effects || effects.length === 0) return

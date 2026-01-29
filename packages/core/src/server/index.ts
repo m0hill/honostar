@@ -27,6 +27,27 @@ export { generateRouteManifest } from "./router/generator"
 export type { RouteManifestEntry } from "./router/manifest-route-loader"
 export { createManifestRouteLoader } from "./router/manifest-route-loader"
 export type { RouteLoader } from "./router/types"
+// Contracts (typed topics/events)
+export {
+  defineContracts,
+  generateContractsTypes,
+  globalContracts,
+  schema,
+  topic,
+  topicPattern,
+  validateEventContract,
+} from "./contracts"
+export type {
+  ContractEventName,
+  ContractPayload,
+  ContractTopicName,
+  ContractsDefinition,
+  EventContract,
+  GenerateContractsTypesOptions,
+  SchemaOptions,
+  TopicContractRegistry,
+  TopicMatcher,
+} from "./contracts"
 // Security
 export { csrf } from "./security"
 // Observable HTML (regions)

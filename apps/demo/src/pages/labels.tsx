@@ -1,7 +1,7 @@
 import { defineCommand } from "@honostar/core/server"
 import { z } from "zod"
 import { labels } from "@/db/schema"
-import { topics } from "@/lib/topics"
+import { labelCreated } from "@/lib/contracts"
 
 const labelSchema = z.object({
   issue: z.object({
@@ -28,7 +28,7 @@ export const POST = defineCommand({
         await c.var.db.insert(labels).values({ name: newLabel, color: "#999999" })
 
         // CQRS: publish domain event for queries; show success toast to creator.
-        c.var.fx.publish(topics.labels.list(), "label:created", { name: newLabel })
+        await c.var.fx.publish(labelCreated, { name: newLabel })
         return c.var.fx.reply(
           [["toast:show", `Label "${newLabel}" created successfully!`, "success"]],
           {
