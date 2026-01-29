@@ -13,10 +13,11 @@ import {
   registerEffects,
   renderer,
 } from "@honostar/core/server"
+import { honostarLogging, type WideEvent } from "@honostar/logging"
 import { Hono } from "hono"
+import type { Context } from "hono"
 import { serveStatic } from "hono/bun"
 import { compress } from "hono/compress"
-import { logger } from "hono/logger"
 
 import "@honostar/core/server/polyfills/compression.js"
 
@@ -48,7 +49,18 @@ app.onError(
 app.use("/*", serveStatic({ root: "./public" }))
 app.use("/images/*", serveStatic({ root: "./" }))
 
-app.use("*", logger())
+app.use(
+  "*",
+  honostarLogging({
+    base: { service: "honostar-demo" },
+    enrichers: [
+      (c: Context<AppEnv>, evt: WideEvent) => {
+        evt.client_id = c.var.clientId
+        evt.sse_topics = c.var.sseTopics ?? []
+      },
+    ],
+  })
+)
 
 // Include SSE in compression so long-lived streams benefit from Brotli/gzip context reuse.
 app.use("*", compress())
