@@ -5,7 +5,12 @@ import { getCounter } from "../state"
 const counterTopic = "counter"
 
 export const counterQuery: QueryHandler = async () => {
-  return [["patch-elements", <Counter count={getCounter()} />, { selector: "#counter" }]]
+  const count = getCounter()
+  const dot = `<circle cx="6" cy="6" r="5" fill="${count % 2 === 0 ? "#22c55e" : "#ef4444"}"></circle>`
+  return [
+    ["patch-elements", <Counter count={count} />, { selector: "#counter" }],
+    ["patch-elements", dot, { selector: "#counter-dot", mode: "inner", namespace: "svg" }],
+  ]
 }
 
 export default defineQueryPage({
