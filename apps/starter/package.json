@@ -3,14 +3,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "routes:generate": "pnpm --filter @honostar/core build && tsx scripts/generate-routes.ts",
-    "contracts:generate": "pnpm --filter @honostar/core build && tsx scripts/generate-contracts.ts",
-    "assets:build": "pnpm --filter @honostar/core build && vite build",
-    "assets:dev": "pnpm --filter @honostar/core build && vite build --watch",
-    "dev": "pnpm --filter @honostar/logging build && pnpm routes:generate && pnpm contracts:generate && concurrently \"pnpm assets:dev\" \"tsx watch src/index.ts\"",
-    "start": "pnpm --filter @honostar/logging build && pnpm routes:generate && pnpm contracts:generate && pnpm assets:build && tsx src/index.ts",
+    "dev": "honostar dev",
+    "start": "honostar start",
     "lint": "oxlint --type-aware -c ../../.oxlintrc.json",
-    "typecheck": "pnpm --filter @honostar/core build && pnpm --filter @honostar/logging build && tsc -p tsconfig.json --noEmit"
+    "typecheck": "honostar prepare && tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "@hono/node-server": "^1.0.0",
@@ -19,12 +15,36 @@
     "hono": "^4.9.7"
   },
   "devDependencies": {
+    "@honostar/cli": "workspace:*",
     "@types/node": "^22.10.1",
-    "concurrently": "^9.2.1",
     "oxlint": "^1.28.0",
     "oxlint-tsgolint": "^0.6.0",
     "tsx": "^4.7.2",
     "typescript": "^5.9.3",
     "vite": "^6.0.0"
+  },
+  "honostar": {
+    "depsBuild": [
+      "@honostar/core",
+      "@honostar/logging"
+    ],
+    "routes": {
+      "pagesDir": "src/pages",
+      "manifestPath": "src/generated/routes.manifest.ts",
+      "routesPath": "src/generated/routes.ts",
+      "configPath": "scripts/routes.config.json",
+      "serverImportPath": "@honostar/core/server"
+    },
+    "contracts": {
+      "contractsImportPath": "../lib/app",
+      "outPath": "src/generated/contracts.ts",
+      "contractsExportName": "app",
+      "contractsAccessor": ".contracts",
+      "serverImportPath": "@honostar/core/server"
+    },
+    "server": {
+      "dev": "tsx watch src/index.ts",
+      "start": "tsx src/index.ts"
+    }
   }
 }

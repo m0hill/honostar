@@ -30,7 +30,7 @@
     "./server/polyfills/compression.js": "./dist/server/polyfills/compression.js"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.build.json && node ../../scripts/fix-node-esm-imports.mjs dist",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "oxlint --type-aware -c ../../.oxlintrc.json",
     "test": "bun test"

@@ -156,6 +156,14 @@ export type HonostarConfig = {
   }
 }
 
+export type DeepPartial<T> = {
+  [K in keyof T]?: T[K] extends Array<unknown>
+    ? T[K]
+    : T[K] extends object
+      ? DeepPartial<T[K]>
+      : T[K]
+}
+
 /**
  * Default configuration matching current hardcoded behavior
  * Ensures zero-config backwards compatibility
@@ -210,7 +218,7 @@ export const DEFAULT_CONFIG: HonostarConfig = {
  * Preserves all defaults unless explicitly overridden
  * Automatically syncs CSRF exceptPaths with SSE endpoint if not explicitly set
  */
-export function createConfig(user?: Partial<HonostarConfig>): HonostarConfig {
+export function createConfig(user?: DeepPartial<HonostarConfig>): HonostarConfig {
   const merged = {
     ...DEFAULT_CONFIG,
     ...user,

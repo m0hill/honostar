@@ -14,7 +14,7 @@
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.build.json && node ../../scripts/fix-node-esm-imports.mjs dist",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "bun test"
   },

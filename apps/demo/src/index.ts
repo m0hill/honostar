@@ -21,15 +21,7 @@ import { compress } from "hono/compress"
 
 import "@honostar/core/server/polyfills/compression.js"
 
-// Define your application config
-const config = createConfig({
-  assets: {
-    css: "/assets/styles.css",
-    runtime: "/assets/runtime.js",
-    datastar: "/assets/datastar.js",
-    plugins: ["/assets/plugins.js"],
-  },
-})
+const config = createConfig()
 
 import { customEffects } from "@/effects"
 import { auth } from "@/middleware/auth"

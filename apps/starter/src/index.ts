@@ -25,14 +25,7 @@ import "./lib/app"
 import { fileURLToPath } from "node:url"
 import { routesManifest } from "./generated/routes.manifest"
 
-const config = createConfig({
-  assets: {
-    css: "/assets/styles.css",
-    runtime: "/assets/runtime.js",
-    datastar: "/assets/datastar.js",
-    plugins: [],
-  },
-})
+const config = createConfig()
 
 const app = new Hono<AppEnv>()
 const bus = new MemoryBus()

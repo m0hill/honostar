@@ -1,17 +1,6 @@
-import { readFileSync } from "node:fs"
 import { resolve } from "node:path"
-import { defineConfig, type Plugin } from "vite"
-
-function emitPublicFileAsAsset(args: { src: string; fileName: string }): Plugin {
-  return {
-    name: `honostar:emit:${args.fileName}`,
-    apply: "build",
-    generateBundle() {
-      const source = readFileSync(resolve(__dirname, args.src), "utf-8")
-      this.emitFile({ type: "asset", fileName: args.fileName, source })
-    },
-  }
-}
+import tailwindcss from "@tailwindcss/vite"
+import { defineConfig } from "vite"
 
 export default defineConfig({
   publicDir: false,
@@ -19,17 +8,14 @@ export default defineConfig({
     outDir: "dist",
     emptyOutDir: false,
     sourcemap: true,
+    manifest: "manifest.json",
     rollupOptions: {
       input: {
         runtime: resolve(__dirname, "src/client.ts"),
         plugins: resolve(__dirname, "src/lib/plugins/index.ts"),
-      },
-      output: {
-        entryFileNames: "assets/[name].js",
-        chunkFileNames: "assets/chunks/[name]-[hash].js",
-        assetFileNames: "assets/static/[name]-[hash][extname]",
+        styles: resolve(__dirname, "styles.css"),
       },
     },
   },
-  plugins: [emitPublicFileAsAsset({ src: "public/datastar.js", fileName: "assets/datastar.js" })],
+  plugins: [tailwindcss()],
 })

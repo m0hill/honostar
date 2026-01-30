@@ -2,11 +2,12 @@ import { renderToString } from "hono/jsx/dom/server"
 import type { JSX } from "hono/jsx/jsx-runtime"
 import { jsxRenderer } from "hono/jsx-renderer"
 import { resolveThemeProvider } from "../common/theme"
-import type { HonostarConfig } from "./config"
+import type { DeepPartial, HonostarConfig } from "./config"
 import { createConfig } from "./config"
 import { factory } from "./middleware"
 import { signTopics } from "./security/topics"
 import { regionAttrs } from "./regions"
+import { resolveHonostarAssetsFromViteEnv } from "./assets/vite-manifest"
 
 function stripDoctype(html: string): string {
   return html.replace(/^\s*<!DOCTYPE html>\s*/i, "")
@@ -31,7 +32,7 @@ function generateNonce(): string {
  * Renderer factory that accepts optional configuration
  * Returns middleware that injects HTML shell with configured assets and CSP
  */
-export const renderer = (userConfig?: Partial<HonostarConfig>) => {
+export const renderer = (userConfig?: DeepPartial<HonostarConfig>) => {
   const config = createConfig(userConfig)
 
   return factory.createMiddleware(async (c, next) => {
@@ -49,6 +50,7 @@ export const renderer = (userConfig?: Partial<HonostarConfig>) => {
 
     const theme = resolveThemeProvider(c.var.theme, cookiePreference)
     const scriptNonce = generateNonce()
+    const assets = await resolveHonostarAssetsFromViteEnv(config.assets)
 
     const base = jsxRenderer(({ children }) => {
       const pageHead = c.var.pageHead
@@ -68,12 +70,10 @@ export const renderer = (userConfig?: Partial<HonostarConfig>) => {
         csrfToken: c.var.csrfToken ?? null,
         theme: theme.config,
         assets: {
-          css: withAssetVersion(config.assets.css, config.assets.version),
-          runtime: withAssetVersion(config.assets.runtime, config.assets.version),
-          datastar: withAssetVersion(config.assets.datastar, config.assets.version),
-          plugins: (config.assets.plugins ?? []).map((p) =>
-            withAssetVersion(p, config.assets.version)
-          ),
+          css: withAssetVersion(assets.css, assets.version),
+          runtime: withAssetVersion(assets.runtime, assets.version),
+          datastar: withAssetVersion(assets.datastar, assets.version),
+          plugins: (assets.plugins ?? []).map((p) => withAssetVersion(p, assets.version)),
         },
         devtools: {
           inspector: config.devtools?.inspector ?? null,
@@ -172,27 +172,12 @@ export const renderer = (userConfig?: Partial<HonostarConfig>) => {
             />
             <title>{title}</title>
             {pageHead?.elements}
-            <link
-              rel="stylesheet"
-              href={withAssetVersion(config.assets.css, config.assets.version)}
-            />
-            <link
-              rel="modulepreload"
-              href={withAssetVersion(config.assets.datastar, config.assets.version)}
-            />
-            <link
-              rel="modulepreload"
-              href={withAssetVersion(config.assets.runtime, config.assets.version)}
-            />
+            <link rel="stylesheet" href={withAssetVersion(assets.css, assets.version)} />
+            <link rel="modulepreload" href={withAssetVersion(assets.datastar, assets.version)} />
+            <link rel="modulepreload" href={withAssetVersion(assets.runtime, assets.version)} />
             {/* Load Datastar first so plugins can register with it */}
-            <script
-              type="module"
-              src={withAssetVersion(config.assets.datastar, config.assets.version)}
-            />
-            <script
-              type="module"
-              src={withAssetVersion(config.assets.runtime, config.assets.version)}
-            />
+            <script type="module" src={withAssetVersion(assets.datastar, assets.version)} />
+            <script type="module" src={withAssetVersion(assets.runtime, assets.version)} />
 
             {/* Opt-in to native MPA view transitions and set subtle, fast defaults */}
             <style

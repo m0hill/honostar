@@ -1,12 +1,14 @@
 {
-  "name": "@honostar/inspector",
+  "name": "@honostar/cli",
   "version": "0.0.0",
   "private": true,
+  "bin": {
+    "honostar": "./dist/index.js"
+  },
   "files": [
     "dist"
   ],
   "type": "module",
-  "sideEffects": false,
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -16,11 +18,18 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json && node ../../scripts/fix-node-esm-imports.mjs dist",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "bun test"
+    "lint": "oxlint --type-aware -c ../../.oxlintrc.json"
+  },
+  "dependencies": {
+    "@honostar/core": "workspace:*"
   },
   "devDependencies": {
-    "@types/bun": "latest",
     "@types/node": "^22.10.1",
+    "oxlint": "^1.28.0",
+    "oxlint-tsgolint": "^0.6.0",
     "typescript": "^5.9.3"
+  },
+  "peerDependencies": {
+    "vite": "^6"
   }
 }
