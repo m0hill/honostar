@@ -4,12 +4,54 @@ import type {
   PatchSignalsOptions,
 } from "../../../common/types"
 
+export type SseLane = "canonical" | "interaction" | "bulk"
+
+export type SseQos = {
+  /**
+   * Priority lane for scheduling writes on a single SSE connection.
+   * canonical > interaction > bulk
+   */
+  lane?: SseLane
+  /**
+   * Optional key used for coalescing/dropping within a lane.
+   */
+  key?: string
+  /**
+   * When true, newer messages with the same `key` replace queued ones (bulk-friendly).
+   */
+  drop?: boolean
+}
+
+type SseEnvelope = { qos?: SseQos }
+
 export type SSEPayload =
-  | { event: "datastar-patch-elements"; html: string; options: PatchElementsOptions }
-  | { event: "datastar-patch-signals"; signals: string; options: PatchSignalsOptions }
-  | { event: "execute-script"; script: string; options?: ExecuteScriptOptions }
-  | { event: "honostar-event"; name: string; payload: string }
-  | { event: "close" }
+  | ({
+      event: "datastar-patch-elements"
+      html: string
+      options: PatchElementsOptions
+    } & SseEnvelope)
+  | ({
+      event: "datastar-patch-signals"
+      signals: string
+      options: PatchSignalsOptions
+    } & SseEnvelope)
+  | ({ event: "execute-script"; script: string; options?: ExecuteScriptOptions } & SseEnvelope)
+  | ({ event: "honostar-event"; name: string; payload: string } & SseEnvelope)
+  | ({
+      event: "datastar-honostar-stream-open"
+      streamId: string
+      meta?: string
+    } & SseEnvelope)
+  | ({
+      event: "datastar-honostar-stream-chunk"
+      streamId: string
+      kind: "text" | "json"
+      data: string
+      target?: string
+    } & SseEnvelope)
+  | ({ event: "datastar-honostar-stream-close"; streamId: string } & SseEnvelope)
+  | ({ event: "datastar-honostar-stream-error"; streamId: string; message: string } & SseEnvelope)
+  | ({ event: "close" } & SseEnvelope)
 
 export type Sink = (msg: SSEPayload) => void
 
@@ -19,6 +61,28 @@ export interface PubSubBus {
   toClient(clientId: string, msg: SSEPayload): void
   toTopic(topic: string, msg: SSEPayload): void
   toAll(msg: SSEPayload): void
+  /**
+   * Returns an AbortSignal that is aborted when the client SSE connection closes (when supported).
+   * This is intended for long-running tab-scoped streams.
+   */
+  getClientAbortSignal?: (clientId: string) => AbortSignal | null
+  /**
+   * Register a per-stream abort controller for a client tab.
+   * Implementations MAY abort/replace any existing controller for the same (clientId, streamId).
+   */
+  registerClientStreamAbort?: (
+    clientId: string,
+    streamId: string,
+    controller: AbortController
+  ) => void
+  /**
+   * Unregister a per-stream abort controller without aborting.
+   */
+  unregisterClientStreamAbort?: (clientId: string, streamId: string) => void
+  /**
+   * Abort a running client stream by ID, when supported.
+   */
+  abortClientStream?: (clientId: string, streamId: string, reason?: string) => void
   /**
    * Return a retained "last known good" patch for a topic.
    * Used by the SSE endpoint to immediately self-heal state on (re)connect.
@@ -58,6 +122,8 @@ function canRetain(
 export class MemoryBus implements PubSubBus {
   private clients = new Map<string, Channel>()
   private topics = new Map<string, Channel>()
+  private clientAborts = new Map<string, AbortController>()
+  private clientStreamAborts = new Map<string, AbortController>()
   private retainedTopics = new Map<
     string,
     Extract<SSEPayload, { event: "datastar-patch-elements" }>
@@ -85,6 +151,9 @@ export class MemoryBus implements PubSubBus {
 
   subscribeClient(clientId: string, sink: Sink) {
     const ch = this.getClientChannel(clientId)
+    if (!this.clientAborts.has(clientId)) {
+      this.clientAborts.set(clientId, new AbortController())
+    }
     const unsub = ch.subscribe(sink)
     return () => {
       try {
@@ -92,6 +161,25 @@ export class MemoryBus implements PubSubBus {
       } finally {
         if (ch.subs.size === 0) {
           this.clients.delete(clientId)
+          const ac = this.clientAborts.get(clientId)
+          if (ac) {
+            try {
+              ac.abort()
+            } finally {
+              this.clientAborts.delete(clientId)
+            }
+          }
+
+          // Abort and clear any per-stream controllers for this client.
+          const prefix = `${clientId}::`
+          for (const [key, controller] of this.clientStreamAborts.entries()) {
+            if (!key.startsWith(prefix)) continue
+            try {
+              controller.abort()
+            } finally {
+              this.clientStreamAborts.delete(key)
+            }
+          }
         }
       }
     }
@@ -112,7 +200,9 @@ export class MemoryBus implements PubSubBus {
   }
 
   toClient(clientId: string, msg: SSEPayload) {
-    this.getClientChannel(clientId).publish(msg)
+    const existing = this.clients.get(clientId)
+    if (!existing) return
+    existing.publish(msg)
   }
 
   toTopic(topic: string, msg: SSEPayload) {
@@ -137,6 +227,39 @@ export class MemoryBus implements PubSubBus {
   toAll(msg: SSEPayload) {
     for (const ch of this.clients.values()) ch.publish(msg)
     for (const ch of this.topics.values()) ch.publish(msg)
+  }
+
+  getClientAbortSignal(clientId: string): AbortSignal | null {
+    return this.clientAborts.get(clientId)?.signal ?? null
+  }
+
+  registerClientStreamAbort(clientId: string, streamId: string, controller: AbortController): void {
+    const key = `${clientId}::${streamId}`
+    const existing = this.clientStreamAborts.get(key)
+    if (existing) {
+      try {
+        existing.abort()
+      } finally {
+        this.clientStreamAborts.delete(key)
+      }
+    }
+    this.clientStreamAborts.set(key, controller)
+  }
+
+  unregisterClientStreamAbort(clientId: string, streamId: string): void {
+    const key = `${clientId}::${streamId}`
+    this.clientStreamAborts.delete(key)
+  }
+
+  abortClientStream(clientId: string, streamId: string, reason?: string): void {
+    const key = `${clientId}::${streamId}`
+    const controller = this.clientStreamAborts.get(key)
+    if (!controller) return
+    try {
+      controller.abort(reason)
+    } finally {
+      this.clientStreamAborts.delete(key)
+    }
   }
 
   async getRetainedTopic(topic: string): Promise<SSEPayload | null> {

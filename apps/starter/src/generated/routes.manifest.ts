@@ -4,6 +4,50 @@ import type { RouteManifestEntry } from "@honostar/core/server"
 
 export const routesManifest: RouteManifestEntry[] = [
   {
+    routePath: "/examples/bad_apple/raster/pause",
+    load: () => import("./../pages/examples/bad_apple/raster/pause"),
+  },
+  {
+    routePath: "/examples/bad_apple/raster/start",
+    load: () => import("./../pages/examples/bad_apple/raster/start"),
+  },
+  {
+    routePath: "/examples/bad_apple/raster/stop",
+    load: () => import("./../pages/examples/bad_apple/raster/stop"),
+  },
+  {
+    routePath: "/examples/bad_apple/raster",
+    load: () => import("./../pages/examples/bad_apple/raster/index"),
+  },
+  {
+    routePath: "/examples/ai_tokens/start",
+    load: () => import("./../pages/examples/ai_tokens/start"),
+  },
+  {
+    routePath: "/examples/bad_apple/pause",
+    load: () => import("./../pages/examples/bad_apple/pause"),
+  },
+  {
+    routePath: "/examples/bad_apple/start",
+    load: () => import("./../pages/examples/bad_apple/start"),
+  },
+  {
+    routePath: "/examples/ai_tokens/stop",
+    load: () => import("./../pages/examples/ai_tokens/stop"),
+  },
+  {
+    routePath: "/examples/bad_apple/stop",
+    load: () => import("./../pages/examples/bad_apple/stop"),
+  },
+  {
+    routePath: "/examples/ai_tokens",
+    load: () => import("./../pages/examples/ai_tokens/index"),
+  },
+  {
+    routePath: "/examples/bad_apple",
+    load: () => import("./../pages/examples/bad_apple/index"),
+  },
+  {
     routePath: "/increment",
     load: () => import("./../pages/increment"),
   },

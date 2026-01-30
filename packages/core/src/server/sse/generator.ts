@@ -215,6 +215,52 @@ export class SseFormatter {
     return this.format("datastar-patch-elements", dataLines, sendOptions).join("")
   }
 
+  public streamOpen(streamId: string, meta?: string): string {
+    this.validateRequired(streamId, "streamId")
+    const dataLines = this.eachNewlineIsADataLine("streamId", streamId)
+    if (meta !== undefined) {
+      dataLines.push(...this.eachNewlineIsADataLine("meta", meta))
+    }
+    return this.format("datastar-honostar-stream-open", dataLines, {}).join("")
+  }
+
+  public streamChunk(args: {
+    streamId: string
+    kind: "text" | "json"
+    data: string
+    target?: string
+  }): string {
+    this.validateRequired(args.streamId, "streamId")
+    this.validateRequired(args.kind, "kind")
+    this.validateRequired(args.data, "data")
+
+    const dataLines = [
+      ...this.eachNewlineIsADataLine("streamId", args.streamId),
+      ...this.eachNewlineIsADataLine("kind", args.kind),
+      ...this.eachNewlineIsADataLine("data", args.data),
+    ]
+    if (args.target !== undefined) {
+      dataLines.push(...this.eachNewlineIsADataLine("target", args.target))
+    }
+    return this.format("datastar-honostar-stream-chunk", dataLines, {}).join("")
+  }
+
+  public streamClose(streamId: string): string {
+    this.validateRequired(streamId, "streamId")
+    const dataLines = this.eachNewlineIsADataLine("streamId", streamId)
+    return this.format("datastar-honostar-stream-close", dataLines, {}).join("")
+  }
+
+  public streamError(streamId: string, message: string): string {
+    this.validateRequired(streamId, "streamId")
+    this.validateRequired(message, "message")
+    const dataLines = [
+      ...this.eachNewlineIsADataLine("streamId", streamId),
+      ...this.eachNewlineIsADataLine("message", message),
+    ]
+    return this.format("datastar-honostar-stream-error", dataLines, {}).join("")
+  }
+
   public removeElements(
     selector?: string,
     elements?: string,

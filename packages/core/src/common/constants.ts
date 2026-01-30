@@ -40,4 +40,10 @@ export const EventTypes = [
   "datastar-patch-elements",
 
   "datastar-patch-signals",
+
+  // Honostar stream primitives (multiplexed over the same Datastar SSE connection)
+  "datastar-honostar-stream-open",
+  "datastar-honostar-stream-chunk",
+  "datastar-honostar-stream-close",
+  "datastar-honostar-stream-error",
 ] as const

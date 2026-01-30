@@ -42,6 +42,32 @@ function isSsePayload(value: unknown): value is SSEPayload {
       const payload = (value as { payload?: unknown }).payload
       return typeof name === "string" && typeof payload === "string"
     }
+    case "datastar-honostar-stream-open": {
+      const streamId = (value as { streamId?: unknown }).streamId
+      const meta = (value as { meta?: unknown }).meta
+      return typeof streamId === "string" && (meta === undefined || typeof meta === "string")
+    }
+    case "datastar-honostar-stream-chunk": {
+      const streamId = (value as { streamId?: unknown }).streamId
+      const kind = (value as { kind?: unknown }).kind
+      const data = (value as { data?: unknown }).data
+      const target = (value as { target?: unknown }).target
+      return (
+        typeof streamId === "string" &&
+        (kind === "text" || kind === "json") &&
+        typeof data === "string" &&
+        (target === undefined || typeof target === "string")
+      )
+    }
+    case "datastar-honostar-stream-close": {
+      const streamId = (value as { streamId?: unknown }).streamId
+      return typeof streamId === "string"
+    }
+    case "datastar-honostar-stream-error": {
+      const streamId = (value as { streamId?: unknown }).streamId
+      const message = (value as { message?: unknown }).message
+      return typeof streamId === "string" && typeof message === "string"
+    }
     case "close":
       return true
     default:

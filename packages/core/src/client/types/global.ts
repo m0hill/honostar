@@ -1,6 +1,7 @@
 import type { createPrefetchClient } from "../prefetch"
 import type { ModalsApi } from "../runtime/modals"
 import type { PluginHandler, PluginsApi } from "../runtime/plugins"
+import type { HonostarStreamHandler } from "../runtime/streams"
 import type { ThemeController } from "../theme"
 
 export {}
@@ -21,6 +22,9 @@ declare global {
     prefetch?: ReturnType<typeof createPrefetchClient> | undefined
     modals?: ModalsApi | undefined
     plugins?: PluginsApi | undefined
+    streams?: {
+      subscribe: (streamId: string, handler: HonostarStreamHandler) => () => void
+    }
     actions?: HonostarActions
   }
 
@@ -36,6 +40,7 @@ declare global {
      * This allows the client runtime to avoid double-wrapping fetch.
      */
     __honostarFetchBootstrapped?: true
+    __honostarStreamsInstalled?: true
     __honostarPendingPluginRegistrations?: Array<{
       name: string
       handler: PluginHandler

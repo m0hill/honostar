@@ -31,7 +31,7 @@ import { validateEventContract } from "../contracts"
 import { verifyTopics } from "../security/topics"
 import type { EffectDefinition } from "./effect-registry"
 import { SseFormatter } from "./generator"
-import type { SSEPayload } from "./pubsub/memory"
+import type { SSEPayload, SseLane } from "./pubsub/memory"
 import type { QueryRegistration } from "./queries"
 import { TopicQueryRegistry } from "./queries"
 
@@ -126,12 +126,102 @@ export const createSseEndpoint = (
       }
       const unsubscribes: (() => void)[] = []
       const formatter = new SseFormatter()
-      let writeChain: Promise<unknown> = Promise.resolve()
+      let taskChain: Promise<unknown> = Promise.resolve()
 
-      const enqueue = (fn: () => Promise<unknown>) => {
-        writeChain = writeChain.then(fn).catch((err) => {
-          console.error("[SSE] Write chain error", err)
+      const enqueueTask = (fn: () => Promise<unknown>) => {
+        taskChain = taskChain.then(fn).catch((err) => {
+          console.error("[SSE] Task chain error", err)
         })
+      }
+
+      type QueuedWrite = {
+        lane: SseLane
+        qosKey?: string
+        qosDrop?: boolean
+        size: number
+        write: () => Promise<unknown>
+      }
+
+      const queues: Record<SseLane, QueuedWrite[]> = {
+        canonical: [],
+        interaction: [],
+        bulk: [],
+      }
+      const queuedBytes: Record<SseLane, number> = { canonical: 0, interaction: 0, bulk: 0 }
+
+      // Keep a hard bound on buffered bulk data so a stream can't OOM the server.
+      const MAX_BULK_BUFFERED_BYTES = 512 * 1024
+
+      let flushScheduled = false
+      let flushing = false
+
+      const scheduleFlush = () => {
+        if (flushScheduled) return
+        flushScheduled = true
+        queueMicrotask(() => {
+          flushScheduled = false
+          void flush()
+        })
+      }
+
+      const pickNext = (): QueuedWrite | null => {
+        return queues.canonical.shift() ?? queues.interaction.shift() ?? queues.bulk.shift() ?? null
+      }
+
+      const flush = async () => {
+        if (flushing) return
+        flushing = true
+        try {
+          let count = 0
+          for (;;) {
+            const next = pickNext()
+            if (!next) break
+            queuedBytes[next.lane] = Math.max(0, queuedBytes[next.lane] - next.size)
+            await next.write()
+            count++
+            if (count >= 200) {
+              scheduleFlush()
+              break
+            }
+          }
+        } catch (err) {
+          console.error("[SSE] Flush error", err)
+        } finally {
+          flushing = false
+        }
+      }
+
+      const enqueueWrite = (entry: QueuedWrite) => {
+        if (entry.lane === "bulk") {
+          // Drop/replace queued messages by key when configured (video-like streams).
+          if (entry.qosDrop === true && entry.qosKey) {
+            const idx = queues.bulk.findIndex((q) => q.qosKey === entry.qosKey)
+            if (idx !== -1) {
+              const prev = queues.bulk[idx]!
+              queuedBytes.bulk = Math.max(0, queuedBytes.bulk - prev.size)
+              queues.bulk[idx] = entry
+              queuedBytes.bulk += entry.size
+              scheduleFlush()
+              return
+            }
+          }
+
+          // Bound bulk buffering: best-effort drop oldest bulk messages.
+          while (
+            queuedBytes.bulk + entry.size > MAX_BULK_BUFFERED_BYTES &&
+            queues.bulk.length > 0
+          ) {
+            const dropped = queues.bulk.shift()
+            if (dropped) queuedBytes.bulk = Math.max(0, queuedBytes.bulk - dropped.size)
+          }
+          if (queuedBytes.bulk + entry.size > MAX_BULK_BUFFERED_BYTES) {
+            return
+          }
+        }
+
+        queues[entry.lane].push(entry)
+        queuedBytes[entry.lane] += entry.size
+        scheduleFlush()
       }
 
       const renderNode = async (node: JSX.Element | string | null | undefined): Promise<string> => {
@@ -162,14 +252,24 @@ export const createSseEndpoint = (
           if (isPatchElementsEffect(fx)) {
             const [, payload, opts] = fx
             const html = await renderElementsPayload(payload)
-            await stream.write(formatter.patchElements(html, opts ?? {}))
+            const eventString = formatter.patchElements(html, opts ?? {})
+            enqueueWrite({
+              lane: "canonical",
+              size: eventString.length,
+              write: () => stream.write(eventString),
+            })
             continue
           }
 
           if (isPatchElementsSeqEffect(fx)) {
             const [, payload, opts] = fx
             const html = await renderElementsSeqPayload(payload)
-            await stream.write(formatter.patchElements(html, opts ?? {}))
+            const eventString = formatter.patchElements(html, opts ?? {})
+            enqueueWrite({
+              lane: "canonical",
+              size: eventString.length,
+              write: () => stream.write(eventString),
+            })
             continue
           }
 
@@ -177,7 +277,12 @@ export const createSseEndpoint = (
             const [, patch] = fx
             const html = await renderElementsPayload(patch.html)
             const opts = resolveRegionPatchOptions(patch, c.var.regionRegistry)
-            await stream.write(formatter.patchElements(html, opts))
+            const eventString = formatter.patchElements(html, opts)
+            enqueueWrite({
+              lane: "canonical",
+              size: eventString.length,
+              write: () => stream.write(eventString),
+            })
             continue
           }
 
@@ -185,24 +290,39 @@ export const createSseEndpoint = (
             const [, patch] = fx
             const html = await renderElementsSeqPayload(patch.html)
             const opts = resolveRegionPatchOptions(patch, c.var.regionRegistry)
-            await stream.write(formatter.patchElements(html, opts))
+            const eventString = formatter.patchElements(html, opts)
+            enqueueWrite({
+              lane: "canonical",
+              size: eventString.length,
+              write: () => stream.write(eventString),
+            })
             continue
           }
 
           if (isPatchSignalsEffect(fx)) {
             const [, signals, opts] = fx
-            await stream.write(formatter.patchSignals(JSON.stringify(signals), opts ?? {}))
+            const eventString = formatter.patchSignals(JSON.stringify(signals), opts ?? {})
+            enqueueWrite({
+              lane: "canonical",
+              size: eventString.length,
+              write: () => stream.write(eventString),
+            })
             continue
           }
 
           if (isExecuteScriptEffect(fx)) {
             const [, script, opts] = fx
-            await stream.write(formatter.executeScript(script, opts))
+            const eventString = formatter.executeScript(script, opts)
+            enqueueWrite({
+              lane: "canonical",
+              size: eventString.length,
+              write: () => stream.write(eventString),
+            })
             continue
           }
 
           if (fx[0] === "close-sse") {
-            await stream.close()
+            enqueueWrite({ lane: "canonical", size: 0, write: () => stream.close() })
             return
           }
         }
@@ -243,25 +363,68 @@ export const createSseEndpoint = (
 
       await stream.writeSSE({ data: "", event: "connection-established", id: clientId })
       const ping = setInterval(() => {
-        enqueue(() => stream.writeSSE({ event: "ping", data: "" }))
+        enqueueWrite({
+          lane: "interaction",
+          size: 0,
+          write: () => stream.writeSSE({ event: "ping", data: "" }),
+        })
       }, pingMs)
 
       const handleMessage = (msg: SSEPayload) => {
+        const lane: SseLane =
+          msg.qos?.lane ??
+          (msg.event === "honostar-event"
+            ? "canonical"
+            : msg.event === "close"
+              ? "canonical"
+              : "interaction")
+        const qosKey =
+          typeof msg.qos?.key === "string" && msg.qos.key.length > 0 ? msg.qos.key : undefined
+        const qosDrop = msg.qos?.drop === true
+
+        const enqueueEventString = (eventString: string) => {
+          const entry: QueuedWrite = {
+            lane,
+            qosDrop,
+            size: eventString.length,
+            write: () => stream.write(eventString),
+          }
+          if (qosKey) entry.qosKey = qosKey
+          enqueueWrite(entry)
+        }
+
         if (msg.event === "datastar-patch-elements") {
           const eventString = formatter.patchElements(msg.html, msg.options)
-          enqueue(() => stream.write(eventString))
+          enqueueEventString(eventString)
         } else if (msg.event === "datastar-patch-signals") {
           const eventString = formatter.patchSignals(msg.signals, msg.options)
-          enqueue(() => stream.write(eventString))
+          enqueueEventString(eventString)
         } else if (msg.event === "execute-script") {
           const eventString = formatter.executeScript(msg.script, msg.options)
-          enqueue(() => stream.write(eventString))
+          enqueueEventString(eventString)
+        } else if (msg.event === "datastar-honostar-stream-open") {
+          const eventString = formatter.streamOpen(msg.streamId, msg.meta)
+          enqueueEventString(eventString)
+        } else if (msg.event === "datastar-honostar-stream-chunk") {
+          const eventString = formatter.streamChunk({
+            streamId: msg.streamId,
+            kind: msg.kind,
+            data: msg.data,
+            ...(msg.target !== undefined && { target: msg.target }),
+          })
+          enqueueEventString(eventString)
+        } else if (msg.event === "datastar-honostar-stream-close") {
+          const eventString = formatter.streamClose(msg.streamId)
+          enqueueEventString(eventString)
+        } else if (msg.event === "datastar-honostar-stream-error") {
+          const eventString = formatter.streamError(msg.streamId, msg.message)
+          enqueueEventString(eventString)
         } else if (msg.event === "close") {
           try {
             unsubscribes.forEach((u) => u?.())
             clearInterval(ping)
           } finally {
-            enqueue(() => stream.close())
+            enqueueWrite({ lane: "canonical", size: 0, write: () => stream.close() })
           }
         }
       }
@@ -287,7 +450,7 @@ export const createSseEndpoint = (
                   name: msg.name,
                   payload: safeParseJsonifiable(msg.payload),
                 }
-                enqueue(() => runQuery(topic, event))
+                enqueueTask(() => runQuery(topic, event))
                 return
               }
               handleMessage(msg)
@@ -297,7 +460,7 @@ export const createSseEndpoint = (
             // Option C (recommended): send a fat patch immediately on connect when a query is registered.
             // Fallback to retained topic patches when using the legacy "broadcast patches" flow.
             if (getQueries().has(topic)) {
-              enqueue(() => runQuery(topic))
+              enqueueTask(() => runQuery(topic))
               continue
             }
 

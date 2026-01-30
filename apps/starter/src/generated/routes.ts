@@ -3,6 +3,22 @@
 import { route } from "@honostar/core/server"
 
 export const routes = route({
+  examples: {
+    aiTokens: {
+      start: "/examples/ai_tokens/start",
+      stop: "/examples/ai_tokens/stop",
+    },
+    badApple: {
+      pause: "/examples/bad_apple/pause",
+      raster: {
+        pause: "/examples/bad_apple/raster/pause",
+        start: "/examples/bad_apple/raster/start",
+        stop: "/examples/bad_apple/raster/stop",
+      },
+      start: "/examples/bad_apple/start",
+      stop: "/examples/bad_apple/stop",
+    },
+  },
   home: "/",
   increment: "/increment",
 })

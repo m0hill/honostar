@@ -37,6 +37,55 @@ import type { RegionPatch, RegionPatchSeq } from "../regions"
 import { patchRegion, patchRegionSeq, resolveRegionPatchOptions } from "../regions"
 import type { EffectDefinition } from "./effect-registry"
 import { EffectRegistry } from "./effect-registry"
+import type { SseLane, SseQos } from "./pubsub/memory"
+
+export type FxStreamTarget = { to: "client"; clientId?: string } | { to: "topic"; topic: string }
+
+export type FxStreamChunk = {
+  kind: "text" | "json"
+  data: string | Jsonifiable
+  /**
+   * Optional JSON-encoded targeting metadata for client runtimes.
+   * When present, the client stream watcher can apply chunks directly to a signal/DOM target.
+   */
+  target?: Record<string, Jsonifiable>
+}
+
+export type FxStream = {
+  streamId: string
+  abortSignal: AbortSignal | null
+  open: (meta?: Jsonifiable) => void
+  close: () => void
+  error: (message: string) => void
+  chunk: (chunk: FxStreamChunk) => void
+  chunkText: (
+    text: string,
+    opts?: { coalesceMs?: number; target?: Record<string, Jsonifiable> }
+  ) => void
+  flush: () => void
+  signals: (patch: Record<string, Jsonifiable>, opts?: PatchSignalsOptions) => void
+  elements: (
+    payload: JSX.Element | JSX.Element[] | string,
+    opts?: PatchElementsOptions
+  ) => Promise<void>
+  executeScript: (script: string, opts?: ExecuteScriptOptions) => void
+}
+
+function normalizeLane(candidate: unknown): SseLane | undefined {
+  if (candidate === "canonical" || candidate === "interaction" || candidate === "bulk") {
+    return candidate
+  }
+  return undefined
+}
+
+function normalizeQos(qos?: SseQos): SseQos | undefined {
+  if (!qos) return undefined
+  const lane = normalizeLane(qos.lane)
+  const key = typeof qos.key === "string" && qos.key.length > 0 ? qos.key : undefined
+  const drop = typeof qos.drop === "boolean" ? qos.drop : undefined
+  if (!lane && !key && drop === undefined) return undefined
+  return { ...(lane && { lane }), ...(key && { key }), ...(drop !== undefined && { drop }) }
+}
 
 const isPatchElementsEffect = (
   fx: EffectDefinition
@@ -294,6 +343,7 @@ export class FxResponder {
       event: "datastar-patch-elements",
       html,
       options,
+      qos: { lane: "canonical" },
     })
   }
 
@@ -306,6 +356,7 @@ export class FxResponder {
       event: "datastar-patch-signals",
       signals: JSON.stringify(signals),
       options: options ?? {},
+      qos: { lane: "canonical" },
     })
   }
 
@@ -314,6 +365,7 @@ export class FxResponder {
       event: "execute-script",
       script,
       ...(options && { options }),
+      qos: { lane: "canonical" },
     })
   }
 
@@ -500,6 +552,7 @@ export class FxResponder {
             event: "datastar-patch-elements",
             html,
             options: opts ?? {},
+            qos: { lane: "interaction" },
           })
           continue
         }
@@ -511,6 +564,7 @@ export class FxResponder {
             event: "datastar-patch-elements",
             html,
             options: opts ?? {},
+            qos: { lane: "interaction" },
           })
           continue
         }
@@ -523,6 +577,7 @@ export class FxResponder {
             event: "datastar-patch-elements",
             html,
             options: opts,
+            qos: { lane: "interaction" },
           })
           continue
         }
@@ -535,6 +590,7 @@ export class FxResponder {
             event: "datastar-patch-elements",
             html,
             options: opts,
+            qos: { lane: "interaction" },
           })
           continue
         }
@@ -545,6 +601,7 @@ export class FxResponder {
             event: "datastar-patch-signals",
             signals: JSON.stringify(payload),
             options: opts ?? {},
+            qos: { lane: "interaction" },
           })
           continue
         }
@@ -555,6 +612,7 @@ export class FxResponder {
             event: "execute-script",
             script,
             ...(opts && { options: opts }),
+            qos: { lane: "interaction" },
           })
           continue
         }
@@ -714,6 +772,7 @@ export class FxResponder {
         event: "honostar-event",
         name: contract.event,
         payload: JSON.stringify(payload ?? null),
+        qos: { lane: "canonical" },
       })
       return
     }
@@ -735,7 +794,12 @@ export class FxResponder {
 
     const encoded = JSON.stringify(payload ?? null)
     for (const t of topics) {
-      this.c.var.bus.toTopic(t, { event: "honostar-event", name, payload: encoded })
+      this.c.var.bus.toTopic(t, {
+        event: "honostar-event",
+        name,
+        payload: encoded,
+        qos: { lane: "canonical" },
+      })
     }
   }
 
@@ -760,8 +824,216 @@ export class FxResponder {
     )
 
     for (const t of topics) {
-      this.c.var.bus.toTopic(t, { event: "honostar-event", name: contract.event, payload: encoded })
+      this.c.var.bus.toTopic(t, {
+        event: "honostar-event",
+        name: contract.event,
+        payload: encoded,
+        qos: { lane: "canonical" },
+      })
     }
+  }
+
+  public stream(to: FxStreamTarget, streamId: string, opts?: { qos?: SseQos }): FxStream {
+    const qos = normalizeQos(opts?.qos)
+    const target: FxStreamTarget =
+      to.to === "client"
+        ? { to: "client", clientId: to.clientId ?? this.c.var.clientId }
+        : { to: "topic", topic: to.topic }
+
+    const bus = this.c.var.bus
+    const clientAbort =
+      target.to === "client"
+        ? (bus.getClientAbortSignal?.(target.clientId ?? "anonymous") ?? null)
+        : null
+    const streamAbort = target.to === "client" ? new AbortController() : null
+    const abortSignal = streamAbort?.signal ?? null
+
+    if (target.to === "client") {
+      const clientId = target.clientId ?? "anonymous"
+      if (clientAbort) {
+        clientAbort.addEventListener(
+          "abort",
+          () => {
+            try {
+              streamAbort?.abort()
+            } catch {
+              // ignore
+            }
+          },
+          { once: true }
+        )
+      }
+      bus.registerClientStreamAbort?.(clientId, streamId, streamAbort ?? new AbortController())
+    }
+
+    const coalesceState: {
+      timer: ReturnType<typeof setTimeout> | null
+      buffer: string
+      ms: number
+      target: Record<string, Jsonifiable> | undefined
+    } = { timer: null, buffer: "", ms: 0, target: undefined }
+
+    let finished = false
+
+    const toTarget = (msg: import("./pubsub/memory").SSEPayload) => {
+      const next = qos ? { ...msg, qos: { ...(msg.qos ? msg.qos : {}), ...qos } } : msg
+      if (target.to === "client") {
+        bus.toClient(target.clientId ?? "anonymous", next)
+        return
+      }
+      bus.toTopic(target.topic, next)
+    }
+
+    const flush = () => {
+      if (!coalesceState.buffer) return
+      const data = coalesceState.buffer
+      const targetJson = coalesceState.target ? JSON.stringify(coalesceState.target) : undefined
+      coalesceState.buffer = ""
+      coalesceState.target = undefined
+      if (coalesceState.timer) {
+        clearTimeout(coalesceState.timer)
+        coalesceState.timer = null
+      }
+      toTarget({
+        event: "datastar-honostar-stream-chunk",
+        streamId,
+        kind: "text",
+        data,
+        ...(targetJson !== undefined && { target: targetJson }),
+      })
+    }
+
+    const end = (kind: "close" | "error", message?: string) => {
+      if (finished) return
+      finished = true
+
+      flush()
+      if (target.to === "client") {
+        bus.unregisterClientStreamAbort?.(target.clientId ?? "anonymous", streamId)
+      }
+
+      if (kind === "close") {
+        toTarget({ event: "datastar-honostar-stream-close", streamId })
+      } else {
+        toTarget({
+          event: "datastar-honostar-stream-error",
+          streamId,
+          message: message ?? "Stream error",
+        })
+      }
+    }
+
+    if (abortSignal) {
+      abortSignal.addEventListener(
+        "abort",
+        () => {
+          end("close")
+        },
+        { once: true }
+      )
+    }
+
+    return {
+      streamId,
+      abortSignal,
+      open: (meta?: Jsonifiable) => {
+        const metaJson = meta === undefined ? undefined : JSON.stringify(meta)
+        toTarget({
+          event: "datastar-honostar-stream-open",
+          streamId,
+          ...(metaJson !== undefined && { meta: metaJson }),
+        })
+      },
+      close: () => {
+        end("close")
+      },
+      error: (message: string) => {
+        end("error", message)
+      },
+      chunk: (chunk: FxStreamChunk) => {
+        if (finished) return
+        flush()
+        const data = (() => {
+          if (chunk.kind === "text") {
+            return typeof chunk.data === "string" ? chunk.data : JSON.stringify(chunk.data)
+          }
+          return JSON.stringify(chunk.data)
+        })()
+        const targetJson = chunk.target ? JSON.stringify(chunk.target) : undefined
+        toTarget({
+          event: "datastar-honostar-stream-chunk",
+          streamId,
+          kind: chunk.kind,
+          data,
+          ...(targetJson !== undefined && { target: targetJson }),
+        })
+      },
+      chunkText: (
+        text: string,
+        options?: { coalesceMs?: number; target?: Record<string, Jsonifiable> }
+      ) => {
+        if (finished) return
+        const coalesceMs = options?.coalesceMs ?? 0
+        if (coalesceMs <= 0) {
+          const targetJson = options?.target ? JSON.stringify(options.target) : undefined
+          toTarget({
+            event: "datastar-honostar-stream-chunk",
+            streamId,
+            kind: "text",
+            data: text,
+            ...(targetJson !== undefined && { target: targetJson }),
+          })
+          return
+        }
+
+        coalesceState.ms = coalesceMs
+        coalesceState.target = options?.target
+        coalesceState.buffer = `${coalesceState.buffer}${text}`
+        if (!coalesceState.timer) {
+          coalesceState.timer = setTimeout(() => flush(), coalesceMs)
+        }
+      },
+      flush,
+      signals: (patch: Record<string, Jsonifiable>, options?: PatchSignalsOptions) => {
+        if (finished) return
+        flush()
+        toTarget({
+          event: "datastar-patch-signals",
+          signals: JSON.stringify(patch),
+          options: options ?? {},
+        })
+      },
+      elements: async (
+        payload: JSX.Element | JSX.Element[] | string,
+        options?: PatchElementsOptions
+      ) => {
+        if (finished) return
+        flush()
+        const html = await this.renderElementsPayload(payload)
+        toTarget({
+          event: "datastar-patch-elements",
+          html,
+          options: options ?? {},
+        })
+      },
+      executeScript: (script: string, options?: ExecuteScriptOptions) => {
+        if (finished) return
+        flush()
+        toTarget({
+          event: "execute-script",
+          script,
+          ...(options && { options }),
+        })
+      },
+    }
+  }
+
+  public streamClient(streamId: string, opts?: { qos?: SseQos }): FxStream {
+    return this.stream({ to: "client" }, streamId, opts)
+  }
+
+  public streamTopic(topic: string, streamId: string, opts?: { qos?: SseQos }): FxStream {
+    return this.stream({ to: "topic", topic }, streamId, opts)
   }
 }
 

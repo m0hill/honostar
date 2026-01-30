@@ -60,6 +60,15 @@ pnpm dev:demo
 
 Implementation / commenting standards live in `docs/IMPLEMENTATION.md`.
 
+## Docs
+
+- `docs/BUILD.md` - Build system (Vite/tsc) and asset pipeline
+- `docs/STREAMING.md` - Streaming as a first-class primitive (multiplexed over `/_/events`)
+- `docs/CUSTOM_EFFECTS.md` - Extending the effect system
+- `docs/PREFETCH.md` - Prefetch behavior
+- `docs/DECISIONS.md` - Architecture decisions
+- `docs/VISION.md` - Product vision / roadmap
+
 ## Core Concepts
 
 ### Pages & Handlers

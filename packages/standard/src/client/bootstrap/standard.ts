@@ -1,14 +1,12 @@
+import "@honostar/core/client/bootstrap/minimal"
+
 import {
   createModalHost,
   createPrefetchClient,
-  createThemeController,
   ensureHonostar,
-  ensureTabId,
   freeze,
-  installFetchAugmentation,
   installImageEnhancements,
   installPluginSystem,
-  installThemeActions,
   onPageRevealFocusApp,
   readRuntimeData,
 } from "@honostar/core/client"
@@ -36,14 +34,7 @@ async function loadPlugins(pluginPaths: string[]) {
 
 void (async function bootstrap() {
   const data = readRuntimeData()
-  const tabId = ensureTabId()
-  installFetchAugmentation({ tabId, csrfToken: data.csrfToken })
-
-  const theme = createThemeController(data.theme)
-  if (theme) installThemeActions(theme)
-
   const honostar = ensureHonostar()
-  honostar.theme = theme ?? undefined
 
   // Install plugin system early so user code can register plugins
   const plugins = installPluginSystem(data.assets.datastar)
