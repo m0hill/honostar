@@ -20,10 +20,10 @@ import { Hono } from "hono"
 import { compress } from "hono/compress"
 
 import "@honostar/core/server/polyfills/compression.js"
-import "./lib/contracts"
+import "./lib/app"
 
 import { fileURLToPath } from "node:url"
-import { routesManifest } from "./routes.manifest"
+import { routesManifest } from "./generated/routes.manifest"
 
 const config = createConfig({
   assets: {

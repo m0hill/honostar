@@ -7,12 +7,15 @@ const appRoot = resolve(fileURLToPath(new URL("..", import.meta.url)))
 
 async function main() {
   await generateContractsTypes({
-    contractsImportPath: "./lib/contracts",
-    outPath: resolve(appRoot, "src/contracts.generated.ts"),
+    // src/generated/contracts.ts -> ../lib/app
+    contractsImportPath: "../lib/app",
+    outPath: resolve(appRoot, "src/generated/contracts.ts"),
+    contractsExportName: "app",
+    contractsAccessor: ".contracts",
     serverImportPath: "@honostar/core/server",
   })
 
-  console.log("✓ Generated src/contracts.generated.ts")
+  console.log("✓ Generated src/generated/contracts.ts")
 }
 
 main().catch((error) => {

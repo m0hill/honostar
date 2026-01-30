@@ -1,4 +1,4 @@
-import { routes } from "@/routes"
+import { routes } from "@/generated/routes"
 import type { IssueWithAuthor } from "@/types"
 import { Badge } from "./ui/badge"
 import { Card } from "./ui/card"

@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { labels as labelsTable } from "@/db/schema"
 import { requireAuth } from "@/lib/auth-middleware"
-import { routes } from "@/routes"
+import { routes } from "@/generated/routes"
 import type { Label as LabelType } from "@/types"
 
 function NewIssuePage(props: { labels: LabelType[]; error?: string }) {

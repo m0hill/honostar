@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { requireGuest } from "@/lib/auth-middleware"
-import { routes } from "@/routes"
+import { routes } from "@/generated/routes"
 
 function LoginPage(props: { error?: string }) {
   return (

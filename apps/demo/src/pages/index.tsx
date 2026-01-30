@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { labels } from "@/db/schema"
 import { topics } from "@/lib/topics"
-import { routes } from "@/routes"
+import { routes } from "@/generated/routes"
 import type { IssueWithAuthor, User } from "@/types"
 
 type IssueStatusFilter = "open" | "closed" | "all"

@@ -27,6 +27,9 @@ export { generateRouteManifest } from "./router/generator"
 export type { RouteManifestEntry } from "./router/manifest-route-loader"
 export { createManifestRouteLoader } from "./router/manifest-route-loader"
 export type { RouteLoader } from "./router/types"
+// App container (single source of truth for ids + policies)
+export { createApp } from "./app"
+export type { HonostarApp } from "./app"
 // Contracts (typed topics/events)
 export {
   defineContracts,

@@ -5,7 +5,7 @@ import { issues } from "@/db/schema"
 import { requireAuth } from "@/lib/auth-middleware"
 import { issueStatusChangedDetail, issueStatusChangedList } from "@/lib/contracts"
 import { topics } from "@/lib/topics"
-import { routes } from "@/routes"
+import { routes } from "@/generated/routes"
 
 const payloadSchema = z.object({
   status: z.enum(["open", "closed"]),

@@ -2,7 +2,7 @@ import { defineQueryPage } from "@honostar/core/server"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { requireAuth } from "@/lib/auth-middleware"
-import { routes } from "@/routes"
+import { routes } from "@/generated/routes"
 import type { User } from "@/types"
 
 function ProfilePage({ user }: { user: User }) {

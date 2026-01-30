@@ -5,10 +5,10 @@ import type { RouteManifestEntry } from "@honostar/core/server"
 export const routesManifest: RouteManifestEntry[] = [
   {
     routePath: "/increment",
-    load: () => import("./pages/increment"),
+    load: () => import("./../pages/increment"),
   },
   {
     routePath: "/",
-    load: () => import("./pages/index"),
+    load: () => import("./../pages/index"),
   },
 ]

@@ -5,58 +5,58 @@ import type { RouteManifestEntry } from "@honostar/core/server"
 export const routesManifest: RouteManifestEntry[] = [
   {
     routePath: "/issues/new-modal",
-    load: () => import("./pages/issues/new-modal"),
+    load: () => import("./../pages/issues/new-modal"),
   },
   {
     routePath: "/issues/new",
-    load: () => import("./pages/issues/new"),
+    load: () => import("./../pages/issues/new"),
   },
   {
     routePath: "/profile",
-    load: () => import("./pages/profile"),
+    load: () => import("./../pages/profile"),
   },
   {
     routePath: "/issues",
-    load: () => import("./pages/issues"),
+    load: () => import("./../pages/issues"),
   },
   {
     routePath: "/labels",
-    load: () => import("./pages/labels"),
+    load: () => import("./../pages/labels"),
   },
   {
     routePath: "/logout",
-    load: () => import("./pages/logout"),
+    load: () => import("./../pages/logout"),
   },
   {
     routePath: "/search",
-    load: () => import("./pages/search"),
+    load: () => import("./../pages/search"),
   },
   {
     routePath: "/signup",
-    load: () => import("./pages/signup"),
+    load: () => import("./../pages/signup"),
   },
   {
     routePath: "/login",
-    load: () => import("./pages/login"),
+    load: () => import("./../pages/login"),
   },
   {
     routePath: "/",
-    load: () => import("./pages/index"),
+    load: () => import("./../pages/index"),
   },
   {
     routePath: "/issues/:id/comments",
-    load: () => import("./pages/issues/[id]/comments"),
+    load: () => import("./../pages/issues/[id]/comments"),
   },
   {
     routePath: "/issues/:id/status",
-    load: () => import("./pages/issues/[id]/status"),
+    load: () => import("./../pages/issues/[id]/status"),
   },
   {
     routePath: "/auth/:action",
-    load: () => import("./pages/auth/[action]"),
+    load: () => import("./../pages/auth/[action]"),
   },
   {
     routePath: "/issues/:id",
-    load: () => import("./pages/issues/[id]"),
+    load: () => import("./../pages/issues/[id]"),
   },
 ]

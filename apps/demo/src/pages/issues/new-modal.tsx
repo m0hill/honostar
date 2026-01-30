@@ -3,7 +3,7 @@ import { z } from "zod"
 import IssueModal from "@/components/IssueModal"
 import { labels } from "@/db/schema"
 import { requireAuth } from "@/lib/auth-middleware"
-import { routes } from "@/routes"
+import { routes } from "@/generated/routes"
 
 // No data expected from client - empty schema
 const emptySchema = z.object({}).optional()

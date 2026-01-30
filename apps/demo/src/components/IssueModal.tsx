@@ -1,4 +1,4 @@
-import { routes } from "@/routes"
+import { routes } from "@/generated/routes"
 import type { Label } from "@/types"
 import LabelsSection from "./LabelsSection"
 import { Button } from "./ui/button"

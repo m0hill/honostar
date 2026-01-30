@@ -1,5 +1,5 @@
 import { factory } from "@honostar/core/server"
-import { routes } from "@/routes"
+import { routes } from "@/generated/routes"
 
 export const requireAuth = factory.createMiddleware(async (c, next) => {
   if (!c.var.user) {

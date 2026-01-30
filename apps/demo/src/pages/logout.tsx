@@ -1,6 +1,6 @@
 import { defineCommand } from "@honostar/core/server"
 import { deleteCookie } from "hono/cookie"
-import { routes } from "@/routes"
+import { routes } from "@/generated/routes"
 
 export const POST = defineCommand({
   async handler(c) {

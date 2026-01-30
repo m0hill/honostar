@@ -4,7 +4,7 @@ import { issues, issuesToLabels, labels as labelsTable } from "@/db/schema"
 import { requireAuth } from "@/lib/auth-middleware"
 import { issueCreated, labelCreated } from "@/lib/contracts"
 import { saveBase64Image } from "@/lib/images"
-import { routes } from "@/routes"
+import { routes } from "@/generated/routes"
 
 /**
  * Define the schema for the incoming JSON payload from Datastar.

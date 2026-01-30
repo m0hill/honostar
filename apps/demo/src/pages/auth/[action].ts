@@ -1,7 +1,7 @@
 import { defineCommand } from "@honostar/core/server"
 import { z } from "zod"
 import { createAuthResponse, handleLogin, handleSignup } from "@/lib/auth"
-import { routes } from "@/routes"
+import { routes } from "@/generated/routes"
 
 const authPayloadSchema = z.object({
   form: z.object({

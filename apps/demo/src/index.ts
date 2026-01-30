@@ -35,7 +35,7 @@ import { customEffects } from "@/effects"
 import { auth } from "@/middleware/auth"
 import { attachBus } from "@/middleware/bus"
 import { attachDb } from "@/middleware/db"
-import { routesManifest } from "@/routes.manifest"
+import { routesManifest } from "@/generated/routes.manifest"
 import "@/lib/contracts"
 
 const app = new Hono<AppEnv>()

@@ -6,7 +6,7 @@ import { comments as commentsTable } from "@/db/schema"
 import { requireAuth } from "@/lib/auth-middleware"
 import { commentCreated } from "@/lib/contracts"
 import { topics } from "@/lib/topics"
-import { routes } from "@/routes"
+import { routes } from "@/generated/routes"
 
 // Drizzle ORM query builder types
 type CommentsTable = typeof commentsTable

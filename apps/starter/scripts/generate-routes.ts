@@ -6,8 +6,8 @@ import { generateRouteManifest } from "@honostar/core/server"
 
 const appRoot = resolve(fileURLToPath(new URL("..", import.meta.url)))
 const pagesDir = resolve(appRoot, "src/pages")
-const manifestPath = resolve(appRoot, "src/routes.manifest.ts")
-const routesPath = resolve(appRoot, "src/routes.ts")
+const manifestPath = resolve(appRoot, "src/generated/routes.manifest.ts")
+const routesPath = resolve(appRoot, "src/generated/routes.ts")
 const configPath = resolve(appRoot, "scripts/routes.config.json")
 
 async function loadRoutesConfig() {
@@ -30,8 +30,8 @@ async function main() {
     serverImportPath: "@honostar/core/server",
   })
 
-  const relativeManifest = join("src", "routes.manifest.ts")
-  const relativeRoutes = join("src", "routes.ts")
+  const relativeManifest = join("src", "generated", "routes.manifest.ts")
+  const relativeRoutes = join("src", "generated", "routes.ts")
 
   console.log(`✓ Generated ${relativeManifest}`)
   console.log(`✓ Generated ${relativeRoutes}`)
