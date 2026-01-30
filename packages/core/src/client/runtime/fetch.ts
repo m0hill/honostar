@@ -7,6 +7,12 @@ export function installFetchAugmentation(opts: {
   tabId: string
   csrfToken: string | null
 }): () => void {
+  // The server injects a tiny inline bootstrap that patches fetch before Datastar initializes.
+  // When present, avoid double-wrapping fetch in the client runtime.
+  if (typeof window !== "undefined" && window.__honostarFetchBootstrapped) {
+    return () => {}
+  }
+
   const originalFetch: BrowserFetchWithPreconnect = window.fetch
   const originalPreconnect =
     typeof originalFetch.preconnect === "function"

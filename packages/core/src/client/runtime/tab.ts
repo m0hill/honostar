@@ -6,6 +6,12 @@ export function generateTabId(): string {
 }
 
 export function ensureTabId(storageKey = "tabId"): string {
+  // Prefer the server-bootstrapped tab id if present. This avoids any mismatch and ensures
+  // the very first SSE connection (opened before runtime loads) uses the same id.
+  if (typeof window !== "undefined" && typeof window.__honostarTabId === "string") {
+    return window.__honostarTabId
+  }
+
   try {
     let tabId = sessionStorage.getItem(storageKey)
     if (!tabId) {

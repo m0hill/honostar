@@ -5,9 +5,10 @@
   "scripts": {
     "routes:generate": "pnpm --filter @honostar/core build && tsx scripts/generate-routes.ts",
     "contracts:generate": "pnpm --filter @honostar/core build && tsx scripts/generate-contracts.ts",
-    "build:runtime": "pnpm --filter @honostar/core build && esbuild src/client.ts --bundle --format=esm --platform=browser --outfile=public/runtime.js",
-    "dev": "pnpm --filter @honostar/logging build && pnpm routes:generate && pnpm contracts:generate && pnpm build:runtime && tsx watch src/index.ts",
-    "start": "pnpm --filter @honostar/logging build && pnpm routes:generate && pnpm contracts:generate && pnpm build:runtime && tsx src/index.ts",
+    "assets:build": "pnpm --filter @honostar/core build && vite build",
+    "assets:dev": "pnpm --filter @honostar/core build && vite build --watch",
+    "dev": "pnpm --filter @honostar/logging build && pnpm routes:generate && pnpm contracts:generate && concurrently \"pnpm assets:dev\" \"tsx watch src/index.ts\"",
+    "start": "pnpm --filter @honostar/logging build && pnpm routes:generate && pnpm contracts:generate && pnpm assets:build && tsx src/index.ts",
     "lint": "oxlint --type-aware -c ../../.oxlintrc.json",
     "typecheck": "pnpm --filter @honostar/core build && pnpm --filter @honostar/logging build && tsc -p tsconfig.json --noEmit"
   },
@@ -19,10 +20,11 @@
   },
   "devDependencies": {
     "@types/node": "^22.10.1",
-    "esbuild": "^0.25.0",
+    "concurrently": "^9.2.1",
     "oxlint": "^1.28.0",
     "oxlint-tsgolint": "^0.6.0",
     "tsx": "^4.7.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vite": "^6.0.0"
   }
 }

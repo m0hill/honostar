@@ -110,6 +110,66 @@ export const renderer = (userConfig?: Partial<HonostarConfig>) => {
               nonce={scriptNonce}
               dangerouslySetInnerHTML={{ __html: theme.bootstrapScript }}
             />
+            <script
+              id="honostar-fetch-bootstrap"
+              nonce={scriptNonce}
+              dangerouslySetInnerHTML={{
+                __html: `
+              (() => {
+                if (window.__honostarFetchBootstrapped) return
+                window.__honostarFetchBootstrapped = true
+
+                const storageKey = 'tabId'
+                let tabId = null
+                try {
+                  tabId = sessionStorage.getItem(storageKey)
+                } catch {}
+
+                if (!tabId) {
+                  try {
+                    tabId =
+                      (globalThis.crypto && typeof crypto.randomUUID === 'function'
+                        ? crypto.randomUUID()
+                        : 'tab-' + Math.random().toString(36).slice(2))
+                    sessionStorage.setItem(storageKey, tabId)
+                  } catch {
+                    tabId = 'tab-' + Math.random().toString(36).slice(2)
+                  }
+                }
+
+                window.__honostarTabId = tabId
+
+                const originalFetch = window.fetch
+                if (typeof originalFetch !== 'function') return
+
+                const originalPreconnect =
+                  typeof originalFetch.preconnect === 'function'
+                    ? originalFetch.preconnect.bind(originalFetch)
+                    : null
+
+                const getCsrfToken = () => {
+                  const meta = document.querySelector('meta[name="csrf-token"]')
+                  return meta ? meta.getAttribute('content') || '' : ''
+                }
+
+                const wrapped = Object.assign(
+                  (input, init) => {
+                    const nextInit = init ? { ...init } : {}
+                    const headers = new Headers(nextInit.headers || {})
+                    headers.set('X-Tab-ID', tabId)
+                    const csrf = getCsrfToken()
+                    if (csrf) headers.set('X-CSRF-Token', csrf)
+                    nextInit.headers = headers
+                    return originalFetch(input, nextInit)
+                  },
+                  originalPreconnect ? { preconnect: (...args) => originalPreconnect(...args) } : {}
+                )
+
+                window.fetch = wrapped
+              })()
+            `,
+              }}
+            />
             <title>{title}</title>
             {pageHead?.elements}
             <link

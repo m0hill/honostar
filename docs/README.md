@@ -189,6 +189,16 @@ app.use("*", renderer(config))
 app.get("/_/events", createSseEndpoint(config))
 ```
 
+### Vite asset pipeline (recommended)
+
+In the starter/demo apps, browser assets are built with Vite into `dist/assets/` and served at `/assets/*`.
+That setup typically uses:
+
+- `css: "/assets/styles.css"`
+- `runtime: "/assets/runtime.js"`
+- `datastar: "/assets/datastar.js"`
+- `plugins: ["/assets/plugins.js"]` (optional)
+
 ## Multi-Instance Scaling
 
 HonoStar supports horizontal scaling via Redis or NATS for distributed SSE:

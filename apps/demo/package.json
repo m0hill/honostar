@@ -3,19 +3,17 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "routes:generate": "pnpm --filter @honostar/core build && bun scripts/generate-routes.ts",
-    "contracts:generate": "pnpm --filter @honostar/core build && bun scripts/generate-contracts.ts",
-    "build:plugins": "pnpm --filter @honostar/core build && bun build src/lib/plugins/index.ts --outfile public/plugins.js --target browser --format esm --minify",
-    "dev:plugins": "pnpm --filter @honostar/core build && bun build src/lib/plugins/index.ts --outfile public/plugins.js --target browser --format esm --watch",
-    "build:assets": "pnpm run build:css && pnpm run build:runtime && pnpm run build:plugins",
+    "routes:generate": "pnpm --filter @honostar/core build && tsx scripts/generate-routes.ts",
+    "contracts:generate": "pnpm --filter @honostar/core build && tsx scripts/generate-contracts.ts",
+    "assets:build": "pnpm --filter @honostar/core build && pnpm --filter @honostar/inspector build && pnpm --filter @honostar/standard build && vite build",
+    "assets:dev": "pnpm --filter @honostar/core build && pnpm --filter @honostar/inspector build && pnpm --filter @honostar/standard build && vite build --watch",
+    "build:assets": "pnpm run build:css && pnpm run assets:build",
     "start": "pnpm run routes:generate && pnpm run build:assets && bun src/index.ts",
-    "dev": "pnpm --filter @honostar/logging build && bunx concurrently \"pnpm run dev:css\" \"pnpm run dev:runtime\" \"pnpm run dev:plugins\" \"bun --hot src/index.ts\"",
+    "dev": "pnpm --filter @honostar/logging build && concurrently \"pnpm run dev:css\" \"pnpm run assets:dev\" \"bun --hot src/index.ts\"",
     "build": "pnpm --filter @honostar/logging build && pnpm run routes:generate && pnpm run contracts:generate && pnpm run build:assets && bun build src/index.ts --outdir dist --target bun",
     "build:prod": "pnpm --filter @honostar/logging build && pnpm run routes:generate && pnpm run contracts:generate && pnpm run build:assets && bun build src/index.ts --outdir dist --target bun --minify --release",
-    "build:css": "tailwindcss -i ./styles.css -o ./public/styles.css",
-    "dev:css": "tailwindcss -i ./styles.css -o ./public/styles.css --watch",
-    "build:runtime": "pnpm --filter @honostar/core build && pnpm --filter @honostar/inspector build && pnpm --filter @honostar/standard build && bun build src/client.ts --outfile public/runtime.js --target browser --format esm --minify",
-    "dev:runtime": "pnpm --filter @honostar/core build && pnpm --filter @honostar/inspector build && pnpm --filter @honostar/standard build && bun build src/client.ts --outfile public/runtime.js --target browser --format esm --watch",
+    "build:css": "node -e \"require('fs').mkdirSync('dist/assets',{recursive:true})\" && tailwindcss -i ./styles.css -o ./dist/assets/styles.css",
+    "dev:css": "node -e \"require('fs').mkdirSync('dist/assets',{recursive:true})\" && tailwindcss -i ./styles.css -o ./dist/assets/styles.css --watch",
     "lint": "oxlint --type-aware -c ../../.oxlintrc.json",
     "typecheck": "pnpm --filter @honostar/core build && pnpm --filter @honostar/logging build && pnpm --filter @honostar/inspector build && pnpm --filter @honostar/standard build && tsc -noEmit",
     "test": "pnpm run routes:generate && pnpm run contracts:generate && bun test --pass-with-no-tests",
@@ -53,6 +51,7 @@
     "oxlint-tsgolint": "^0.6.0",
     "tailwindcss": "^4.1.13",
     "tsx": "^4.7.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vite": "^6.0.0"
   }
 }

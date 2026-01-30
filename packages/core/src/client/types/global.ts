@@ -26,6 +26,16 @@ declare global {
 
   interface Window {
     Honostar?: HonostarApi
+    /**
+     * Set by the server-rendered HTML before Datastar initializes, so the initial SSE connect
+     * can include `X-Tab-ID` even if runtime JS is code-split/deferred by the bundler.
+     */
+    __honostarTabId?: string
+    /**
+     * Marker set when fetch has already been patched to include Honostar headers.
+     * This allows the client runtime to avoid double-wrapping fetch.
+     */
+    __honostarFetchBootstrapped?: true
     __honostarPendingPluginRegistrations?: Array<{
       name: string
       handler: PluginHandler

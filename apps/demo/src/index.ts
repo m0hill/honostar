@@ -24,10 +24,10 @@ import "@honostar/core/server/polyfills/compression.js"
 // Define your application config
 const config = createConfig({
   assets: {
-    css: "/styles.css",
-    runtime: "/runtime.js",
-    datastar: "/datastar.js",
-    plugins: ["/plugins.js"],
+    css: "/assets/styles.css",
+    runtime: "/assets/runtime.js",
+    datastar: "/assets/datastar.js",
+    plugins: ["/assets/plugins.js"],
   },
 })
 
@@ -47,6 +47,7 @@ app.onError(
   })
 )
 
+app.use("/assets/*", serveStatic({ root: "./dist" }))
 app.use("/*", serveStatic({ root: "./public" }))
 app.use("/images/*", serveStatic({ root: "./" }))
 

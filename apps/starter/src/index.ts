@@ -27,9 +27,9 @@ import { routesManifest } from "./generated/routes.manifest"
 
 const config = createConfig({
   assets: {
-    css: "/styles.css",
-    runtime: "/runtime.js",
-    datastar: "/datastar.js",
+    css: "/assets/styles.css",
+    runtime: "/assets/runtime.js",
+    datastar: "/assets/datastar.js",
     plugins: [],
   },
 })
@@ -37,6 +37,7 @@ const config = createConfig({
 const app = new Hono<AppEnv>()
 const bus = new MemoryBus()
 const publicRoot = fileURLToPath(new URL("../public", import.meta.url))
+const distRoot = fileURLToPath(new URL("../dist", import.meta.url))
 
 app.notFound(createNotFoundHandler())
 app.onError(
@@ -45,6 +46,7 @@ app.onError(
   })
 )
 
+app.use("/assets/*", serveStatic({ root: distRoot }))
 app.use("/*", serveStatic({ root: publicRoot }))
 
 app.use(
