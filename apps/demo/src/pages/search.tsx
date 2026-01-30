@@ -2,6 +2,7 @@ import { createHandler, patchRegion } from "@honostar/core/server"
 import { like } from "drizzle-orm"
 import { z } from "zod"
 import IssuesList from "@/components/IssuesList"
+import { topics } from "@/lib/topics"
 
 const searchSchema = z.object({
   search: z.string().optional().default(""),
@@ -26,7 +27,7 @@ export const GET = createHandler({
         }),
         orderBy: (issues, { desc }) => [desc(issues.createdAt)],
       })
-      return c.var.fx.reply([patchRegion("issues:list", <IssuesList issues={allIssues} />)])
+      return c.var.fx.reply([patchRegion(topics.issues.list(), <IssuesList issues={allIssues} />)])
     }
 
     // Search issues by title
@@ -39,6 +40,8 @@ export const GET = createHandler({
       orderBy: (issues, { desc }) => [desc(issues.createdAt)],
     })
 
-    return c.var.fx.reply([patchRegion("issues:list", <IssuesList issues={searchResults} />)])
+    return c.var.fx.reply([
+      patchRegion(topics.issues.list(), <IssuesList issues={searchResults} />),
+    ])
   },
 })

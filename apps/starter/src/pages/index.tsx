@@ -1,21 +1,20 @@
 import { defineQueryPage, patchRegion, type QueryHandler } from "@honostar/core/server"
 import { Counter } from "../components/Counter"
+import { regions, topics } from "../lib/ids"
 import { getCounter } from "../state"
-
-const counterTopic = "counter"
 
 export const counterQuery: QueryHandler = async () => {
   const count = getCounter()
   const dot = `<circle cx="6" cy="6" r="5" fill="${count % 2 === 0 ? "#22c55e" : "#ef4444"}"></circle>`
   return [
-    patchRegion(counterTopic, <Counter count={count} />),
-    patchRegion("counter:dot", dot, { mode: "inner", namespace: "svg" }),
+    patchRegion(regions.counter, <Counter count={count} />),
+    patchRegion(regions.counterDot, dot, { mode: "inner", namespace: "svg" }),
   ]
 }
 
 export default defineQueryPage({
-  topics: [counterTopic],
-  queries: [[counterTopic, counterQuery]],
+  topics: [topics.counter],
+  queries: [[topics.counter, counterQuery]],
   loader: async () => ({
     count: getCounter(),
   }),

@@ -4,7 +4,7 @@ A runtime-agnostic meta-framework for building hypermedia-driven web application
 
 ## Philosophy
 
-HonoStar embraces **server-rendered HTML as the source of truth**. Every navigation is a real link, every state change happens on the server, and real-time updates flow through Server-Sent Events (SSE). No optimistic updates, no client-side sync engines—just declarative HTML that self-heals.
+HonoStar embraces **server-rendered HTML as the source of truth**. Every navigation is a real link, every state change happens on the server, and real-time updates flow through Server-Sent Events (SSE). No client-side sync engines—just declarative HTML that self-heals. Optimistic UI is supported as an optional, tab-scoped layer, but canonical state always comes from the server.
 
 - **Multi-Page App (MPA)**: Traditional navigation with progressive enhancement via View Transitions
 - **Server Authority**: All mutations happen server-side; the server re-renders and broadcasts canonical HTML

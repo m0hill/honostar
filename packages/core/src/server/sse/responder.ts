@@ -24,7 +24,13 @@ import type {
   PatchSignalsOptions,
 } from "../../common/types"
 import type { AppEnv } from "../context"
-import type { EventContract } from "../contracts"
+import type {
+  ContractEventName,
+  ContractPayload,
+  ContractTopicName,
+  ContractsDefinition,
+  EventContract,
+} from "../contracts"
 import { validateEventContract } from "../contracts"
 import { factory } from "../middleware"
 import type { RegionPatch, RegionPatchSeq } from "../regions"
@@ -150,6 +156,30 @@ export class FxResponder {
   private async renderElementsSeqPayload(payload: Array<JSX.Element | string>): Promise<string> {
     const html = await Promise.all(payload.map((part) => this.renderNode(part)))
     return html.join("\n")
+  }
+
+  /**
+   * Get a typed publisher for a contracts registry.
+   *
+   * This provides autocomplete for topic + event names and makes payload types flow end-to-end.
+   */
+  public withContracts<C extends ContractsDefinition>(_contracts: C) {
+    return {
+      publish: async <
+        Topic extends ContractTopicName<C>,
+        Event extends ContractEventName<C, Topic>,
+      >(
+        topic: Topic,
+        event: Event,
+        payload: ContractPayload<C, Topic, Event>
+      ) => {
+        await this.publish(
+          topic,
+          event,
+          (payload as unknown as Jsonifiable | null | undefined) ?? null
+        )
+      },
+    } as const
   }
 
   private async tryCreateHttpResponse(
@@ -566,6 +596,15 @@ export class FxResponder {
       toClient: true,
       ...options,
     })
+  }
+
+  /**
+   * Acknowledge the request without sending any effects.
+   *
+   * Useful when you rely entirely on CQRS events + SSE queries for UI updates.
+   */
+  public async ok(options?: { status?: StatusCode; headers?: Record<string, string> }) {
+    return this.reply([], options)
   }
 
   public async replyRegion(
