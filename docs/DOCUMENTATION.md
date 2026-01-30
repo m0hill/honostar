@@ -276,7 +276,9 @@ app.get("/_/events", createSseEndpoint())
 
 // Custom configuration
 const config = {
-  assets: { css: "/assets/styles.css" },
+  // If you’re using hashed assets (Vite manifest), prefer letting the renderer resolve
+  // URLs automatically (see docs/BUILD.md) instead of hardcoding `/assets/*.css`.
+  assets: { css: "/styles.css" },
   endpoints: { sse: "/events" },
   security: {
     csp: "script-src 'self' 'unsafe-eval' 'nonce-${nonce}' cdn.example.com;",
@@ -624,9 +626,11 @@ data-on:honostar-theme-change__window="renderChart(evt.detail.resolved)"
   - Files starting with `_` are ignored (e.g., `_components/`)
 - **Build-time manifest generation** (`packages/core/src/server/router/generator.ts`):
   - Runtime-agnostic implementation using standard Node.js APIs
-  - Scans `src/pages/` and generates `src/routes.manifest.ts` with lazy imports
-  - Generates `src/routes.ts` with type-safe route helpers
-  - Run via `pnpm --filter honostar-starter routes:generate` or `pnpm --filter honostar-demo routes:generate`
+  - Scans `src/pages/` and generates:
+    - a route manifest (lazy imports)
+    - type-safe `routes` helpers
+  - Output paths are app-configurable (in this repo apps write to `src/generated/`)
+  - Run via `honostar prepare` (used by `honostar dev`/`honostar start`)
   - Can be imported programmatically: `import { generateRouteManifest } from '@honostar/core/server'`
 - **Route configuration** (`scripts/routes.config.json`):
   - Maps routes to custom property paths for the `routes` object
@@ -860,7 +864,7 @@ bus.toAll(msg) // Broadcast to all connected clients
 **Route Definition**
 
 - Routes are auto-generated from `src/pages/` file structure.
-- `scripts/generate-route-manifest.ts` runs before every build/dev to update `src/routes.ts` and `src/routes.manifest.ts`.
+- `honostar prepare` (from `@honostar/cli`) runs before dev/build to update `src/generated/routes.ts` and `src/generated/routes.manifest.ts`.
 - **Never manually edit** `src/routes.ts` or `src/routes.manifest.ts` - they are overwritten on every build.
 
 **Route Helpers** (`src/honostar/server/route.ts`)
@@ -928,7 +932,7 @@ Before opening a PR, confirm:
 11. **Fat patches** - prefer full region re-renders over incremental append/prepend.
 12. **Modals** conform to the pattern (Escape/outside close, focus trap, teardown).
 13. **`openWhenHidden`** only where truly needed.
-14. **Routes manifest** is regenerated (`pnpm --filter honostar-demo routes:generate` runs automatically in dev/build).
+14. **Routes manifest** is regenerated (`honostar prepare` runs automatically in dev/build).
 15. **Type-safe routes** - use `routes` object instead of hardcoded strings.
 16. **Bus usage** - use `c.var.fx.reply()`/`broadcast()` instead of calling bus directly.
 17. **Handler validation** - use `createHandler({ schema, ... })` for Datastar endpoints; validators must support Standard Schema spec.

@@ -11,6 +11,8 @@ import {
   mountRoutes,
   type QueryRegistration,
   registerEffects,
+  readViteManifest,
+  resolveHonostarAssetsFromViteManifest,
   renderer,
 } from "@honostar/core/server"
 import { honostarLogging, type WideEvent } from "@honostar/logging"
@@ -21,7 +23,20 @@ import { compress } from "hono/compress"
 
 import "@honostar/core/server/polyfills/compression.js"
 
-const config = createConfig()
+const manifest = await readViteManifest(new URL("../dist/manifest.json", import.meta.url))
+const viteAssets = resolveHonostarAssetsFromViteManifest(manifest, {
+  baseUrl: "",
+  runtimeEntry: "src/client.ts",
+  cssEntry: "styles.css",
+  pluginsEntries: ["src/lib/plugins/index.ts"],
+})
+
+const config = createConfig({
+  assets: {
+    ...viteAssets,
+    datastar: "/datastar.js",
+  },
+})
 
 import { customEffects } from "@/effects"
 import { auth } from "@/middleware/auth"

@@ -7,7 +7,6 @@ import { createConfig } from "./config"
 import { factory } from "./middleware"
 import { signTopics } from "./security/topics"
 import { regionAttrs } from "./regions"
-import { resolveHonostarAssetsFromViteEnv } from "./assets/vite-manifest"
 
 function stripDoctype(html: string): string {
   return html.replace(/^\s*<!DOCTYPE html>\s*/i, "")
@@ -50,7 +49,6 @@ export const renderer = (userConfig?: DeepPartial<HonostarConfig>) => {
 
     const theme = resolveThemeProvider(c.var.theme, cookiePreference)
     const scriptNonce = generateNonce()
-    const assets = await resolveHonostarAssetsFromViteEnv(config.assets)
 
     const base = jsxRenderer(({ children }) => {
       const pageHead = c.var.pageHead
@@ -70,10 +68,12 @@ export const renderer = (userConfig?: DeepPartial<HonostarConfig>) => {
         csrfToken: c.var.csrfToken ?? null,
         theme: theme.config,
         assets: {
-          css: withAssetVersion(assets.css, assets.version),
-          runtime: withAssetVersion(assets.runtime, assets.version),
-          datastar: withAssetVersion(assets.datastar, assets.version),
-          plugins: (assets.plugins ?? []).map((p) => withAssetVersion(p, assets.version)),
+          css: withAssetVersion(config.assets.css, config.assets.version),
+          runtime: withAssetVersion(config.assets.runtime, config.assets.version),
+          datastar: withAssetVersion(config.assets.datastar, config.assets.version),
+          plugins: (config.assets.plugins ?? []).map((p) =>
+            withAssetVersion(p, config.assets.version)
+          ),
         },
         devtools: {
           inspector: config.devtools?.inspector ?? null,
@@ -172,12 +172,27 @@ export const renderer = (userConfig?: DeepPartial<HonostarConfig>) => {
             />
             <title>{title}</title>
             {pageHead?.elements}
-            <link rel="stylesheet" href={withAssetVersion(assets.css, assets.version)} />
-            <link rel="modulepreload" href={withAssetVersion(assets.datastar, assets.version)} />
-            <link rel="modulepreload" href={withAssetVersion(assets.runtime, assets.version)} />
+            <link
+              rel="stylesheet"
+              href={withAssetVersion(config.assets.css, config.assets.version)}
+            />
+            <link
+              rel="modulepreload"
+              href={withAssetVersion(config.assets.datastar, config.assets.version)}
+            />
+            <link
+              rel="modulepreload"
+              href={withAssetVersion(config.assets.runtime, config.assets.version)}
+            />
             {/* Load Datastar first so plugins can register with it */}
-            <script type="module" src={withAssetVersion(assets.datastar, assets.version)} />
-            <script type="module" src={withAssetVersion(assets.runtime, assets.version)} />
+            <script
+              type="module"
+              src={withAssetVersion(config.assets.datastar, config.assets.version)}
+            />
+            <script
+              type="module"
+              src={withAssetVersion(config.assets.runtime, config.assets.version)}
+            />
 
             {/* Opt-in to native MPA view transitions and set subtle, fast defaults */}
             <style

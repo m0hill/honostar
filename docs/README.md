@@ -191,13 +191,16 @@ app.get("/_/events", createSseEndpoint(config))
 
 ### Vite asset pipeline (recommended)
 
-In the starter/demo apps, browser assets are built with Vite into `dist/assets/` and served at `/assets/*`.
-That setup typically uses:
+In the starter/demo apps, browser assets are built with Vite into `dist/` (hashed filenames under `dist/assets/`), and served at `/assets/*`.
 
-- `css: "/assets/styles.css"`
-- `runtime: "/assets/runtime.js"`
-- `datastar: "/assets/datastar.js"`
-- `plugins: ["/assets/plugins.js"]` (optional)
+Apps use `dist/manifest.json` to resolve the hashed URLs, so you don’t need to hardcode:
+
+- `assets/runtime-<hash>.js`
+- `assets/styles-<hash>.css`
+
+Use the `honostar` CLI (`pnpm dev`, `pnpm dev:demo`) so the manifest exists before the server starts.
+
+Details: `docs/BUILD.md` (includes the recommended `createConfig({ assets: ... })` pattern).
 
 ## Multi-Instance Scaling
 
@@ -281,7 +284,18 @@ HonoStar runs on any platform supported by Hono:
 
 ## Documentation
 
-For detailed engineering guidelines, see [AGENTS.md](./AGENTS.md).
+Docs in this folder:
+
+- `docs/BUILD.md` — Vite pipeline, manifest-based asset resolution, Tailwind via Vite plugin, CLI behavior.
+- `docs/DECISIONS.md` — “why” behind architecture decisions.
+- `docs/VISION.md` — long-term direction and product bets.
+- `docs/IMPLEMENTATION.md` — implementation/commenting standards.
+- `docs/DOCUMENTATION.md` — deeper framework guide (concepts, patterns, gotchas).
+- `docs/CUSTOM_EFFECTS.md` — custom effect authoring.
+- `docs/PREFETCH.md` — smart prefetching behavior.
+- `docs/datastar-docs/` — upstream/reference material and notes.
+
+Engineering guidelines for contributing live in `AGENTS.md` at the repo root.
 
 ## License
 

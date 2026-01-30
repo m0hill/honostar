@@ -92,7 +92,7 @@ The pitch: **scale out without rewriting your UI model**.
 
 - `honostar dev` runs:
   - route manifest generation (watch mode)
-  - client runtime bundling
+  - client asset bundling with Vite (writes `dist/manifest.json`)
   - server reload
   - inspector auto-enable in dev
 - prebuilt starter templates:

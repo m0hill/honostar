@@ -70,16 +70,12 @@ function spawnShell(command: string, args: string[], cwd: string): ChildProcess 
   })
 }
 
-function spawnCommandLineWithEnv(
-  cmdline: string,
-  cwd: string,
-  extraEnv: Record<string, string>
-): ChildProcess {
+function spawnCommandLine(cmdline: string, cwd: string): ChildProcess {
   return spawn(cmdline, {
     cwd,
     stdio: "inherit",
     shell: true,
-    env: { ...process.env, ...extraEnv },
+    env: process.env,
   })
 }
 
@@ -207,9 +203,7 @@ function runServerDev(cfg: HonostarPackageConfig, appRoot: string): ChildProcess
   if (!cmd) {
     throw new Error("Missing `honostar.server.dev` in package.json")
   }
-  return spawnCommandLineWithEnv(cmd, appRoot, {
-    HONOSTAR_VITE_MANIFEST_PATH: "dist/manifest.json",
-  })
+  return spawnCommandLine(cmd, appRoot)
 }
 
 function runServerStart(cfg: HonostarPackageConfig, appRoot: string): ChildProcess {
@@ -217,9 +211,7 @@ function runServerStart(cfg: HonostarPackageConfig, appRoot: string): ChildProce
   if (!cmd) {
     throw new Error("Missing `honostar.server.start` in package.json")
   }
-  return spawnCommandLineWithEnv(cmd, appRoot, {
-    HONOSTAR_VITE_MANIFEST_PATH: "dist/manifest.json",
-  })
+  return spawnCommandLine(cmd, appRoot)
 }
 
 function waitForExit(p: ChildProcess, label: string): Promise<number> {

@@ -12,7 +12,7 @@
     "test": "honostar prepare && bun test --pass-with-no-tests",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "start:prod": "honostar prepare && HONOSTAR_VITE_MANIFEST_PATH=dist/manifest.json bun dist/index.js",
+    "start:prod": "honostar prepare && bun dist/index.js",
     "check": "pnpm run typecheck && pnpm run test"
   },
   "dependencies": {

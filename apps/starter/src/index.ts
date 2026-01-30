@@ -13,6 +13,8 @@ import {
   MemoryBus,
   mountRoutes,
   type QueryRegistration,
+  readViteManifest,
+  resolveHonostarAssetsFromViteManifest,
   renderer,
 } from "@honostar/core/server"
 import { honostarLogging } from "@honostar/logging"
@@ -25,7 +27,20 @@ import "./lib/app"
 import { fileURLToPath } from "node:url"
 import { routesManifest } from "./generated/routes.manifest"
 
-const config = createConfig()
+const manifest = await readViteManifest(new URL("../dist/manifest.json", import.meta.url))
+const viteAssets = resolveHonostarAssetsFromViteManifest(manifest, {
+  baseUrl: "",
+  runtimeEntry: "src/client.ts",
+  cssEntry: "styles.css",
+})
+
+const config = createConfig({
+  assets: {
+    ...viteAssets,
+    datastar: "/datastar.js",
+    plugins: [],
+  },
+})
 
 const app = new Hono<AppEnv>()
 const bus = new MemoryBus()
