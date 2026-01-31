@@ -141,5 +141,5 @@
     "builtin": true
   },
   "globals": {},
-  "ignorePatterns": ["public/**/*", "**/*.test.ts"]
+  "ignorePatterns": ["public/**/*", "**/*.test.ts", "opensrc/**"]
 }

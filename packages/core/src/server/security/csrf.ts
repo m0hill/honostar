@@ -3,6 +3,7 @@ import { getCookie, setCookie } from "hono/cookie"
 import type { HonostarConfig } from "../config"
 import type { AppEnv } from "../context"
 import { factory } from "../middleware"
+import { envIsProduction } from "../runtime-env"
 
 type CsrfOpts = {
   cookieName?: string
@@ -63,7 +64,7 @@ export const csrf = (cfg?: Pick<HonostarConfig, "security" | "endpoints"> | Csrf
         path: "/",
         sameSite: "Lax",
         httpOnly: false,
-        secure: process.env.NODE_ENV === "production",
+        secure: envIsProduction(),
       })
     }
     c.set("csrfToken", token)

@@ -23,10 +23,6 @@ export { renderer } from "./renderer"
 export type { BuildRoutes, Route } from "./route"
 export { route } from "./route"
 export { mountRoutes } from "./router"
-export { generateRouteManifest } from "./router/generator"
-// Vite assets (Node-only helper)
-export type { ViteManifest, ViteManifestEntry } from "./assets/vite-manifest"
-export { readViteManifest, resolveHonostarAssetsFromViteManifest } from "./assets/vite-manifest"
 export type { RouteManifestEntry } from "./router/manifest-route-loader"
 export { createManifestRouteLoader } from "./router/manifest-route-loader"
 export type { RouteLoader } from "./router/types"
@@ -36,7 +32,6 @@ export type { HonostarApp } from "./app"
 // Contracts (typed topics/events)
 export {
   defineContracts,
-  generateContractsTypes,
   globalContracts,
   schema,
   topic,
@@ -49,13 +44,12 @@ export type {
   ContractTopicName,
   ContractsDefinition,
   EventContract,
-  GenerateContractsTypesOptions,
   SchemaOptions,
   TopicContractRegistry,
   TopicMatcher,
 } from "./contracts"
 // Security
-export { csrf } from "./security"
+export { csrf, canonicalizeTopics, signTopics, verifyTopics } from "./security"
 // Observable HTML (regions)
 export type {
   RegionDeclaration,
@@ -75,15 +69,18 @@ export {
   regionAttrs,
   regionDomId,
   regionSelector,
+  resolveRegionPatchOptions,
 } from "./regions"
 // Effect System
 export type { EffectHandler } from "./sse/effect-registry"
+export type { BuiltInEffectName, EffectDefinition } from "./sse/effect-registry"
 // SSE
 export { createSseEndpoint } from "./sse/endpoint"
 export type { FxResponse } from "./sse/middleware"
 export { registerEffect, registerEffects, registerQueries, registerQuery } from "./sse/middleware"
+export { SseFormatter } from "./sse/generator"
 // Bus Implementations
-export type { PubSubBus } from "./sse/pubsub/memory"
+export type { PubSubBus, SSEPayload, Sink, SseLane, SseQos } from "./sse/pubsub/memory"
 export { MemoryBus } from "./sse/pubsub/memory"
 export type {
   NatsBusOptions,
@@ -95,4 +92,5 @@ export { NatsBus } from "./sse/pubsub/nats-bus"
 export type { RedisBusOptions, RedisClient } from "./sse/pubsub/redis-bus"
 export { RedisBus } from "./sse/pubsub/redis-bus"
 export type { QueryHandler, QueryRegistration } from "./sse/queries"
+export { TopicQueryRegistry } from "./sse/queries"
 export { fxResponder } from "./sse/responder"

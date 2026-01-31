@@ -19,6 +19,7 @@
 import type { Context } from "hono"
 import { getCookie, setCookie } from "hono/cookie"
 import type { HonostarConfig } from "../config"
+import { envGet, envIsProduction } from "../runtime-env"
 
 const TOPICS_TOKEN_QUERY_PARAM = "topicsToken"
 const TOPICS_TOKEN_HEADER = "X-Honostar-Topics"
@@ -109,13 +110,24 @@ async function hmacVerify(secret: string, data: string, signature: Uint8Array): 
  * Get signing secret from environment
  * Throws if secret is not configured in production
  */
-function getSigningSecret(cfg: HonostarConfig): string | null {
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+}
+
+function getEnvFromContext(c: Context, key: string): string | undefined {
+  const env: unknown = c.env
+  if (!isPlainRecord(env)) return undefined
+  const value = env[key]
+  return typeof value === "string" && value.length > 0 ? value : undefined
+}
+
+function getSigningSecret(cfg: HonostarConfig, c: Context): string | null {
   const secretEnv = cfg.security.topics?.secretEnv ?? "HONOSTAR_SIGNING_SECRET"
-  const secret = process.env[secretEnv]
+  const secret = getEnvFromContext(c, secretEnv) ?? envGet(secretEnv)
 
   if (!secret) {
     // In development, allow missing secret but warn
-    if (process.env.NODE_ENV !== "production") {
+    if (!envIsProduction()) {
       warnOnce(
         `topics:missing-secret:${secretEnv}`,
         `[Topic Security] No signing secret found in ${secretEnv}. ` +
@@ -147,7 +159,7 @@ export async function signTopics(
   topics: string[],
   cfg: HonostarConfig
 ): Promise<string | null> {
-  const secret = getSigningSecret(cfg)
+  const secret = getSigningSecret(cfg, c)
   if (!secret) {
     // Development mode with no secret - skip signing
     return null
@@ -187,7 +199,7 @@ export async function signTopics(
 
   // Set HttpOnly cookie
   const url = new URL(c.req.url)
-  const isSecure = url.protocol === "https:" || process.env.NODE_ENV === "production"
+  const isSecure = url.protocol === "https:" || envIsProduction()
 
   setCookie(c, cookieName, token, {
     httpOnly: true,
@@ -214,7 +226,7 @@ export async function verifyTopics(
   requestedTopics: string[],
   cfg: HonostarConfig
 ): Promise<string[] | null> {
-  const secret = getSigningSecret(cfg)
+  const secret = getSigningSecret(cfg, c)
   if (!secret) {
     // Development mode with no secret - allow all requested topics
     warnOnce(

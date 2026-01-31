@@ -33,6 +33,8 @@ Honostar’s `renderer()` injects whatever is in `config.assets.*`. With Vite, t
 Recommended pattern (app code):
 
 ```ts
+import { readViteManifest, resolveHonostarAssetsFromViteManifest } from "@honostar/core/server/node"
+
 const manifest = await readViteManifest(new URL("../dist/manifest.json", import.meta.url))
 const viteAssets = resolveHonostarAssetsFromViteManifest(manifest, {
   baseUrl: "",

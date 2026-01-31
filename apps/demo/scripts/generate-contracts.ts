@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { resolve } from "node:path"
 import { fileURLToPath } from "node:url"
-import { generateContractsTypes } from "@honostar/core/server"
+import { generateContractsTypes } from "@honostar/core/server/node"
 
 const appRoot = resolve(fileURLToPath(new URL("..", import.meta.url)))
 

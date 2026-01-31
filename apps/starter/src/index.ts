@@ -13,10 +13,9 @@ import {
   MemoryBus,
   mountRoutes,
   type QueryRegistration,
-  readViteManifest,
-  resolveHonostarAssetsFromViteManifest,
   renderer,
 } from "@honostar/core/server"
+import { readViteManifest, resolveHonostarAssetsFromViteManifest } from "@honostar/core/server/node"
 import { honostarLogging } from "@honostar/logging"
 import { Hono } from "hono"
 import { compress } from "hono/compress"

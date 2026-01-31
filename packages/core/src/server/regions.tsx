@@ -1,5 +1,6 @@
 import type { JSX } from "hono/jsx/jsx-runtime"
 import type { ElementPatchMode, PatchElementsOptions } from "../common/types"
+import { envGet } from "./runtime-env"
 
 export const HonostarRegionAttr = "data-honostar-region"
 export const HonostarRegionKindAttr = "data-honostar-region-kind"
@@ -31,12 +32,28 @@ function warnOnce(key: string, ...args: Parameters<typeof console.warn>) {
   console.warn(...args)
 }
 
+function base64urlEncodeBytes(bytes: Uint8Array): string {
+  if (typeof btoa === "function") {
+    let binary = ""
+    for (const b of bytes) binary += String.fromCharCode(b)
+    const base64 = btoa(binary)
+    return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "")
+  }
+
+  if (typeof Buffer !== "undefined") {
+    return Buffer.from(bytes)
+      .toString("base64")
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/g, "")
+  }
+
+  throw new Error("base64 encoding unavailable")
+}
+
 function base64urlEncodeUtf8(input: string): string {
-  return Buffer.from(input, "utf8")
-    .toString("base64")
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/g, "")
+  const bytes = new TextEncoder().encode(input)
+  return base64urlEncodeBytes(bytes)
 }
 
 export function regionDomId(regionId: RegionId): string {
@@ -167,7 +184,7 @@ export function createRegionRegistry(): RegionRegistry {
 const incrementalModes = new Set<ElementPatchMode>(["append", "prepend", "before", "after"])
 
 function getDiscipline(): RegionPatchDiscipline {
-  const raw = process.env.HONOSTAR_REGION_PATCH_DISCIPLINE
+  const raw = envGet("HONOSTAR_REGION_PATCH_DISCIPLINE")
   if (raw === "off" || raw === "warn" || raw === "strict") return raw
   return "warn"
 }

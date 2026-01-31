@@ -11,10 +11,9 @@ import {
   mountRoutes,
   type QueryRegistration,
   registerEffects,
-  readViteManifest,
-  resolveHonostarAssetsFromViteManifest,
   renderer,
 } from "@honostar/core/server"
+import { readViteManifest, resolveHonostarAssetsFromViteManifest } from "@honostar/core/server/node"
 import { honostarLogging, type WideEvent } from "@honostar/logging"
 import { Hono } from "hono"
 import type { Context } from "hono"

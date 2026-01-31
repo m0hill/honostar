@@ -1,4 +1,5 @@
 import type { StandardSchemaV1 } from "@standard-schema/spec"
+import { envGet, envIsProduction } from "../runtime-env"
 
 type ContractMode = "off" | "warn" | "strict"
 
@@ -11,9 +12,9 @@ function warnOnce(key: string, ...args: Parameters<typeof console.warn>) {
 }
 
 function modeFromEnv(): ContractMode {
-  const raw = process.env.HONOSTAR_EVENT_CONTRACTS
+  const raw = envGet("HONOSTAR_EVENT_CONTRACTS")
   if (raw === "off" || raw === "warn" || raw === "strict") return raw
-  return process.env.NODE_ENV === "production" ? "off" : "warn"
+  return envIsProduction() ? "off" : "warn"
 }
 
 export type TopicMatcher = string | RegExp

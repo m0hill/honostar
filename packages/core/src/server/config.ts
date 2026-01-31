@@ -180,7 +180,7 @@ export const DEFAULT_CONFIG: HonostarConfig = {
     plugins: [],
     // Use empty string instead of `undefined` to satisfy `exactOptionalPropertyTypes`.
     // `withAssetVersion()` treats empty/whitespace as "disabled".
-    version: process.env.HONOSTAR_ASSET_VERSION ?? "",
+    version: envGet("HONOSTAR_ASSET_VERSION") ?? "",
   },
   endpoints: {
     sse: "/_/events",
@@ -204,7 +204,7 @@ export const DEFAULT_CONFIG: HonostarConfig = {
   },
   devtools: {
     inspector: {
-      enabled: process.env.NODE_ENV !== "production",
+      enabled: envIsProduction() === false,
       maxEvents: 100,
       defaultTab: "signals",
       defaultViewMode: "json",
@@ -255,3 +255,4 @@ export function createConfig(user?: DeepPartial<HonostarConfig>): HonostarConfig
 
   return merged
 }
+import { envGet, envIsProduction } from "./runtime-env"

@@ -4,7 +4,7 @@ import { mkdir, readFile } from "node:fs/promises"
 import { existsSync } from "node:fs"
 import { dirname, resolve } from "node:path"
 import process from "node:process"
-import { generateContractsTypes, generateRouteManifest } from "@honostar/core/server"
+import { generateContractsTypes, generateRouteManifest } from "@honostar/core/server/node"
 
 type HonostarPackageConfig = {
   depsBuild?: string[]
