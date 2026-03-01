@@ -1,3 +1,25 @@
-h1 {
-  font-family: Arial, Helvetica, sans-serif;
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+  color: #1a1a1a;
+  background: #f9fafb;
+  line-height: 1.5;
+}
+
+button:hover {
+  opacity: 0.85;
+}
+
+input:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: -1px;
 }
