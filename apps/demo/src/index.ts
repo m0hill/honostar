@@ -63,6 +63,12 @@ app.use(
     base: { service: "honostar-demo" },
     enrichers: [
       (c: Context<AppEnv>, evt: WideEvent) => {
+        if (c.var.user && evt.user === undefined) {
+          evt.user = {
+            id: c.var.user.id,
+            username: c.var.user.username,
+          }
+        }
         evt.client_id = c.var.clientId
         evt.sse_topics = c.var.sseTopics ?? []
       },

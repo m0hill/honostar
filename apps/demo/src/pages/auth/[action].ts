@@ -31,6 +31,7 @@ export const POST = defineCommand({
         : await handleLogin(c.var.db, data.form)
 
     if (result.user) {
+      c.set("user", result.user)
       await createAuthResponse(c, result.user) // sets the cookie
       return c.redirect(routes.auth.profile.href(), 303) // let the browser navigate
     }
