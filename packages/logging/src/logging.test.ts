@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test"
 import { Hono } from "hono"
+import { createError } from "./error"
 import { honostarLogging, log } from "./logging"
 
 describe("@honostar/logging", () => {
@@ -72,6 +73,42 @@ describe("@honostar/logging", () => {
     const evt = events[0] as any
     expect(evt.outcome).toBe("error")
     expect(evt.error?.message).toBe("boom")
+  })
+
+  test("includes structured error hints from createError", async () => {
+    const events: any[] = []
+    const app = new Hono()
+
+    app.use(
+      "*",
+      honostarLogging({
+        includeErrorStack: false,
+        logger: {
+          info: (obj) => events.push(obj),
+          error: (obj) => events.push(obj),
+        },
+      })
+    )
+
+    app.get("/checkout", () => {
+      throw createError({
+        message: "Payment failed",
+        status: 402,
+        why: "Card declined",
+        fix: "Use another payment method",
+        link: "https://docs.example.com/payments",
+      })
+    })
+
+    const res = await app.request("http://localhost/checkout")
+    expect(res.status).toBe(500)
+    expect(events).toHaveLength(1)
+
+    const evt = events[0] as any
+    expect(evt.error?.message).toBe("Payment failed")
+    expect(evt.error?.why).toBe("Card declined")
+    expect(evt.error?.fix).toBe("Use another payment method")
+    expect(evt.error?.link).toBe("https://docs.example.com/payments")
   })
 
   test("applies include/exclude route filtering", async () => {
@@ -152,6 +189,75 @@ describe("@honostar/logging", () => {
     expect(events[0]?.path).toBe("/force-keep")
   })
 
+  test("classifies 4xx responses as warn level", async () => {
+    const events: any[] = []
+    const app = new Hono()
+
+    app.use(
+      "*",
+      honostarLogging({
+        logger: {
+          info: (obj) => events.push(obj),
+          error: (obj) => events.push(obj),
+        },
+      })
+    )
+
+    app.get("/not-allowed", (c) => c.text("nope", 403))
+    const res = await app.request("http://localhost/not-allowed")
+
+    expect(res.status).toBe(403)
+    expect(events).toHaveLength(1)
+    expect(events[0]?.level).toBe("warn")
+  })
+
+  test("does not fail request if keep hook throws", async () => {
+    const events: any[] = []
+    const app = new Hono()
+
+    app.use(
+      "*",
+      honostarLogging({
+        keep: () => {
+          throw new Error("keep hook failed")
+        },
+        logger: {
+          info: (obj) => events.push(obj),
+          error: (obj) => events.push(obj),
+        },
+      })
+    )
+
+    app.get("/keep-throws", (c) => c.text("ok"))
+    const res = await app.request("http://localhost/keep-throws")
+
+    expect(res.status).toBe(200)
+    expect(events).toHaveLength(1)
+  })
+
+  test("does not fail request if logger throws", async () => {
+    const app = new Hono()
+
+    app.use(
+      "*",
+      honostarLogging({
+        logger: {
+          info: () => {
+            throw new Error("logger failed")
+          },
+          error: () => {
+            throw new Error("logger failed")
+          },
+        },
+      })
+    )
+
+    app.get("/logger-throws", (c) => c.text("ok"))
+    const res = await app.request("http://localhost/logger-throws")
+
+    expect(res.status).toBe(200)
+  })
+
   test("drain receives safe headers only", async () => {
     const drained: any[] = []
     const app = new Hono()
@@ -179,11 +285,68 @@ describe("@honostar/logging", () => {
         cookie: "session=secret",
       },
     })
+    await Promise.resolve()
 
     expect(drained).toHaveLength(1)
     expect(drained[0]?.request?.requestId).toBe("req_drain")
     expect(drained[0]?.headers?.["x-custom-id"]).toBe("abc123")
     expect(drained[0]?.headers?.authorization).toBeUndefined()
     expect(drained[0]?.headers?.cookie).toBeUndefined()
+  })
+
+  test("drain header allowlist limits exported headers", async () => {
+    const drained: any[] = []
+    const app = new Hono()
+
+    app.use(
+      "*",
+      honostarLogging({
+        headerAllowlist: ["x-request-id"],
+        logger: {
+          info: () => {},
+          error: () => {},
+        },
+        drain: (ctx) => {
+          drained.push(ctx)
+        },
+      })
+    )
+
+    app.get("/drain-allowlist", (c) => c.text("ok"))
+
+    await app.request("http://localhost/drain-allowlist", {
+      headers: {
+        "x-request-id": "req_allow",
+        "x-custom-id": "hidden",
+      },
+    })
+    await Promise.resolve()
+
+    expect(drained).toHaveLength(1)
+    expect(drained[0]?.headers?.["x-request-id"]).toBe("req_allow")
+    expect(drained[0]?.headers?.["x-custom-id"]).toBeUndefined()
+  })
+
+  test("does not fail request if drain throws", async () => {
+    const app = new Hono()
+
+    app.use(
+      "*",
+      honostarLogging({
+        logger: {
+          info: () => {},
+          error: () => {},
+        },
+        drain: () => {
+          throw new Error("drain failed")
+        },
+      })
+    )
+
+    app.get("/drain-throws", (c) => c.text("ok"))
+    const res = await app.request("http://localhost/drain-throws")
+    await Promise.resolve()
+
+    expect(res.status).toBe(200)
   })
 })

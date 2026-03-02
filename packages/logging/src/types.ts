@@ -9,6 +9,9 @@ export type WideEventLevel = "info" | "error" | "warn" | "debug"
 export type WideEventError = {
   type?: string
   message?: string
+  why?: string
+  fix?: string
+  link?: string
   stack?: string
   cause?: unknown
 }
@@ -102,6 +105,7 @@ export type HonostarLoggingOptions<E extends Env = Env> = {
   exclude?: string[]
   sampling?: SamplingConfig
   keep?: (ctx: TailSamplingContext) => void | Promise<void>
+  headerAllowlist?: string[]
   drain?: (ctx: DrainContext) => void | Promise<void>
   enrichers?: Array<WideEventEnricher<E>>
 }

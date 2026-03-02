@@ -29,6 +29,8 @@ const colors = {
   dim: "\x1B[2m",
   red: "\x1B[31m",
   yellow: "\x1B[33m",
+  blue: "\x1B[34m",
+  magenta: "\x1B[35m",
   cyan: "\x1B[36m",
   white: "\x1B[37m",
   gray: "\x1B[90m",
@@ -105,8 +107,62 @@ function getLevelColor(level: WideEventLevel): string {
   }
 }
 
+function getMethodColor(method: string): string {
+  switch (method.toUpperCase()) {
+    case "GET":
+      return colors.cyan
+    case "POST":
+      return colors.blue
+    case "PUT":
+      return colors.yellow
+    case "PATCH":
+      return colors.magenta
+    case "DELETE":
+      return colors.red
+    case "HEAD":
+      return colors.gray
+    case "OPTIONS":
+      return colors.white
+    default:
+      return colors.white
+  }
+}
+
+function getStatusColor(statusCode: number): string {
+  if (statusCode >= 500) return colors.red
+  if (statusCode >= 400) return colors.yellow
+  if (statusCode >= 300) return colors.cyan
+  if (statusCode >= 200) return colors.green
+  return colors.gray
+}
+
+function getDurationColor(ms: number): string {
+  if (ms >= 2000) return colors.red
+  if (ms >= 800) return colors.yellow
+  return colors.green
+}
+
 function formatValue(value: unknown): string {
   if (value === null || value === undefined) return String(value)
+  if (typeof value === "string") return value
+  if (typeof value === "number" || typeof value === "boolean") return String(value)
+  if (Array.isArray(value)) return safeJsonStringify(value)
+  if (isPlainObject(value)) {
+    const entries = Object.entries(value)
+    if (entries.length === 0) return "{}"
+    const compactParts = entries.map(([key, nested]) => {
+      if (
+        typeof nested === "string" ||
+        typeof nested === "number" ||
+        typeof nested === "boolean" ||
+        nested === null
+      ) {
+        return `${key}=${String(nested)}`
+      }
+      return `${key}=${safeJsonStringify(nested)}`
+    })
+    return compactParts.join(" ")
+  }
   if (typeof value === "object") {
     try {
       return JSON.stringify(value)
@@ -115,6 +171,15 @@ function formatValue(value: unknown): string {
     }
   }
   return String(value)
+}
+
+function safeJsonStringify(value: unknown): string {
+  try {
+    const serialized = JSON.stringify(value)
+    return serialized === undefined ? "null" : serialized
+  } catch {
+    return '"[unserializable]"'
+  }
 }
 
 function prettyPrintWideEvent(event: Record<string, unknown>): void {
@@ -129,15 +194,17 @@ function prettyPrintWideEvent(event: Record<string, unknown>): void {
 
   const ts = timestamp.length >= 23 ? timestamp.slice(11, 23) : timestamp
   const levelColor = getLevelColor(level)
+  const methodColor = getMethodColor(method)
   let header = `${colors.dim}${ts}${colors.reset} ${levelColor}${level.toUpperCase()}${colors.reset}`
-  header += ` ${colors.cyan}[${service}]${colors.reset} ${method} ${path}`
+  header += ` ${colors.cyan}[${service}]${colors.reset} ${methodColor}${method}${colors.reset} ${colors.white}${path}${colors.reset}`
 
   if (statusCode !== undefined) {
-    const statusColor = statusCode >= 400 ? colors.red : colors.green
+    const statusColor = getStatusColor(statusCode)
     header += ` ${statusColor}${statusCode}${colors.reset}`
   }
   if (durationMs !== undefined) {
-    header += ` ${colors.dim}in ${formatDuration(durationMs)}${colors.reset}`
+    const durationColor = getDurationColor(durationMs)
+    header += ` ${colors.dim}in${colors.reset} ${durationColor}${formatDuration(durationMs)}${colors.reset}`
   }
   console.log(header)
 
@@ -153,9 +220,42 @@ function prettyPrintWideEvent(event: Record<string, unknown>): void {
   const restEntries = Object.entries(event).filter(
     ([key, value]) => !keysToSkip.has(key) && value !== undefined
   )
+  const detailLines: Array<{ key: string; value: string; color?: string }> = []
   for (const [key, value] of restEntries) {
+    if (key === "error" && isPlainObject(value)) {
+      const message =
+        typeof value.message === "string" && value.message.length > 0
+          ? value.message
+          : "Unknown error"
+      detailLines.push({ key: "error", value: message, color: colors.red })
+      if (typeof value.why === "string" && value.why.length > 0) {
+        detailLines.push({ key: "why", value: value.why, color: colors.yellow })
+      }
+      if (typeof value.fix === "string" && value.fix.length > 0) {
+        detailLines.push({ key: "fix", value: value.fix, color: colors.green })
+      }
+      if (typeof value.link === "string" && value.link.length > 0) {
+        detailLines.push({ key: "link", value: value.link, color: colors.cyan })
+      }
+      if (
+        detailLines.length > 0 &&
+        detailLines[detailLines.length - 1]?.key !== "stack" &&
+        typeof value.stack === "string" &&
+        value.stack.length > 0
+      ) {
+        detailLines.push({ key: "stack", value: value.stack, color: colors.gray })
+      }
+      continue
+    }
+
+    detailLines.push({ key, value: formatValue(value) })
+  }
+
+  for (const [index, line] of detailLines.entries()) {
+    const marker = index === detailLines.length - 1 ? "+-" : "|-"
+    const keyColor = line.color ?? colors.white
     console.log(
-      `  ${colors.dim}-${colors.reset} ${colors.white}${key}:${colors.reset} ${formatValue(value)}`
+      `  ${colors.dim}${marker}${colors.reset} ${keyColor}${line.key}:${colors.reset} ${line.value}`
     )
   }
 }
@@ -167,7 +267,7 @@ function createDefaultLogger(opts: { pretty: boolean; stringify: boolean }): Log
       return
     }
     if (opts.stringify) {
-      const serialized = JSON.stringify(obj)
+      const serialized = safeJsonStringify(obj)
       if (level === "error") console.error(serialized)
       else console.log(serialized)
       return
@@ -188,10 +288,39 @@ function createDefaultLogger(opts: { pretty: boolean; stringify: boolean }): Log
 
 function toWideError(err: unknown, includeStack: boolean): WideEventError {
   if (err instanceof Error) {
+    const errWithData = err as Error & {
+      data?: unknown
+      why?: unknown
+      fix?: unknown
+      link?: unknown
+    }
+    const data = isPlainObject(errWithData.data) ? errWithData.data : undefined
+    const why =
+      typeof errWithData.why === "string"
+        ? errWithData.why
+        : typeof data?.why === "string"
+          ? data.why
+          : undefined
+    const fix =
+      typeof errWithData.fix === "string"
+        ? errWithData.fix
+        : typeof data?.fix === "string"
+          ? data.fix
+          : undefined
+    const link =
+      typeof errWithData.link === "string"
+        ? errWithData.link
+        : typeof data?.link === "string"
+          ? data.link
+          : undefined
+
     return {
       type: err.name,
       message: err.message,
       ...(includeStack ? { stack: err.stack } : {}),
+      ...(why ? { why } : {}),
+      ...(fix ? { fix } : {}),
+      ...(link ? { link } : {}),
       ...(err.cause !== undefined ? { cause: err.cause } : {}),
     }
   }
@@ -203,9 +332,23 @@ function toWideError(err: unknown, includeStack: boolean): WideEventError {
   if (isPlainObject(err)) {
     const message = typeof err.message === "string" ? err.message : undefined
     const type = typeof err.name === "string" ? err.name : undefined
+    const data = isPlainObject(err.data) ? err.data : undefined
+    const why =
+      typeof err.why === "string" ? err.why : typeof data?.why === "string" ? data.why : undefined
+    const fix =
+      typeof err.fix === "string" ? err.fix : typeof data?.fix === "string" ? data.fix : undefined
+    const link =
+      typeof err.link === "string"
+        ? err.link
+        : typeof data?.link === "string"
+          ? data.link
+          : undefined
     return {
       ...(type ? { type } : {}),
       ...(message ? { message } : {}),
+      ...(why ? { why } : {}),
+      ...(fix ? { fix } : {}),
+      ...(link ? { link } : {}),
       cause: err,
     }
   }
@@ -221,9 +364,12 @@ function getStoreFromContext(): LogStore | undefined {
 }
 
 function getLevelFromEvent(event: WideEvent): WideEventLevel {
-  if (event.outcome === "error") return "error"
-  if (typeof event.status_code === "number" && event.status_code >= 400) return "error"
   if (event.error) return "error"
+  if (typeof event.status_code === "number") {
+    if (event.status_code >= 500) return "error"
+    if (event.status_code >= 400) return "warn"
+  }
+  if (event.outcome === "error") return "error"
   return "info"
 }
 
@@ -267,10 +413,20 @@ function shouldKeepByTailConditions(
   return false
 }
 
-function headersToSafeRecord(headers: Headers): Record<string, string> {
+function normalizeHeaderAllowlist(allowlist: string[] | undefined): Set<string> | undefined {
+  if (!allowlist || allowlist.length === 0) return undefined
+  return new Set(allowlist.map((key) => key.toLowerCase()))
+}
+
+function headersToSafeRecord(
+  headers: Headers,
+  headerAllowlist?: Set<string>
+): Record<string, string> {
   const out: Record<string, string> = {}
   headers.forEach((value, key) => {
-    if (SENSITIVE_HEADERS.has(key.toLowerCase())) return
+    const normalizedKey = key.toLowerCase()
+    if (SENSITIVE_HEADERS.has(normalizedKey)) return
+    if (headerAllowlist && !headerAllowlist.has(normalizedKey)) return
     out[key] = value
   })
   return out
@@ -345,6 +501,7 @@ export function honostarLogging<E extends Env = Env>(
   const interactionIdHeader = options.interactionIdHeader ?? "x-interaction-id"
   const setResponseRequestIdHeader = options.setResponseRequestIdHeader ?? "x-request-id"
   const logger = options.logger ?? createDefaultLogger({ pretty, stringify })
+  const headerAllowlist = normalizeHeaderAllowlist(options.headerAllowlist)
 
   return async (c, next) => {
     if (!enabled || !shouldLogPath(c.req.path, include, exclude)) {
@@ -427,7 +584,11 @@ export function honostarLogging<E extends Env = Env>(
         tailContext.shouldKeep = shouldKeepByTailConditions(tailContext, options.sampling?.keep)
 
         if (options.keep) {
-          await options.keep(tailContext)
+          try {
+            await options.keep(tailContext)
+          } catch (err) {
+            console.error("[@honostar/logging] keep hook failed", err)
+          }
         }
 
         const forceKeep = tailContext.shouldKeep === true
@@ -435,10 +596,14 @@ export function honostarLogging<E extends Env = Env>(
           return
         }
 
-        if (level === "error") {
-          logger.error(event)
-        } else {
-          logger.info(event)
+        try {
+          if (level === "error") {
+            logger.error(event)
+          } else {
+            logger.info(event)
+          }
+        } catch (err) {
+          console.error("[@honostar/logging] logger failed", err)
         }
 
         if (options.drain) {
@@ -454,12 +619,14 @@ export function honostarLogging<E extends Env = Env>(
               status: event.status_code ?? c.res.status,
               durationMs: event.duration_ms ?? 0,
             },
-            headers: headersToSafeRecord(c.req.raw.headers),
+            headers: headersToSafeRecord(c.req.raw.headers, headerAllowlist),
           }
 
-          Promise.resolve(options.drain(drainContext)).catch((err) => {
-            console.error("[@honostar/logging] drain failed", err)
-          })
+          Promise.resolve()
+            .then(() => options.drain?.(drainContext))
+            .catch((err) => {
+              console.error("[@honostar/logging] drain failed", err)
+            })
         }
       }
     })
