@@ -4,6 +4,7 @@ export { createConfig, DEFAULT_CONFIG } from "./config"
 
 // Context & Middleware
 export type { AppEnv, AppVariables, AppVariablesBase } from "./context"
+export { isDatastarRequest } from "./request"
 // Errors
 export { createNotFoundHandler, createOnErrorHandler } from "./errors"
 export { factory, initContext } from "./middleware"
@@ -70,6 +71,7 @@ export {
   regionDomId,
   regionSelector,
   resolveRegionPatchOptions,
+  warnOnUnregisteredRegionSelector,
 } from "./regions"
 // Effect System
 export type { EffectHandler } from "./sse/effect-registry"

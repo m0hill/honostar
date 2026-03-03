@@ -115,8 +115,14 @@ export const createSseEndpoint = (
 ): Handler => {
   const config = createConfig(userConfig)
   const pingMs = config.sse?.pingIntervalMs ?? 25000
-  return (c) =>
-    streamSSE(c, async (stream) => {
+  return (c) => {
+    const isProbeRequest =
+      c.req.query("__honostar_probe") === "1" || c.req.header("x-honostar-probe") === "1"
+    if (isProbeRequest) {
+      return c.body(null, 204, { "x-honostar-sse": "ok" })
+    }
+
+    return streamSSE(c, async (stream) => {
       const clientId = c.var.clientId
       const bus = c.var.bus
       if (clientId === "anonymous") {
@@ -499,4 +505,5 @@ export const createSseEndpoint = (
 
       await new Promise(() => {})
     })
+  }
 }

@@ -13,7 +13,7 @@ export const GET = createHandler({
   use: [requireAuth],
   async handler(c) {
     // HTML-first fallback: treat this as a normal navigation.
-    if (c.req.header("datastar-request") === null) {
+    if (!c.var.isDatastarRequest) {
       return c.redirect(routes.issues.new.href(), 303)
     }
 

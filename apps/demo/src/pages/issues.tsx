@@ -28,7 +28,7 @@ export const POST = defineCommand({
   use: [requireAuth],
   hook: (result, c) => {
     const error = result.error[0]?.message || "Invalid input"
-    if (c.req.header("datastar-request") !== null) {
+    if (c.var.isDatastarRequest) {
       return c.var.fx.reply(
         [
           [
@@ -94,7 +94,7 @@ export const POST = defineCommand({
 
     if (!created) {
       const error = "Failed to create issue"
-      if (c.req.header("datastar-request") !== null) {
+      if (c.var.isDatastarRequest) {
         return c.var.fx.reply(
           [
             [
@@ -123,7 +123,7 @@ export const POST = defineCommand({
       await c.var.fx.publish(labelCreated, { name: newLabel })
     }
 
-    if (c.req.header("datastar-request") !== null) {
+    if (c.var.isDatastarRequest) {
       return c.var.fx.reply(
         [
           ["toast:show", `Issue "${created.title}" created successfully!`, "success"],

@@ -269,3 +269,17 @@ describe("createSseEndpoint topic allowlist verification", () => {
     expect(text).not.toContain("event: datastar-patch-elements")
   })
 })
+
+describe("createSseEndpoint probe requests", () => {
+  test("returns 204 for probe checks", async () => {
+    const app = new Hono<AppEnv>()
+    app.get("/_/events", createSseEndpoint())
+
+    const res = await app.request("/_/events?__honostar_probe=1", {
+      headers: { "X-Honostar-Probe": "1" },
+    })
+
+    expect(res.status).toBe(204)
+    expect(res.headers.get("x-honostar-sse")).toBe("ok")
+  })
+})

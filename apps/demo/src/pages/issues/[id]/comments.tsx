@@ -21,7 +21,7 @@ export const POST = defineCommand({
   use: [requireAuth],
   hook: (result, c) => {
     const error = result.error[0]?.message || "Invalid comment"
-    if (c.req.header("datastar-request") !== null) {
+    if (c.var.isDatastarRequest) {
       return c.var.fx.reply([["patch-signals", { commentError: error }]], {
         status: 400,
       })
@@ -54,7 +54,7 @@ export const POST = defineCommand({
     // CQRS: publish domain event for query re-render + success toast
     await c.var.fx.publishTo(topics.issue(issueId).comments(), commentCreated, { issueId })
 
-    if (c.req.header("datastar-request") !== null) {
+    if (c.var.isDatastarRequest) {
       return c.var.fx.reply(
         [
           ["patch-signals", { commentError: "", comment: "" }],

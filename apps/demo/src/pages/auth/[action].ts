@@ -14,7 +14,7 @@ export const POST = defineCommand({
   schema: authPayloadSchema,
   hook: (result, c) => {
     const error = result.error[0]?.message || "Validation failed"
-    if (c.req.header("datastar-request") !== null) {
+    if (c.var.isDatastarRequest) {
       return c.var.fx.reply([["patch-signals", { error }]], { status: 400 })
     }
     const { action } = c.req.param()
@@ -36,7 +36,7 @@ export const POST = defineCommand({
       return c.redirect(routes.auth.profile.href(), 303) // let the browser navigate
     }
 
-    if (c.req.header("datastar-request") !== null) {
+    if (c.var.isDatastarRequest) {
       return c.var.fx.reply([["patch-signals", { error: result.error }]], {
         status: result.status,
       })

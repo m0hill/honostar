@@ -16,7 +16,7 @@ export const POST = defineCommand({
   use: [requireAuth],
   hook: (result, c) => {
     const error = result.error[0]?.message || "Invalid status"
-    if (c.req.header("datastar-request") !== null) {
+    if (c.var.isDatastarRequest) {
       return c.var.fx.reply([["toast:show", error, "error"]], { status: 400 })
     }
     return c.text(error, 400)
@@ -49,7 +49,7 @@ export const POST = defineCommand({
       status: data.status,
     })
 
-    if (c.req.header("datastar-request") !== null) {
+    if (c.var.isDatastarRequest) {
       const label = data.status === "closed" ? "Issue closed" : "Issue reopened"
       return c.var.fx.reply([["toast:show", label, "success"]], { status: 200 })
     }

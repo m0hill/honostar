@@ -46,7 +46,7 @@ import "@/lib/contracts"
 
 const app = new Hono<AppEnv>()
 
-app.notFound(createNotFoundHandler())
+app.notFound(createNotFoundHandler({ ssePath: config.endpoints.sse }))
 app.onError(
   createOnErrorHandler({
     showStack: process.env.NODE_ENV !== "production",

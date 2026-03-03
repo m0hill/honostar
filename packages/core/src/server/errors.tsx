@@ -1,14 +1,36 @@
 import type { Context } from "hono"
 import type { JSX } from "hono/jsx/jsx-runtime"
 import type { AppEnv } from "./context"
+import { isDatastarRequest } from "./request"
 
 function acceptsHtml(c: Context<AppEnv>): boolean {
   const accept = c.req.header("accept")?.toLowerCase() ?? ""
   return accept.includes("text/html") || accept.includes("*/*")
 }
 
-function isDatastarRequest(c: Context<AppEnv>): boolean {
-  return c.req.header("datastar-request") !== null
+function detectMiswireMessage(err: unknown): string | null {
+  if (!(err instanceof Error)) return null
+  const message = err.message
+  const stack = err.stack ?? ""
+  const likelyFxPropertyRead =
+    message.includes("Cannot read properties of undefined") &&
+    ["reply", "broadcast", "publish", "publishTo", "ok", "respond", "effectRegistry"].some((key) =>
+      message.includes(`'${key}'`)
+    )
+
+  if (
+    message.includes("c.var.fx is unavailable") ||
+    likelyFxPropertyRead ||
+    stack.includes(".var.fx.") ||
+    stack.includes(".var.fx")
+  ) {
+    return (
+      "[Honostar] Missing FX responder middleware. " +
+      "Add app.use('*', initContext) and app.use('*', fxResponder) before route mounting."
+    )
+  }
+
+  return null
 }
 
 function NotFoundPage(props: { pathname: string }): JSX.Element {
@@ -79,14 +101,24 @@ function ErrorPage(props: {
   )
 }
 
-export function createNotFoundHandler() {
+export function createNotFoundHandler(opts?: { ssePath?: string }) {
+  const ssePath = opts?.ssePath ?? "/_/events"
   return (c: Context<AppEnv>) => {
+    const pathname = new URL(c.req.url).pathname
+    if (pathname === ssePath) {
+      return c.text(
+        `[Honostar] SSE endpoint "${ssePath}" is not mounted. ` +
+          `Add app.get("${ssePath}", createSseEndpoint(config, ...)).`,
+        404
+      )
+    }
+
     if (!acceptsHtml(c) || isDatastarRequest(c)) {
       return c.text("Not Found", 404)
     }
     c.set("pageHead", { title: "Not Found", elements: [] })
     c.status(404)
-    return c.render(<NotFoundPage pathname={new URL(c.req.url).pathname} />)
+    return c.render(<NotFoundPage pathname={pathname} />)
   }
 }
 
@@ -96,12 +128,16 @@ export function createOnErrorHandler(opts?: {
 }) {
   return (err: unknown, c: Context<AppEnv>) => {
     const requestId = opts?.getRequestId?.(c)
+    const miswire = detectMiswireMessage(err)
 
     if (!acceptsHtml(c) || isDatastarRequest(c)) {
+      if (miswire) {
+        return c.text(miswire, 500)
+      }
       return c.text("Internal Server Error", 500)
     }
 
-    const message = err instanceof Error ? err.message : undefined
+    const message = miswire ?? (err instanceof Error ? err.message : undefined)
     const stack = err instanceof Error ? err.stack : undefined
 
     c.set("pageHead", { title: "Server Error", elements: [] })

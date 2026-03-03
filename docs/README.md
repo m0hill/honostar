@@ -65,6 +65,7 @@ Implementation / commenting standards live in `docs/IMPLEMENTATION.md`.
 - `docs/BUILD.md` - Build system (Vite/tsc) and asset pipeline
 - `docs/STREAMING.md` - Streaming as a first-class primitive (multiplexed over `/_/events`)
 - `docs/CUSTOM_EFFECTS.md` - Extending the effect system
+- `docs/COMMANDS_QUERIES_COOKBOOK.md` - Command/query patterns and realtime CQRS recipes
 - `docs/PREFETCH.md` - Prefetch behavior
 - `docs/DECISIONS.md` - Architecture decisions
 - `docs/VISION.md` - Product vision / roadmap
@@ -115,6 +116,8 @@ export const POST = defineCommand({
 
 **Rule**: Every shared state change must publish through a topic defined in `src/lib/topics.ts`.
 
+Tip: use `c.var.isDatastarRequest` (or `isDatastarRequest(c)`) instead of manual header checks.
+
 `reply()` now inspects the incoming request and, when it comes from a Datastar action, automatically returns HTTP patches for simple built-in effects (`patch-elements`, `patch-elements-seq`, `patch-signals`). The response includes the required `datastar-*` headers so the client can morph the DOM without needing an SSE connection. More complex replies (custom effects, execute-script, multi-effect responses) continue to use SSE just like before.
 
 ### SSE Patch Discipline
@@ -136,6 +139,16 @@ c.var.fx.reply([
 ```
 
 **Fat Patches Principle**: Send entire regions (lists, tables, cards) so clients can self-heal after missed events or reconnects. Avoid incremental `append`/`prepend` unless absolutely necessary (infinite scroll, chat).
+
+### Region Authoring (Standard)
+
+Use region APIs consistently:
+
+- Render patch targets with `Region` or `regionAttrs(...)`
+- Patch with `patchRegion(...)` / `patchRegionSeq(...)`
+- Prefer region IDs over raw selector strings
+
+In dev, HonoStar warns when `patch-elements` targets a region-like selector that is not registered.
 
 ### Datastar Attributes
 

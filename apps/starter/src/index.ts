@@ -46,7 +46,7 @@ const bus = new MemoryBus()
 const publicRoot = fileURLToPath(new URL("../public", import.meta.url))
 const distRoot = fileURLToPath(new URL("../dist", import.meta.url))
 
-app.notFound(createNotFoundHandler())
+app.notFound(createNotFoundHandler({ ssePath: config.endpoints.sse }))
 app.onError(
   createOnErrorHandler({
     showStack: process.env.NODE_ENV !== "production",

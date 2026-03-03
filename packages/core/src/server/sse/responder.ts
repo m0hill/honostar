@@ -33,8 +33,14 @@ import type {
 } from "../contracts"
 import { validateEventContract } from "../contracts"
 import { factory } from "../middleware"
+import { isDatastarRequest } from "../request"
 import type { RegionPatch, RegionPatchSeq } from "../regions"
-import { patchRegion, patchRegionSeq, resolveRegionPatchOptions } from "../regions"
+import {
+  patchRegion,
+  patchRegionSeq,
+  resolveRegionPatchOptions,
+  warnOnUnregisteredRegionSelector,
+} from "../regions"
 import type { EffectDefinition } from "./effect-registry"
 import { EffectRegistry } from "./effect-registry"
 import type { SseLane, SseQos } from "./pubsub/memory"
@@ -129,7 +135,13 @@ export class FxResponder {
   }
 
   private isDatastarRequest(): boolean {
-    return this.c.req.header("datastar-request") !== null
+    return this.c.var.isDatastarRequest || isDatastarRequest(this.c)
+  }
+
+  private warnOnRegionSelector(opts?: PatchElementsOptions): void {
+    const selector = opts?.selector
+    if (!selector) return
+    warnOnUnregisteredRegionSelector(selector, this.c.var.regionRegistry)
   }
 
   private shouldAttemptHttpReply(toClient: boolean | undefined, topics?: string[]): boolean {
@@ -242,6 +254,7 @@ export class FxResponder {
 
     if (isPatchElementsEffect(effect)) {
       const [, payload, opts] = effect
+      this.warnOnRegionSelector(opts)
       const html = await this.renderElementsPayload(payload)
       return new Response(html, {
         status,
@@ -251,6 +264,7 @@ export class FxResponder {
 
     if (isPatchElementsSeqEffect(effect)) {
       const [, payload, opts] = effect
+      this.warnOnRegionSelector(opts)
       const html = await this.renderElementsSeqPayload(payload)
       return new Response(html, {
         status,
@@ -339,6 +353,7 @@ export class FxResponder {
   }
 
   private patchElements(topic: string, html: string, options: PatchElementsOptions) {
+    this.warnOnRegionSelector(options)
     this.c.var.bus.toTopic(topic, {
       event: "datastar-patch-elements",
       html,
@@ -547,6 +562,7 @@ export class FxResponder {
 
         if (isPatchElementsEffect(fx)) {
           const [, payload, opts] = fx
+          this.warnOnRegionSelector(opts)
           const html = await this.renderElementsPayload(payload)
           this.c.var.bus.toClient(clientId, {
             event: "datastar-patch-elements",
@@ -559,6 +575,7 @@ export class FxResponder {
 
         if (isPatchElementsSeqEffect(fx)) {
           const [, payload, opts] = fx
+          this.warnOnRegionSelector(opts)
           const html = await this.renderElementsSeqPayload(payload)
           this.c.var.bus.toClient(clientId, {
             event: "datastar-patch-elements",
@@ -1009,6 +1026,7 @@ export class FxResponder {
       ) => {
         if (finished) return
         flush()
+        this.warnOnRegionSelector(options)
         const html = await this.renderElementsPayload(payload)
         toTarget({
           event: "datastar-patch-elements",

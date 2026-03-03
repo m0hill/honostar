@@ -2,6 +2,7 @@ import type { StandardSchemaV1 } from "@standard-schema/spec"
 import type { Context, MiddlewareHandler } from "hono"
 import type { JSX } from "hono/jsx/jsx-runtime"
 import type { AppEnv } from "./context"
+import { isDatastarRequest } from "./request"
 import type { RegionDeclaration } from "./regions"
 import type { FxResponse } from "./sse/middleware"
 import type { QueryRegistration } from "./sse/queries"
@@ -161,10 +162,6 @@ function isValidatedHandler<Schema extends StandardSchemaV1>(
   def: ValidatedHandlerDefinition<Schema> | BaseHandlerDefinition
 ): def is ValidatedHandlerDefinition<Schema> {
   return "schema" in def && def.schema !== undefined
-}
-
-function isDatastarRequest(c: Context<AppEnv>): boolean {
-  return c.req.header("datastar-request") !== null
 }
 
 async function safeParseJson(c: Context<AppEnv>): Promise<unknown> {

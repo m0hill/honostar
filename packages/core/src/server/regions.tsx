@@ -1,6 +1,6 @@
 import type { JSX } from "hono/jsx/jsx-runtime"
 import type { ElementPatchMode, PatchElementsOptions } from "../common/types"
-import { envGet } from "./runtime-env"
+import { envGet, envIsProduction } from "./runtime-env"
 
 export const HonostarRegionAttr = "data-honostar-region"
 export const HonostarRegionKindAttr = "data-honostar-region-kind"
@@ -97,6 +97,49 @@ export function regionSelector(regionId: RegionId): string {
   return `[${HonostarRegionAttr}="${cssAttributeValueEscape(regionId)}"]`
 }
 
+function base64urlDecodeToUtf8(value: string): string | null {
+  const padding = (4 - (value.length % 4)) % 4
+  const padded = `${value}${"=".repeat(padding)}`
+  const base64 = padded.replace(/-/g, "+").replace(/_/g, "/")
+
+  if (typeof atob === "function") {
+    try {
+      const binary = atob(base64)
+      const bytes = new Uint8Array(Array.from(binary, (ch) => ch.charCodeAt(0)))
+      return new TextDecoder().decode(bytes)
+    } catch {
+      return null
+    }
+  }
+
+  if (typeof Buffer !== "undefined") {
+    try {
+      return Buffer.from(base64, "base64").toString("utf-8")
+    } catch {
+      return null
+    }
+  }
+
+  return null
+}
+
+function parseRegionIdFromSelector(selector: string): string | null {
+  const attrMatch = selector.match(
+    /\[\s*data-honostar-region\s*=\s*(?:"([^"]+)"|'([^']+)'|([^\]\s]+))\s*\]/i
+  )
+  if (attrMatch) {
+    const regionId = attrMatch[1] ?? attrMatch[2] ?? attrMatch[3]
+    return regionId ?? null
+  }
+
+  const domIdMatch = selector.match(/#honostar-region--([A-Za-z0-9_-]+)/)
+  if (domIdMatch?.[1]) {
+    return base64urlDecodeToUtf8(domIdMatch[1])
+  }
+
+  return null
+}
+
 export function regionAttrs(regionId: RegionId, options?: { kind?: RegionKind }) {
   const attrs: Record<string, string> = {
     [HonostarRegionAttr]: regionId,
@@ -179,6 +222,27 @@ export function createRegionRegistry(): RegionRegistry {
     { id: "ui:toasts", kind: "list", allowModes: ["append"] },
   ])
   return registry
+}
+
+/**
+ * Dev-only warning for selector-based region targeting that bypasses region registration.
+ *
+ * Prefer `patchRegion(...)` so selectors stay stable and policy checks can run.
+ */
+export function warnOnUnregisteredRegionSelector(
+  selector: string,
+  registry: RegionRegistry = createRegionRegistry()
+): void {
+  if (envIsProduction()) return
+  const regionId = parseRegionIdFromSelector(selector)
+  if (!regionId) return
+  if (registry.get(regionId)) return
+
+  warnOnce(
+    `regions:unknown-selector:${selector}`,
+    `[Regions] Selector "${selector}" targets region "${regionId}" but it is not registered. ` +
+      "Use `patchRegion(...)` + `Region/regionAttrs`, and register page regions via `defineQueryPage({ regions: [...] })`."
+  )
 }
 
 const incrementalModes = new Set<ElementPatchMode>(["append", "prepend", "before", "after"])

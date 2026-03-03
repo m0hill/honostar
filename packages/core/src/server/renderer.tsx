@@ -6,6 +6,7 @@ import type { DeepPartial, HonostarConfig } from "./config"
 import { createConfig } from "./config"
 import { factory } from "./middleware"
 import { signTopics } from "./security/topics"
+import { envIsProduction } from "./runtime-env"
 import { regionAttrs } from "./regions"
 
 function stripDoctype(html: string): string {
@@ -170,6 +171,44 @@ export const renderer = (userConfig?: DeepPartial<HonostarConfig>) => {
             `,
               }}
             />
+            {!envIsProduction() && (
+              <script
+                id="honostar-sse-bootstrap-check"
+                nonce={scriptNonce}
+                dangerouslySetInnerHTML={{
+                  __html: `
+                (() => {
+                  if (window.__honostarSseProbeRan) return
+                  window.__honostarSseProbeRan = true
+
+                  const hasTopics = ${topics.length > 0 ? "true" : "false"}
+                  if (!hasTopics) return
+
+                  const endpoint = ${JSON.stringify(config.endpoints.sse)}
+                  const probeUrl = endpoint.includes("?")
+                    ? endpoint + "&__honostar_probe=1"
+                    : endpoint + "?__honostar_probe=1"
+
+                  fetch(probeUrl, {
+                    method: "GET",
+                    headers: { "X-Honostar-Probe": "1", "Accept": "text/event-stream" },
+                  }).then((res) => {
+                    if (res.ok) return
+                    console.warn(
+                      "[Honostar] SSE endpoint probe failed (" + res.status + "). " +
+                        "Did you mount app.get('" + endpoint + "', createSseEndpoint(config, ...))?"
+                    )
+                  }).catch(() => {
+                    console.warn(
+                      "[Honostar] SSE endpoint probe failed. " +
+                        "Did you mount app.get('" + endpoint + "', createSseEndpoint(config, ...))?"
+                    )
+                  })
+                })()
+              `,
+                }}
+              />
+            )}
             <title>{title}</title>
             {pageHead?.elements}
             <link

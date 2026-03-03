@@ -5,6 +5,7 @@ import {
   regionDomId,
   regionSelector,
   resolveRegionPatchOptions,
+  warnOnUnregisteredRegionSelector,
 } from "./regions"
 
 describe("regions", () => {
@@ -48,6 +49,36 @@ describe("regions", () => {
         registry
       )
       expect(opts.selector).toBe(regionSelector(regionId))
+      expect(warnings.length).toBe(0)
+    } finally {
+      console.warn = originalWarn
+    }
+  })
+
+  test("warns when selector targets an unregistered region", () => {
+    const originalWarn = console.warn
+    const warnings: unknown[][] = []
+    console.warn = (...args) => warnings.push(args)
+    try {
+      warnOnUnregisteredRegionSelector('[data-honostar-region="test:regions:missing-1"]')
+      expect(warnings.length).toBe(1)
+      expect(String(warnings[0]?.[0])).toContain("not registered")
+    } finally {
+      console.warn = originalWarn
+    }
+  })
+
+  test("does not warn when selector targets a registered region", () => {
+    const originalWarn = console.warn
+    const warnings: unknown[][] = []
+    console.warn = (...args) => warnings.push(args)
+    try {
+      const registry = new RegionRegistry()
+      registry.registerAll([{ id: "test:regions:registered-1" }])
+      warnOnUnregisteredRegionSelector(
+        '[data-honostar-region="test:regions:registered-1"]',
+        registry
+      )
       expect(warnings.length).toBe(0)
     } finally {
       console.warn = originalWarn

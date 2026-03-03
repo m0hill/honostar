@@ -137,8 +137,9 @@ function getSigningSecret(cfg: HonostarConfig, c: Context): string | null {
       return null
     }
     throw new Error(
-      `[Topic Security] Missing required environment variable: ${secretEnv}. ` +
-        "Topic allowlist enforcement requires a signing secret in production."
+      `[Topic Security] Missing required signing secret in production (${secretEnv}). ` +
+        "SSE topic allowlist verification cannot run without this key. " +
+        `Set ${secretEnv} (or configure security.topics.secretEnv) before serving ${cfg.endpoints.sse}.`
     )
   }
 

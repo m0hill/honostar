@@ -9,6 +9,7 @@ import type { PubSubBus } from "./sse/pubsub/memory"
 export interface AppVariablesBase {
   bus: PubSubBus
   clientId: string
+  isDatastarRequest: boolean
   regionRegistry: RegionRegistry
   renderToString: (jsx: JSX.Element) => Promise<string>
   renderFragmentToString: (jsx: JSX.Element) => Promise<string>
