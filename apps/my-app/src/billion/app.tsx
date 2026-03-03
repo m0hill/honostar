@@ -52,6 +52,11 @@ const config = createConfig({
   },
 })
 
+const BOARD_PATCH_OPTIONS = {
+  mode: "replace",
+  useViewTransition: false,
+} as const
+
 const boardQuery: QueryHandler = async ({ c, event }) => {
   const fallbackRows = clampRows(toNonNegativeInt(c.req.query("rows")) ?? DEFAULT_VIEW_ROWS)
   const fallbackCols = clampCols(toNonNegativeInt(c.req.query("cols")) ?? DEFAULT_VIEW_COLS)
@@ -70,13 +75,17 @@ const boardQuery: QueryHandler = async ({ c, event }) => {
   ]
 
   if (!event) {
-    effects.push(patchRegion(REGION_BOARD, <BoardRegionPatch snapshot={snapshot} />))
+    effects.push(
+      patchRegion(REGION_BOARD, <BoardRegionPatch snapshot={snapshot} />, BOARD_PATCH_OPTIONS)
+    )
     return effects
   }
 
   const changed = parseTogglePayload(event.payload)
   if (!changed || viewportContains(snapshot, changed.row, changed.col)) {
-    effects.push(patchRegion(REGION_BOARD, <BoardRegionPatch snapshot={snapshot} />))
+    effects.push(
+      patchRegion(REGION_BOARD, <BoardRegionPatch snapshot={snapshot} />, BOARD_PATCH_OPTIONS)
+    )
   }
 
   return effects
@@ -158,7 +167,7 @@ app.post("/viewport", async (c) => {
 
   return c.var.fx.reply([
     patchRegion(REGION_STATS, <StatsRegion snapshot={update.snapshot} />),
-    patchRegion(REGION_BOARD, <BoardRegionPatch snapshot={update.snapshot} />),
+    patchRegion(REGION_BOARD, <BoardRegionPatch snapshot={update.snapshot} />, BOARD_PATCH_OPTIONS),
   ])
 })
 

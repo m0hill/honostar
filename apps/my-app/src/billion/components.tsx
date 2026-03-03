@@ -34,16 +34,19 @@ function StatsCard(props: { checkedCount: number; x: number; y: number }) {
 }
 
 function ScrollableBoard(props: { snapshot: ViewportSnapshot }) {
+  const fitColsExpr = `Math.max(1, Math.floor(($_boardViewport.clientWidth - 12 + ${CELL_GAP_PX}) / ${CELL_STRIDE_PX}))`
+  const fitColsFromEventExpr = `Math.max(1, Math.floor((evt.target.clientWidth - 12 + ${CELL_GAP_PX}) / ${CELL_STRIDE_PX}))`
+
   const initScroll = [
     `$vrows = Math.ceil($_boardViewport.clientHeight / ${CELL_STRIDE_PX}) + ${VIEW_OVERSCAN_ROWS};`,
-    `$vcols = Math.ceil($_boardViewport.clientWidth / ${CELL_STRIDE_PX}) + ${VIEW_OVERSCAN_COLS};`,
+    `$vcols = ${fitColsExpr} + ${VIEW_OVERSCAN_COLS};`,
     `$_boardViewport.scrollTo(${props.snapshot.x * CELL_STRIDE_PX}, ${props.snapshot.y * CELL_STRIDE_PX});`,
     `$vx = Math.floor($_boardViewport.scrollLeft / ${CELL_STRIDE_PX});`,
     `$vy = Math.floor($_boardViewport.scrollTop / ${CELL_STRIDE_PX});`,
     `@post('/viewport', { contentType: 'json', openWhenHidden: true });`,
   ].join(" ")
 
-  const syncScroll = `$vrows = Math.ceil(evt.target.clientHeight / ${CELL_STRIDE_PX}) + ${VIEW_OVERSCAN_ROWS}; $vcols = Math.ceil(evt.target.clientWidth / ${CELL_STRIDE_PX}) + ${VIEW_OVERSCAN_COLS}; $vx = Math.floor(evt.target.scrollLeft / ${CELL_STRIDE_PX}); $vy = Math.floor(evt.target.scrollTop / ${CELL_STRIDE_PX}); @post('/viewport', { contentType: 'json', openWhenHidden: true })`
+  const syncScroll = `$vrows = Math.ceil(evt.target.clientHeight / ${CELL_STRIDE_PX}) + ${VIEW_OVERSCAN_ROWS}; $vcols = ${fitColsFromEventExpr} + ${VIEW_OVERSCAN_COLS}; $vx = Math.floor(evt.target.scrollLeft / ${CELL_STRIDE_PX}); $vy = Math.floor(evt.target.scrollTop / ${CELL_STRIDE_PX}); @post('/viewport', { contentType: 'json', openWhenHidden: true })`
 
   const scrollAttrs = {
     "data-on:scroll__debounce.80ms": syncScroll,
@@ -121,8 +124,7 @@ export function Home(props: { snapshot: ViewportSnapshot }) {
       <header class="billion-header">
         <h1 class="billion-title">One Billion Checkboxes</h1>
         <p class="billion-subtitle">
-          Scroll horizontally and vertically to navigate. Viewport is persisted per tab and synced
-          in realtime.
+          Scroll horizontally and vertically. Viewport is persisted per tab and synced in realtime.
         </p>
         <StatsCard
           checkedCount={props.snapshot.checkedCount}

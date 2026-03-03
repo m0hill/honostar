@@ -10,18 +10,18 @@ export const CHUNK_BITS = CHUNK_SIZE * CHUNK_SIZE
 export const CHUNK_BYTES = CHUNK_BITS / 8
 export const CHUNKS_PER_ROW = Math.ceil(BOARD_SIZE / CHUNK_SIZE)
 
-export const CELL_SIZE_PX = 20
-export const CELL_GAP_PX = 2
+export const CELL_SIZE_PX = 28
+export const CELL_GAP_PX = 6
 export const CELL_STRIDE_PX = CELL_SIZE_PX + CELL_GAP_PX
 
-export const DEFAULT_VIEW_ROWS = 36
-export const DEFAULT_VIEW_COLS = 72
-export const MIN_VIEW_ROWS = 18
-export const MIN_VIEW_COLS = 30
-export const MAX_VIEW_ROWS = 120
-export const MAX_VIEW_COLS = 220
-export const VIEW_OVERSCAN_ROWS = 6
-export const VIEW_OVERSCAN_COLS = 8
+export const DEFAULT_VIEW_ROWS = 28
+export const DEFAULT_VIEW_COLS = 36
+export const MIN_VIEW_ROWS = 12
+export const MIN_VIEW_COLS = 8
+export const MAX_VIEW_ROWS = 90
+export const MAX_VIEW_COLS = 80
+export const VIEW_OVERSCAN_ROWS = 4
+export const VIEW_OVERSCAN_COLS = 2
 
 export const BOARD_PIXEL_SIZE = BOARD_SIZE * CELL_STRIDE_PX
 
