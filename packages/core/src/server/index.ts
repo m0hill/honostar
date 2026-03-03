@@ -90,6 +90,6 @@ export type {
 export { NatsBus } from "./sse/pubsub/nats-bus"
 export type { RedisBusOptions, RedisClient } from "./sse/pubsub/redis-bus"
 export { RedisBus } from "./sse/pubsub/redis-bus"
-export type { QueryHandler, QueryRegistration } from "./sse/queries"
+export type { QueryHandler, QueryOptions, QueryRegistration } from "./sse/queries"
 export { TopicQueryRegistry } from "./sse/queries"
 export { fxResponder } from "./sse/responder"

@@ -48,6 +48,12 @@ Honostar follows **Command Query Responsibility Segregation (CQRS)** for optimal
 - **Multiplayer by default**: All clients subscribe to the same topics and see the same canonical state
 - **Separation of concerns**: Commands focus on business logic; queries focus on presentation
 
+**Shared Query Coalescing (Opt-In)**
+
+- Use `queries` registrations with `{ shared: true }` when output is identical across subscribers for the same key.
+- In v1, coalescing is per process/instance: one query execution + one JSX->HTML compile, then fanout writes per stream.
+- Default cache window is `250ms` (`cacheMs` override available). Include tenant/user scope in topic naming or custom `key(...)` when needed.
+
 **Event-Driven Flow**
 
 1. User submits form → Command handler validates and mutates DB
@@ -61,8 +67,8 @@ Honostar follows **Command Query Responsibility Segregation (CQRS)** for optimal
 ## 3. Page & Topic Wiring
 
 1. **Pages** (`createPage`) declare their topics. The renderer automatically subscribes via `<body data-init="@get('<sse-endpoint>?topics=…')">` (endpoint defaults to `/_/events`, configurable via `HonostarConfig`).
-2. Components that will be patched must expose a **stable root ID** (`id="issues-list"`).
-3. SSE responses should target those IDs and use default `outer` morphing unless you're intentionally appending/prepending list items.
+2. Canonical patch targets should be declared regions (`Region`/`regionAttrs`) with stable region IDs.
+3. SSE query responses should patch regions with `patchRegion(...)` / `patchRegionSeq(...)`. Use selector patching only for non-region targets (toasts/overlays/transient containers).
 
 **Initial Page Load Strategies**
 
@@ -199,12 +205,13 @@ Requirements for any modal:
 
 **Default Behavior (Recommended)**
 
-- `mode: 'outer'` is the **default** for `patch-elements`. Never specify it explicitly—just omit the `mode` option.
-- Use fat patches: `['patch-elements', component]` with no options when possible. Datastar will morph by matching top-level element IDs.
+- Prefer region patches for canonical UI: `patchRegion(regionId, jsx)` / `patchRegionSeq(regionId, [...])`.
+- Region patches keep selector strings out of app code and enforce region registration discipline.
+- `patch-elements` with explicit selectors is an escape hatch, not the default.
 
 **When to Use Options**
 
-- `{ selector: '#target-id' }` - Required for `append`/`prepend`/`before`/`after`/`remove` modes. Not needed for default `outer` morph.
+- `{ selector: '#target-id' }` - Required for non-region targets and `append`/`prepend`/`before`/`after`/`remove` modes.
 - `mode: 'append'/'prepend'` - Only for true incremental updates (infinite scroll, chat messages). **Warning**: These are fragile to SSE interruptions. Prefer full region re-renders.
 - `mode: 'inner'/'replace'` - Rarely needed. Document why if used.
 
@@ -216,18 +223,16 @@ Requirements for any modal:
 **Example (Correct)**
 
 ```typescript
-// Good: Default outer morph, no explicit mode
-c.var.fx.broadcast(topic, [
-  ['patch-elements', <IssuesList issues={allIssues} />]
-])
+// Good: Canonical region patch
+return [patchRegion("issues:list", <IssuesList issues={allIssues} />)]
 
-// Good: Selector required for append mode
+// Good: Selector patching for overlay container
 c.var.fx.reply([
   ['patch-elements', <Modal />, { selector: '#ds-overlays', mode: 'append' }]
 ])
 
-// Bad: Redundant explicit outer mode
-['patch-elements', component, { mode: 'outer' }] // ❌ Remove mode
+// Bad: Selector patching for canonical region content
+['patch-elements', <IssuesList issues={allIssues} />, { selector: '#honostar-region--...' }] // ❌ Use patchRegion
 ```
 
 ---

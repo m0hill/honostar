@@ -1,7 +1,7 @@
 import type { StatusCode } from "hono/utils/http-status"
 import { factory } from "../middleware"
 import type { EffectDefinition, EffectHandler } from "./effect-registry"
-import type { QueryHandler } from "./queries"
+import type { QueryHandler, QueryOptions, QueryRegistration } from "./queries"
 import { TopicQueryRegistry } from "./queries"
 
 /**
@@ -143,14 +143,18 @@ export function registerEffects(effects: Record<string, EffectHandler>) {
  * }))
  * ```
  */
-export function registerQuery(topicOrPattern: string | RegExp, handler: QueryHandler) {
+export function registerQuery(
+  topicOrPattern: string | RegExp,
+  handler: QueryHandler,
+  options?: QueryOptions
+) {
   return factory.createMiddleware(async (c, next) => {
     const queries = c.var.queries ?? new TopicQueryRegistry()
     if (!c.var.queries) c.set("queries", queries)
 
     // Narrow for overload resolution (string vs RegExp).
-    if (typeof topicOrPattern === "string") queries.register(topicOrPattern, handler)
-    else queries.register(topicOrPattern, handler)
+    if (typeof topicOrPattern === "string") queries.register(topicOrPattern, handler, options)
+    else queries.register(topicOrPattern, handler, options)
     await next()
   })
 }
@@ -160,17 +164,15 @@ export function registerQuery(topicOrPattern: string | RegExp, handler: QueryHan
  *
  * @param queries - List of query registrations.
  */
-export function registerQueries(
-  queries: Array<[topicOrPattern: string | RegExp, handler: QueryHandler]>
-) {
+export function registerQueries(queries: QueryRegistration[]) {
   return factory.createMiddleware(async (c, next) => {
     const registry = c.var.queries ?? new TopicQueryRegistry()
     if (!c.var.queries) c.set("queries", registry)
 
-    for (const [topicOrPattern, handler] of queries) {
+    for (const [topicOrPattern, handler, options] of queries) {
       // Narrow for overload resolution (string vs RegExp).
-      if (typeof topicOrPattern === "string") registry.register(topicOrPattern, handler)
-      else registry.register(topicOrPattern, handler)
+      if (typeof topicOrPattern === "string") registry.register(topicOrPattern, handler, options)
+      else registry.register(topicOrPattern, handler, options)
     }
     await next()
   })

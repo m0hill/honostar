@@ -7,7 +7,7 @@ import {
   resolvePageLayouts,
 } from "../page"
 import type { FxResponse } from "../sse/middleware"
-import type { QueryHandler, QueryRegistration } from "../sse/queries"
+import type { QueryHandler, QueryOptions, QueryRegistration } from "../sse/queries"
 import type { RouteLoader } from "./types"
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "OPTIONS"
@@ -69,28 +69,34 @@ function queryKey(topicOrPattern: string | RegExp): string {
   return `r:${topicOrPattern.source}/${topicOrPattern.flags}`
 }
 
+function queryOptionsEqual(a: QueryOptions | undefined, b: QueryOptions | undefined): boolean {
+  if (!a && !b) return true
+  if (!a || !b) return false
+  return a.shared === b.shared && a.cacheMs === b.cacheMs && a.key === b.key
+}
+
 function collectQueries(
   target: QueryRegistration[] | undefined,
   registrations: QueryRegistration[] | undefined,
-  dedupe: Map<string, QueryHandler>
+  dedupe: Map<string, { handler: QueryHandler; options: QueryOptions | undefined }>
 ): void {
   if (!target || !registrations || registrations.length === 0) return
 
   for (const registration of registrations) {
-    const [topicOrPattern, handler] = registration
+    const [topicOrPattern, handler, options] = registration
     const key = queryKey(topicOrPattern)
 
     const existing = dedupe.get(key)
     if (existing) {
-      if (existing !== handler) {
+      if (existing.handler !== handler || !queryOptionsEqual(existing.options, options)) {
         console.warn(
-          `[CQRS] Duplicate query registration for "${key}" detected; keeping the first handler.`
+          `[CQRS] Duplicate query registration for "${key}" detected with different handler/options; keeping the first registration.`
         )
       }
       continue
     }
 
-    dedupe.set(key, handler)
+    dedupe.set(key, { handler, options })
     target.push(registration)
   }
 }
@@ -120,7 +126,7 @@ async function registerModule(
   routePath: string,
   mod: Record<string, unknown>,
   options: MountRoutesOptions | undefined,
-  queryDedupe: Map<string, QueryHandler>
+  queryDedupe: Map<string, { handler: QueryHandler; options: QueryOptions | undefined }>
 ) {
   const methods: HttpMethod[] = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
 
@@ -216,7 +222,13 @@ export async function mountRoutes(
   loader: RouteLoader,
   options?: MountRoutesOptions
 ) {
-  const queryDedupe = new Map<string, QueryHandler>()
+  const queryDedupe = new Map<
+    string,
+    {
+      handler: QueryHandler
+      options: QueryOptions | undefined
+    }
+  >()
   for await (const { routePath, module } of loader.load()) {
     await registerModule(app, routePath, module, options, queryDedupe)
   }

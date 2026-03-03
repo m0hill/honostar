@@ -123,22 +123,42 @@ Tip: use `c.var.isDatastarRequest` (or `isDatastarRequest(c)`) instead of manual
 ### SSE Patch Discipline
 
 ```typescript
-// ✅ Good: Query returns a fat patch (default outer morph)
+// ✅ Good: Query returns a fat region patch
 export const issuesListQuery: QueryHandler = async ({ c }) => {
   const allIssues = await fetchIssues(c)
-  return [['patch-elements', <IssuesList issues={allIssues} />]]
+  return [patchRegion("issues:list", <IssuesList issues={allIssues} />)]
 }
 
-// ✅ Good: Append modal to overlay container
+// ✅ Escape hatch: append modal to overlay container
 c.var.fx.reply([
   ['patch-elements', <Modal />, { selector: '#ds-overlays', mode: 'append' }]
 ])
 
-// ❌ Bad: Redundant explicit mode
-['patch-elements', component, { mode: 'outer' }] // Remove mode option
+// ❌ Avoid: selector patching for canonical page state
+['patch-elements', <IssuesList issues={allIssues} />, { selector: '#honostar-region--...' }]
 ```
 
-**Fat Patches Principle**: Send entire regions (lists, tables, cards) so clients can self-heal after missed events or reconnects. Avoid incremental `append`/`prepend` unless absolutely necessary (infinite scroll, chat).
+**Default Rule**: Use regions (`Region`/`regionAttrs`) and patch with `patchRegion(...)` / `patchRegionSeq(...)`.
+Use raw `patch-elements` selectors only for non-region targets (toasts, overlays, transient containers).
+
+### Shared Queries (Opt-In)
+
+When many tabs subscribe to the same hot topic on one server instance, you can coalesce query compute + render:
+
+```typescript
+const queries: QueryRegistration[] = [
+  [
+    "issues:list",
+    async ({ c }) => [patchRegion("issues:list", <IssuesList issues={await fetchIssues(c)} />)],
+    { shared: true, cacheMs: 250 },
+  ],
+]
+```
+
+- `shared: true` is opt-in.
+- Coalescing is per process/instance (no cross-instance dedupe in v1).
+- Only use for queries whose output is identical for all subscribers for a given key.
+- Include tenant/user scope in topic naming or custom `key(...)` when needed.
 
 ### Region Authoring (Standard)
 

@@ -9,6 +9,25 @@ import type { QueryRegistration } from "./queries"
 
 const tick = () => new Promise((resolve) => setTimeout(resolve, 0))
 
+async function readUntil(
+  reader: ReadableStreamDefaultReader<Uint8Array>,
+  predicate: (text: string) => boolean,
+  maxReads = 80
+): Promise<string> {
+  const decoder = new TextDecoder()
+  let text = ""
+
+  for (let i = 0; i < maxReads; i++) {
+    const { value, done } = await reader.read()
+    if (done) break
+    if (value) text += decoder.decode(value)
+    if (predicate(text)) break
+    await tick()
+  }
+
+  return text
+}
+
 describe("createSseEndpoint retained topic replay", () => {
   beforeEach(() => {
     delete process.env.HONOSTAR_SIGNING_SECRET
@@ -144,6 +163,194 @@ describe("createSseEndpoint CQRS topic queries", () => {
 
     expect(text).toContain('data: elements <div id="comments-section">INIT</div>')
     expect(text).toContain('data: elements <div id="comments-section">EVENT</div>')
+  })
+
+  test("coalesces shared query execution across connections", async () => {
+    const bus = new MemoryBus()
+    const topic = "issues:list"
+    let invocations = 0
+
+    const queries: QueryRegistration[] = [
+      [
+        topic,
+        async ({ event }) => {
+          invocations += 1
+          await new Promise((resolve) => setTimeout(resolve, 20))
+          return [
+            ["patch-elements", `<div id="issues-list">${event ? "EVENT" : "INIT"}</div>`],
+          ]
+        },
+        { shared: true, cacheMs: 500 },
+      ],
+    ]
+
+    const app = new Hono<AppEnv>()
+    app.use("*", async (c, next) => {
+      c.set("clientId", c.req.header("X-Tab-ID") ?? "anonymous")
+      c.set("bus", bus)
+      await next()
+    })
+    app.get("/_/events", createSseEndpoint(undefined, { queries }))
+
+    const ac1 = new AbortController()
+    const ac2 = new AbortController()
+    const [res1, res2] = await Promise.all([
+      app.request(`/_/events?topics=${topic}`, {
+        headers: { "X-Tab-ID": "client-1", "Datastar-Request": "true" },
+        signal: ac1.signal,
+      }),
+      app.request(`/_/events?topics=${topic}`, {
+        headers: { "X-Tab-ID": "client-2", "Datastar-Request": "true" },
+        signal: ac2.signal,
+      }),
+    ])
+
+    const reader1 = res1.body?.getReader()
+    const reader2 = res2.body?.getReader()
+    expect(reader1).toBeTruthy()
+    expect(reader2).toBeTruthy()
+    if (!reader1 || !reader2) return
+
+    const [init1, init2] = await Promise.all([
+      readUntil(reader1, (text) => text.includes("issues-list") && text.includes("INIT")),
+      readUntil(reader2, (text) => text.includes("issues-list") && text.includes("INIT")),
+    ])
+
+    expect(init1).toContain("INIT")
+    expect(init2).toContain("INIT")
+    expect(invocations).toBe(1)
+
+    bus.toTopic(topic, { event: "honostar-event", name: "issue:updated", payload: "null" })
+
+    const [event1, event2] = await Promise.all([
+      readUntil(reader1, (text) => text.includes("issues-list") && text.includes("EVENT")),
+      readUntil(reader2, (text) => text.includes("issues-list") && text.includes("EVENT")),
+    ])
+
+    ac1.abort()
+    ac2.abort()
+
+    expect(event1).toContain("EVENT")
+    expect(event2).toContain("EVENT")
+    expect(invocations).toBe(2)
+  })
+
+  test("runs non-shared query per connection", async () => {
+    const bus = new MemoryBus()
+    const topic = "issues:list"
+    let invocations = 0
+
+    const queries: QueryRegistration[] = [
+      [
+        topic,
+        async ({ event }) => {
+          invocations += 1
+          return [
+            ["patch-elements", `<div id="issues-list">${event ? "EVENT" : "INIT"}</div>`],
+          ]
+        },
+      ],
+    ]
+
+    const app = new Hono<AppEnv>()
+    app.use("*", async (c, next) => {
+      c.set("clientId", c.req.header("X-Tab-ID") ?? "anonymous")
+      c.set("bus", bus)
+      await next()
+    })
+    app.get("/_/events", createSseEndpoint(undefined, { queries }))
+
+    const ac1 = new AbortController()
+    const ac2 = new AbortController()
+    const [res1, res2] = await Promise.all([
+      app.request(`/_/events?topics=${topic}`, {
+        headers: { "X-Tab-ID": "client-1", "Datastar-Request": "true" },
+        signal: ac1.signal,
+      }),
+      app.request(`/_/events?topics=${topic}`, {
+        headers: { "X-Tab-ID": "client-2", "Datastar-Request": "true" },
+        signal: ac2.signal,
+      }),
+    ])
+
+    const reader1 = res1.body?.getReader()
+    const reader2 = res2.body?.getReader()
+    expect(reader1).toBeTruthy()
+    expect(reader2).toBeTruthy()
+    if (!reader1 || !reader2) return
+
+    await Promise.all([
+      readUntil(reader1, (text) => text.includes("issues-list") && text.includes("INIT")),
+      readUntil(reader2, (text) => text.includes("issues-list") && text.includes("INIT")),
+    ])
+    expect(invocations).toBe(2)
+
+    bus.toTopic(topic, { event: "honostar-event", name: "issue:updated", payload: "null" })
+
+    await Promise.all([
+      readUntil(reader1, (text) => text.includes("issues-list") && text.includes("EVENT")),
+      readUntil(reader2, (text) => text.includes("issues-list") && text.includes("EVENT")),
+    ])
+
+    ac1.abort()
+    ac2.abort()
+
+    expect(invocations).toBe(4)
+  })
+
+  test("shared key includes non-reserved SSE query params", async () => {
+    const bus = new MemoryBus()
+    const topic = "issues:list"
+    let invocations = 0
+
+    const queries: QueryRegistration[] = [
+      [
+        topic,
+        async () => {
+          invocations += 1
+          await new Promise((resolve) => setTimeout(resolve, 20))
+          return [["patch-elements", '<div id="issues-list">INIT</div>']]
+        },
+        { shared: true, cacheMs: 500 },
+      ],
+    ]
+
+    const app = new Hono<AppEnv>()
+    app.use("*", async (c, next) => {
+      c.set("clientId", c.req.header("X-Tab-ID") ?? "anonymous")
+      c.set("bus", bus)
+      await next()
+    })
+    app.get("/_/events", createSseEndpoint(undefined, { queries }))
+
+    const ac1 = new AbortController()
+    const ac2 = new AbortController()
+    const [res1, res2] = await Promise.all([
+      app.request(`/_/events?topics=${topic}&filter=a`, {
+        headers: { "X-Tab-ID": "client-1", "Datastar-Request": "true" },
+        signal: ac1.signal,
+      }),
+      app.request(`/_/events?topics=${topic}&filter=b`, {
+        headers: { "X-Tab-ID": "client-2", "Datastar-Request": "true" },
+        signal: ac2.signal,
+      }),
+    ])
+
+    const reader1 = res1.body?.getReader()
+    const reader2 = res2.body?.getReader()
+    expect(reader1).toBeTruthy()
+    expect(reader2).toBeTruthy()
+    if (!reader1 || !reader2) return
+
+    await Promise.all([
+      readUntil(reader1, (text) => text.includes("issues-list") && text.includes("INIT")),
+      readUntil(reader2, (text) => text.includes("issues-list") && text.includes("INIT")),
+    ])
+
+    ac1.abort()
+    ac2.abort()
+
+    expect(invocations).toBe(2)
   })
 })
 

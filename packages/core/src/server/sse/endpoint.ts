@@ -32,7 +32,8 @@ import { verifyTopics } from "../security/topics"
 import type { EffectDefinition } from "./effect-registry"
 import { SseFormatter } from "./generator"
 import type { SSEPayload, SseLane } from "./pubsub/memory"
-import type { QueryRegistration } from "./queries"
+import { sharedQueryCoalescer } from "./shared-query"
+import type { QueryOptions, QueryRegistration } from "./queries"
 import { TopicQueryRegistry } from "./queries"
 
 type DomainEvent = { name: string; payload: Jsonifiable | null }
@@ -95,6 +96,56 @@ function safeParseJsonifiable(value: string): Jsonifiable | null {
     return null
   }
 }
+
+const RESERVED_SSE_PARAM_KEYS = new Set(["topics", "topicsToken", "datastar"])
+
+function stableJsonStringify(value: unknown): string {
+  if (value === null || value === undefined) return "null"
+  if (typeof value === "number" || typeof value === "boolean") return JSON.stringify(value)
+  if (typeof value === "string") return JSON.stringify(value)
+
+  if (Array.isArray(value)) {
+    return `[${value.map((item) => stableJsonStringify(item)).join(",")}]`
+  }
+
+  if (isPlainRecord(value)) {
+    const keys = Object.keys(value).sort()
+    const parts = keys.map((key) => `${JSON.stringify(key)}:${stableJsonStringify(value[key])}`)
+    return `{${parts.join(",")}}`
+  }
+
+  return JSON.stringify(null)
+}
+
+function extractSharedSseParams(url: string): Record<string, string> {
+  const params = new URL(url, "http://localhost").searchParams
+  const out: Record<string, string> = {}
+  for (const [key, value] of params.entries()) {
+    if (RESERVED_SSE_PARAM_KEYS.has(key)) continue
+    if (out[key] !== undefined) continue
+    out[key] = value
+  }
+  return out
+}
+
+function defaultSharedKey(args: {
+  topic: string
+  event: DomainEvent | undefined
+  match: RegExpMatchArray | undefined
+  sseParams: Record<string, string>
+}): string {
+  const eventName = args.event?.name ?? "__init__"
+  const payload = stableJsonStringify(args.event?.payload ?? null)
+  const match0 = args.match?.[0] ?? ""
+  const sseParams = stableJsonStringify(args.sseParams)
+  return `${args.topic}|${eventName}|${payload}|${match0}|${sseParams}`
+}
+
+function containsCloseSseEffect(effects: EffectDefinition[]): boolean {
+  return effects.some((fx) => fx[0] === "close-sse")
+}
+
+type ResolvedQuery = NonNullable<ReturnType<TopicQueryRegistry["resolve"]>>
 
 /**
  * Creates an SSE endpoint handler.
@@ -253,17 +304,14 @@ export const createSseEndpoint = (
         return html.join("\n")
       }
 
-      const writeEffectsToStream = async (effects: EffectDefinition[]) => {
+      const compileEffects = async (effects: EffectDefinition[]): Promise<string[]> => {
+        const compiled: string[] = []
         for (const fx of effects) {
           if (isPatchElementsEffect(fx)) {
             const [, payload, opts] = fx
             const html = await renderElementsPayload(payload)
             const eventString = formatter.patchElements(html, opts ?? {})
-            enqueueWrite({
-              lane: "canonical",
-              size: eventString.length,
-              write: () => stream.write(eventString),
-            })
+            compiled.push(eventString)
             continue
           }
 
@@ -271,11 +319,7 @@ export const createSseEndpoint = (
             const [, payload, opts] = fx
             const html = await renderElementsSeqPayload(payload)
             const eventString = formatter.patchElements(html, opts ?? {})
-            enqueueWrite({
-              lane: "canonical",
-              size: eventString.length,
-              write: () => stream.write(eventString),
-            })
+            compiled.push(eventString)
             continue
           }
 
@@ -284,11 +328,7 @@ export const createSseEndpoint = (
             const html = await renderElementsPayload(patch.html)
             const opts = resolveRegionPatchOptions(patch, c.var.regionRegistry)
             const eventString = formatter.patchElements(html, opts)
-            enqueueWrite({
-              lane: "canonical",
-              size: eventString.length,
-              write: () => stream.write(eventString),
-            })
+            compiled.push(eventString)
             continue
           }
 
@@ -297,40 +337,41 @@ export const createSseEndpoint = (
             const html = await renderElementsSeqPayload(patch.html)
             const opts = resolveRegionPatchOptions(patch, c.var.regionRegistry)
             const eventString = formatter.patchElements(html, opts)
-            enqueueWrite({
-              lane: "canonical",
-              size: eventString.length,
-              write: () => stream.write(eventString),
-            })
+            compiled.push(eventString)
             continue
           }
 
           if (isPatchSignalsEffect(fx)) {
             const [, signals, opts] = fx
             const eventString = formatter.patchSignals(JSON.stringify(signals), opts ?? {})
-            enqueueWrite({
-              lane: "canonical",
-              size: eventString.length,
-              write: () => stream.write(eventString),
-            })
+            compiled.push(eventString)
             continue
           }
 
           if (isExecuteScriptEffect(fx)) {
             const [, script, opts] = fx
             const eventString = formatter.executeScript(script, opts)
-            enqueueWrite({
-              lane: "canonical",
-              size: eventString.length,
-              write: () => stream.write(eventString),
-            })
-            continue
+            compiled.push(eventString)
           }
+        }
+        return compiled
+      }
 
-          if (fx[0] === "close-sse") {
-            enqueueWrite({ lane: "canonical", size: 0, write: () => stream.close() })
-            return
-          }
+      const writeCompiled = async (compiledStrings: string[]) => {
+        for (const eventString of compiledStrings) {
+          enqueueWrite({
+            lane: "canonical",
+            size: eventString.length,
+            write: () => stream.write(eventString),
+          })
+        }
+      }
+
+      const writeEffectsToStream = async (effects: EffectDefinition[]) => {
+        const compiledStrings = await compileEffects(effects)
+        await writeCompiled(compiledStrings)
+        if (containsCloseSseEffect(effects)) {
+          enqueueWrite({ lane: "canonical", size: 0, write: () => stream.close() })
         }
       }
 
@@ -345,11 +386,50 @@ export const createSseEndpoint = (
       // need separate `registerQueries(...)` middleware.
       if (options?.queries && options.queries.length > 0) {
         const registry = getQueries()
-        for (const [topicOrPattern, handler] of options.queries) {
+        for (const [topicOrPattern, handler, queryOptions] of options.queries) {
           // Narrow for overload resolution (string vs RegExp).
-          if (typeof topicOrPattern === "string") registry.register(topicOrPattern, handler)
-          else registry.register(topicOrPattern, handler)
+          if (typeof topicOrPattern === "string") {
+            registry.register(topicOrPattern, handler, queryOptions)
+          } else {
+            registry.register(topicOrPattern, handler, queryOptions)
+          }
         }
+      }
+
+      const sharedSseParams = extractSharedSseParams(c.req.url)
+
+      const invokeQuery = async (topic: string, resolved: ResolvedQuery, event?: DomainEvent) => {
+        return await resolved.handler({
+          c,
+          topic,
+          ...(event !== undefined ? { event } : {}),
+          ...(resolved.match !== undefined ? { match: resolved.match } : {}),
+        })
+      }
+
+      const buildSharedKey = (args: {
+        topic: string
+        event: DomainEvent | undefined
+        resolved: ResolvedQuery
+        queryOptions: QueryOptions
+      }) => {
+        const keyFn = args.queryOptions.key
+        if (!keyFn) {
+          return defaultSharedKey({
+            topic: args.topic,
+            event: args.event,
+            match: args.resolved.match,
+            sseParams: sharedSseParams,
+          })
+        }
+
+        return keyFn({
+          topic: args.topic,
+          ...(args.event !== undefined ? { eventName: args.event.name } : {}),
+          ...(args.event !== undefined ? { eventPayload: args.event.payload } : {}),
+          match0: args.resolved.match?.[0] ?? "",
+          sseParams: sharedSseParams,
+        })
       }
 
       const runQuery = async (topic: string, event?: DomainEvent) => {
@@ -361,8 +441,45 @@ export const createSseEndpoint = (
             source: "receive",
           })
         }
+
         const queries = getQueries()
-        const effects = await queries.run({ c, topic, ...(event ? { event } : {}) })
+        const resolved = queries.resolve(topic)
+        if (!resolved) return
+
+        const queryOptions = resolved.options
+        if (queryOptions?.shared === true) {
+          const sharedCacheMs = queryOptions.cacheMs ?? 250
+          const sharedKey = buildSharedKey({ topic, event, resolved, queryOptions })
+
+          try {
+            const compiledStrings = await sharedQueryCoalescer.getOrRun(
+              sharedKey,
+              sharedCacheMs,
+              async () => {
+                const effects = (await invokeQuery(topic, resolved, event)) ?? []
+                if (containsCloseSseEffect(effects)) {
+                  throw new Error("close-sse is not supported in shared query mode")
+                }
+                return await compileEffects(effects)
+              }
+            )
+            await writeCompiled(compiledStrings)
+            return
+          } catch (error) {
+            if (
+              error instanceof Error &&
+              error.message === "close-sse is not supported in shared query mode"
+            ) {
+              console.warn(
+                `[CQRS] Query for topic "${topic}" returned close-sse while shared=true; falling back to per-connection execution.`
+              )
+            } else {
+              throw error
+            }
+          }
+        }
+
+        const effects = await invokeQuery(topic, resolved, event)
         if (!effects || effects.length === 0) return
         await writeEffectsToStream(effects)
       }
