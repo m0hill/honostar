@@ -4,7 +4,6 @@ import type { JSX } from "hono/jsx/jsx-runtime"
 import type { AppEnv } from "./context"
 import { isDatastarRequest } from "./request"
 import type { RegionDeclaration } from "./regions"
-import type { FxResponse } from "./sse/middleware"
 import type { QueryRegistration } from "./sse/queries"
 
 type PageLoader<T extends Record<string, unknown> = {}> = (
@@ -137,21 +136,18 @@ export interface PageDefinition<T extends Record<string, unknown> = {}> {
 type ValidationHook = (
   result: { success: false; error: readonly StandardSchemaV1.Issue[] },
   c: Context<AppEnv>
-) => Response | FxResponse | Promise<Response | FxResponse>
+) => Response | Promise<Response>
 
 interface BaseHandlerDefinition {
   use?: MiddlewareHandler<AppEnv>[]
-  handler: (c: Context<AppEnv>) => Promise<Response | FxResponse>
+  handler: (c: Context<AppEnv>) => Promise<Response>
 }
 
 interface ValidatedHandlerDefinition<Schema extends StandardSchemaV1> {
   schema: Schema
   use?: MiddlewareHandler<AppEnv>[]
   hook?: ValidationHook
-  handler: (
-    c: Context<AppEnv>,
-    data: StandardSchemaV1.InferOutput<Schema>
-  ) => Promise<Response | FxResponse>
+  handler: (c: Context<AppEnv>, data: StandardSchemaV1.InferOutput<Schema>) => Promise<Response>
 }
 
 export type HandlerDefinition = BaseHandlerDefinition

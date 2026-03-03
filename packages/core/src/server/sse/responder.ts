@@ -384,61 +384,6 @@ export class FxResponder {
     })
   }
 
-  private async renderAndPatch(
-    topic: string,
-    component: JSX.Element | null,
-    options: PatchElementsOptions,
-    signals?: Record<string, Jsonifiable>
-  ) {
-    if (signals) {
-      this.patchSignals(topic, signals)
-    }
-
-    const fragment = component ? await this.c.var.renderFragmentToString(component) : ""
-    this.patchElements(topic, fragment, options)
-  }
-
-  append(
-    topic: string,
-    selector: string,
-    component: JSX.Element,
-    signals?: Record<string, Jsonifiable>
-  ) {
-    return this.renderAndPatch(topic, component, { mode: "append", selector }, signals)
-  }
-
-  prepend(
-    topic: string,
-    selector: string,
-    component: JSX.Element,
-    signals?: Record<string, Jsonifiable>
-  ) {
-    return this.renderAndPatch(topic, component, { mode: "prepend", selector }, signals)
-  }
-
-  update(topic: string, component: JSX.Element, signals?: Record<string, Jsonifiable>) {
-    // Using default mode (outer morph) - no need to specify explicitly
-    return this.renderAndPatch(topic, component, {}, signals)
-  }
-
-  remove(topic: string, selector: string, signals?: Record<string, Jsonifiable>) {
-    if (signals) {
-      this.patchSignals(topic, signals)
-    }
-    this.patchElements(topic, "", { mode: "remove", selector })
-  }
-
-  removeSignals(topic: string, keys: string | string[]) {
-    const arr = Array.isArray(keys) ? keys : [keys]
-    const patch: Record<string, null> = {}
-    for (const k of arr) patch[k] = null
-    this.patchSignals(topic, patch)
-  }
-
-  noContent() {
-    return this.c.body(null, 204)
-  }
-
   /**
    * Execute effects using the extensible registry system.
    * This is the new primary method for running effects.

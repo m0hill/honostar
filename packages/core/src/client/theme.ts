@@ -150,9 +150,6 @@ export function createThemeController(config: ThemeRuntimeConfig): ThemeControll
   })
 
   if (systemMatcher) {
-    const legacyMatcher = systemMatcher as MediaQueryList & {
-      addListener?: (listener: (this: MediaQueryList, ev: MediaQueryListEvent) => void) => void
-    }
     const systemListener = () => {
       if (preference !== "system") return
       const nextResolved = applyPreference("system")
@@ -161,11 +158,7 @@ export function createThemeController(config: ThemeRuntimeConfig): ThemeControll
         emit()
       }
     }
-    if (typeof systemMatcher.addEventListener === "function") {
-      systemMatcher.addEventListener("change", systemListener)
-    } else if (typeof legacyMatcher.addListener === "function") {
-      legacyMatcher.addListener(systemListener)
-    }
+    systemMatcher.addEventListener("change", systemListener)
   }
 
   return controller

@@ -1,65 +1,7 @@
-import type { StatusCode } from "hono/utils/http-status"
 import { factory } from "../middleware"
-import type { EffectDefinition, EffectHandler } from "./effect-registry"
+import type { EffectHandler } from "./effect-registry"
 import type { QueryHandler, QueryOptions, QueryRegistration } from "./queries"
 import { TopicQueryRegistry } from "./queries"
-
-/**
- * A structured response for handlers that want to emit effects without manually calling `c.var.fx.reply()`.
- *
- * This is mainly useful when you want to return a value from your handler and let middleware translate it
- * into the correct transport (HTTP patch vs SSE).
- */
-export type FxResponse = {
-  /**
-   * Effect list to execute.
-   */
-  fx: EffectDefinition[]
-  /**
-   * Close the SSE stream after processing (rare; mostly for internal use).
-   */
-  close?: boolean
-  /**
-   * HTTP status code to use when returning an HTTP response.
-   */
-  status?: StatusCode
-  /**
-   * Topic(s) to broadcast to (topic-scoped).
-   */
-  topics?: string[]
-  /**
-   * When true, send effects only to the initiating tab (client-scoped).
-   */
-  toClient?: boolean
-  /**
-   * Optional headers (mainly relevant for HTTP patch replies).
-   */
-  headers?: Record<string, string>
-}
-
-function isFxResponse(value: unknown): value is FxResponse {
-  if (typeof value !== "object" || value === null || value instanceof Response) {
-    return false
-  }
-
-  return "fx" in value && Array.isArray((value as { fx: unknown }).fx)
-}
-
-export const fxResponder = factory.createMiddleware(async (c, next) => {
-  await next()
-
-  const fxResponse = c.var.fxResponse
-  if (isFxResponse(fxResponse)) {
-    c.res = await c.var.fx.respond({
-      effects: fxResponse.fx,
-      ...(fxResponse.close !== undefined && { close: fxResponse.close }),
-      ...(fxResponse.status !== undefined && { status: fxResponse.status }),
-      ...(fxResponse.topics !== undefined && { topics: fxResponse.topics }),
-      ...(fxResponse.toClient !== undefined && { toClient: fxResponse.toClient }),
-      ...(fxResponse.headers !== undefined && { headers: fxResponse.headers }),
-    })
-  }
-})
 
 /**
  * Register a custom effect handler.

@@ -165,8 +165,7 @@ export type DeepPartial<T> = {
 }
 
 /**
- * Default configuration matching current hardcoded behavior
- * Ensures zero-config backwards compatibility
+ * Default configuration matching the framework's standard behavior.
  */
 export const DEFAULT_CONFIG: HonostarConfig = {
   document: {

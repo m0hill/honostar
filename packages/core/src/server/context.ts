@@ -3,7 +3,6 @@ import type { JSX } from "hono/jsx/jsx-runtime"
 import type { ThemeOptions } from "../common/theme"
 import type { ResolvedPageHead } from "./page"
 import type { RegionRegistry } from "./regions"
-import type { FxResponse } from "./sse/middleware"
 import type { PubSubBus } from "./sse/pubsub/memory"
 
 export interface AppVariablesBase {
@@ -19,7 +18,6 @@ export interface AppVariablesBase {
   pageHead?: ResolvedPageHead
   fx: import("./sse/responder").FxResponder
   queries?: import("./sse/queries").TopicQueryRegistry
-  fxResponse?: FxResponse
   csrfToken?: string
   theme?: ThemeOptions
 }

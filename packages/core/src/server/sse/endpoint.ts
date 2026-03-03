@@ -584,7 +584,7 @@ export const createSseEndpoint = (
             unsubscribes.push(bus.subscribeTopic(topic, sink))
 
             // Option C (recommended): send a fat patch immediately on connect when a query is registered.
-            // Fallback to retained topic patches when using the legacy "broadcast patches" flow.
+            // Otherwise, rely on retained topic patches if available.
             if (getQueries().has(topic)) {
               enqueueTask(() => runQuery(topic))
               continue

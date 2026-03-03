@@ -39,11 +39,6 @@ function resolveManifestEntry(manifest: ViteManifest, key: string): ViteManifest
   const normalizedEntry = manifest[normalized]
   if (normalizedEntry) return normalizedEntry
 
-  // Best-effort fallback: match by `src` field.
-  for (const v of Object.values(manifest)) {
-    if (v.src === key || v.src === normalized) return v
-  }
-
   throw new Error(`[Vite] Manifest missing entry for "${key}"`)
 }
 

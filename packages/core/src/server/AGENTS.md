@@ -12,14 +12,14 @@ Core server runtime providing Hono middleware, effect system, SSE streaming, CQR
 
 ## CONVENTIONS
 
-- Effects return `{ fx: EffectDefinition[] }` for fxResponder middleware transformation
+- Handlers return concrete `Response` values (use `c.var.fx.reply()/broadcast()/ok()` for effects)
 - Topic subscriptions require `signTopics()` before `verifyTopics()` enforces allowlist
 - Custom effects registered via `registerEffect()` middleware with `EffectHandler<Args>` type
 - SSE writes serialized through promise chain to maintain event ordering
 
 ## ANTI-PATTERNS
 
-- Don't return Response from handlers expecting `FxResponse` (middleware won't transform)
+- Don't return non-`Response` values from handlers
 - Don't skip `verifyTopics()` in SSE - bypasses allowlist enforcement
 - Don't mix direct `c.render()` calls with `fx` responders in same handler path
 - Don't use synchronous writes to SSE stream - breaks promise chain ordering

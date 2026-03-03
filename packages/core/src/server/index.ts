@@ -75,7 +75,6 @@ export type { EffectHandler } from "./sse/effect-registry"
 export type { BuiltInEffectName, EffectDefinition } from "./sse/effect-registry"
 // SSE
 export { createSseEndpoint } from "./sse/endpoint"
-export type { FxResponse } from "./sse/middleware"
 export { registerEffect, registerEffects, registerQueries, registerQuery } from "./sse/middleware"
 export { SseFormatter } from "./sse/generator"
 // Bus Implementations

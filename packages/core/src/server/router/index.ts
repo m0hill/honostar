@@ -6,7 +6,6 @@ import {
   resolvePageHead,
   resolvePageLayouts,
 } from "../page"
-import type { FxResponse } from "../sse/middleware"
 import type { QueryHandler, QueryOptions, QueryRegistration } from "../sse/queries"
 import type { RouteLoader } from "./types"
 
@@ -14,13 +13,6 @@ type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "OPTIONS"
 type HandlerLike =
   | HandlerDefinition
   | ((c: Context<AppEnv>) => Promise<Response | void> | Response | void)
-
-function isFxResponse(value: unknown): value is FxResponse {
-  if (typeof value !== "object" || value === null || value instanceof Response) {
-    return false
-  }
-  return "fx" in value && Array.isArray((value as { fx?: unknown }).fx)
-}
 
 function isPageDefinition(value: unknown): value is PageDefinition {
   return (
@@ -47,14 +39,7 @@ function isHandlerLike(value: unknown): value is HandlerLike {
 function wrapHandler(handler: HandlerLike): MiddlewareHandler<AppEnv> {
   return async (c: Context<AppEnv>) => {
     const finalHandler = isHandlerDefinition(handler) ? handler.handler : handler
-    const result = await finalHandler(c)
-
-    if (isFxResponse(result)) {
-      c.set("fxResponse", result)
-      return c.res
-    }
-
-    return result
+    return await finalHandler(c)
   }
 }
 
