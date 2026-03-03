@@ -53,7 +53,7 @@ const config = createConfig({
 })
 
 const BOARD_PATCH_OPTIONS = {
-  mode: "replace",
+  mode: "outer",
   useViewTransition: false,
 } as const
 

@@ -84,7 +84,12 @@ function BoardRegion(props: { snapshot: ViewportSnapshot }) {
       const isChecked = checked.has(localIndex)
 
       cells.push(
-        <label key={`${row}:${col}`} class="billion-custom-checkbox" title={`(${col}, ${row})`}>
+        <label
+          key={`${row}:${col}`}
+          id={`cell-${row}-${col}`}
+          class="billion-custom-checkbox"
+          title={`(${col}, ${row})`}
+        >
           <input
             type="checkbox"
             checked={isChecked}
