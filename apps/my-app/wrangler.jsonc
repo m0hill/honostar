@@ -9,12 +9,20 @@
         "name": "HONOSTAR_SSE_HUB",
         "class_name": "CloudflareBusHub",
       },
+      {
+        "name": "BILLION_CHECKBOXES_STATE",
+        "class_name": "BillionCheckboxesState",
+      },
     ],
   },
   "migrations": [
     {
       "tag": "v1",
       "new_classes": ["CloudflareBusHub"],
+    },
+    {
+      "tag": "v2",
+      "new_sqlite_classes": ["BillionCheckboxesState"],
     },
   ],
 }
