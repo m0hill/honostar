@@ -27,6 +27,7 @@ import type { HonostarConfig } from "../config"
 import { createConfig } from "../config"
 import type { RegionPatch, RegionPatchSeq } from "../regions"
 import { resolveRegionPatchOptions } from "../regions"
+import { envGet } from "../runtime-env"
 import { validateEventContract } from "../contracts"
 import { verifyTopics } from "../security/topics"
 import type { EffectDefinition } from "./effect-registry"
@@ -172,6 +173,11 @@ export const createSseEndpoint = (
     if (isProbeRequest) {
       return c.body(null, 204, { "x-honostar-sse": "ok" })
     }
+
+    const topicsParam = c.req.query("topics")
+    const requestedTopics = topicsParam ? topicsParam.split(",").filter((t) => t.trim()) : []
+    // Expose requested topics for log enrichers (SSE handler returns immediately).
+    c.set("sseTopics", requestedTopics)
 
     return streamSSE(c, async (stream) => {
       const clientId = c.var.clientId
@@ -556,9 +562,6 @@ export const createSseEndpoint = (
       unsubscribes.push(bus.subscribeClient(clientId, handleMessage))
 
       // Verify and enforce topic allowlist
-      const topicsParam = c.req.query("topics")
-      const requestedTopics = topicsParam ? topicsParam.split(",").filter((t) => t.trim()) : []
-
       if (requestedTopics.length > 0) {
         const allowedTopics = await verifyTopics(c, requestedTopics, config)
 
@@ -615,7 +618,9 @@ export const createSseEndpoint = (
       }
 
       stream.onAbort(() => {
-        console.log(`[SSE] Abort stream for client ${clientId}`)
+        if (envGet("HONOSTAR_DEBUG_SSE") === "1") {
+          console.debug(`[SSE] Abort stream for client ${clientId}`)
+        }
         unsubscribes.forEach((unsub) => unsub?.())
         clearInterval(ping)
       })

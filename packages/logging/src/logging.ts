@@ -182,6 +182,44 @@ function safeJsonStringify(value: unknown): string {
   }
 }
 
+function sanitizeUrlForLogging(
+  urlString: string,
+  opts?: { redactQueryParams?: string[]; dropQueryParams?: string[] }
+): string {
+  const redactDefaults = [
+    "topicstoken",
+    "token",
+    "access_token",
+    "refresh_token",
+    "id_token",
+    "code",
+    "state",
+    "signature",
+    "sig",
+  ]
+  const dropDefaults = ["datastar"]
+
+  const redact = new Set((opts?.redactQueryParams ?? redactDefaults).map((k) => k.toLowerCase()))
+  const drop = new Set((opts?.dropQueryParams ?? dropDefaults).map((k) => k.toLowerCase()))
+
+  try {
+    const url = new URL(urlString)
+    for (const key of Array.from(url.searchParams.keys())) {
+      const normalized = key.toLowerCase()
+      if (drop.has(normalized)) {
+        url.searchParams.delete(key)
+        continue
+      }
+      if (redact.has(normalized)) {
+        url.searchParams.set(key, "[redacted]")
+      }
+    }
+    return url.toString()
+  } catch {
+    return urlString
+  }
+}
+
 function prettyPrintWideEvent(event: Record<string, unknown>): void {
   const timestamp = typeof event["timestamp"] === "string" ? event["timestamp"] : ""
   const level = (event["level"] as WideEventLevel | undefined) ?? "info"
@@ -492,6 +530,7 @@ export function honostarLogging<E extends Env = Env>(
   const stringify = options.stringify ?? true
   const include = options.include
   const exclude = options.exclude
+  const urlMode = options.url ?? "sanitized"
 
   const storage = contextStorage()
   const includeErrorStack =
@@ -522,13 +561,25 @@ export function honostarLogging<E extends Env = Env>(
       const base =
         typeof options.base === "function" ? options.base(c as any) : (options.base ?? {})
 
+      const url =
+        urlMode === "none"
+          ? undefined
+          : urlMode === "full"
+            ? c.req.url
+            : sanitizeUrlForLogging(c.req.url, {
+                ...(options.redactQueryParams
+                  ? { redactQueryParams: options.redactQueryParams }
+                  : {}),
+                ...(options.dropQueryParams ? { dropQueryParams: options.dropQueryParams } : {}),
+              })
+
       const event: WideEvent = {
         timestamp: new Date(startMs).toISOString(),
         request_id: requestId,
         ...(interactionId ? { interaction_id: interactionId } : {}),
         method: c.req.method,
         path: c.req.path,
-        url: c.req.url,
+        ...(url ? { url } : {}),
         ...(base ? base : {}),
       }
 

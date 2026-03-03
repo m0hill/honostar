@@ -103,6 +103,23 @@ export type HonostarLoggingOptions<E extends Env = Env> = {
   setResponseRequestIdHeader?: string | false
   include?: string[]
   exclude?: string[]
+  /**
+   * Controls how `event.url` is logged.
+   * - `sanitized` (default): logs the URL with sensitive query params redacted.
+   * - `full`: logs the raw URL (not recommended).
+   * - `none`: omits `event.url` entirely (use `path` instead).
+   */
+  url?: "sanitized" | "full" | "none"
+  /**
+   * Query param keys to redact (value replaced with `[redacted]`) when `url: "sanitized"`.
+   * Keys are matched case-insensitively.
+   */
+  redactQueryParams?: string[]
+  /**
+   * Query param keys to drop entirely when `url: "sanitized"`.
+   * Keys are matched case-insensitively.
+   */
+  dropQueryParams?: string[]
   sampling?: SamplingConfig
   keep?: (ctx: TailSamplingContext) => void | Promise<void>
   headerAllowlist?: string[]

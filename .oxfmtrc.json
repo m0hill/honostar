@@ -5,5 +5,5 @@
   "printWidth": 100,
   "trailingComma": "es5",
   "semi": false,
-  "ignorePatterns": ["public/**/*", "**/*.test.ts", "opensrc/**"]
+  "ignorePatterns": ["public/**/*", "**/*.test.ts", "opensrc/**", "**/generated/**"]
 }
