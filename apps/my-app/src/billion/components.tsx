@@ -15,21 +15,19 @@ import {
 
 function StatsCard(props: { checkedCount: number; x: number; y: number }) {
   return (
-    <section
-      {...regionAttrs(REGION_STATS)}
-      style="margin-bottom: 10px; border: 1px solid #d8d8d8; border-radius: 8px; padding: 10px 12px; background: #fafafa;"
-    >
-      <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-        <div>
-          <strong>Total checked:</strong> {props.checkedCount.toLocaleString()}
-        </div>
-        <div>
-          <strong>Board:</strong> {BOARD_SIZE.toLocaleString()} x {BOARD_SIZE.toLocaleString()} (
-          {TOTAL_CELLS.toLocaleString()} cells)
-        </div>
-        <div>
-          <strong>Viewport origin:</strong> ({props.x.toLocaleString()}, {props.y.toLocaleString()})
-        </div>
+    <section {...regionAttrs(REGION_STATS)} class="billion-stats-container">
+      <div class="billion-stats-line">
+        <span>Checked:</span>
+        <span class="billion-counter">{props.checkedCount.toLocaleString()}</span>
+        <span>/ {TOTAL_CELLS.toLocaleString()}</span>
+      </div>
+      <div class="billion-meta-line">
+        <span>
+          Viewport: ({props.x.toLocaleString()}, {props.y.toLocaleString()})
+        </span>
+        <span>
+          Board: {BOARD_SIZE.toLocaleString()} x {BOARD_SIZE.toLocaleString()}
+        </span>
       </div>
     </section>
   )
@@ -52,16 +50,17 @@ function ScrollableBoard(props: { snapshot: ViewportSnapshot }) {
   }
 
   return (
-    <section>
+    <section class="billion-board-section">
       <div
         data-ref="_boardViewport"
         data-signals={`{ vx: ${props.snapshot.x}, vy: ${props.snapshot.y}, vrows: ${props.snapshot.rows}, vcols: ${props.snapshot.cols} }`}
         data-init={initScroll}
         {...scrollAttrs}
-        style="height: 72vh; overflow: auto; border: 1px solid #d8d8d8; border-radius: 8px; background: #fff;"
+        class="billion-checkbox-container"
       >
         <div
-          style={`position: relative; width: ${BOARD_PIXEL_SIZE}px; height: ${BOARD_PIXEL_SIZE}px;`}
+          class="billion-board-canvas"
+          style={`width: ${BOARD_PIXEL_SIZE}px; height: ${BOARD_PIXEL_SIZE}px;`}
         >
           <BoardRegion snapshot={props.snapshot} />
         </div>
@@ -82,14 +81,15 @@ function BoardRegion(props: { snapshot: ViewportSnapshot }) {
       const isChecked = checked.has(localIndex)
 
       cells.push(
-        <input
-          key={`${row}:${col}`}
-          type="checkbox"
-          checked={isChecked}
-          title={`(${col}, ${row})`}
-          data-on:change={`@post('/toggle/${row}/${col}', { openWhenHidden: true })`}
-          style={checkboxStyle}
-        />
+        <label key={`${row}:${col}`} class="billion-custom-checkbox" title={`(${col}, ${row})`}>
+          <input
+            type="checkbox"
+            checked={isChecked}
+            data-on:change={`@post('/toggle/${row}/${col}', { openWhenHidden: true })`}
+            class="billion-cell-input"
+          />
+          <span class="billion-checkmark" />
+        </label>
       )
     }
   }
@@ -103,7 +103,8 @@ function BoardRegion(props: { snapshot: ViewportSnapshot }) {
       style={`position: absolute; left: ${left}px; top: ${top}px; pointer-events: none;`}
     >
       <div
-        style={`display: grid; grid-template-columns: repeat(${props.snapshot.cols}, ${CELL_SIZE_PX}px); gap: ${CELL_GAP_PX}px; padding: 4px; background: #fff; border-radius: 4px; pointer-events: all;`}
+        class="billion-grid"
+        style={`grid-template-columns: repeat(${props.snapshot.cols}, var(--billion-checkbox-size));`}
       >
         {cells}
       </div>
@@ -113,19 +114,26 @@ function BoardRegion(props: { snapshot: ViewportSnapshot }) {
 
 export function Home(props: { snapshot: ViewportSnapshot }) {
   return (
-    <main style="padding: 18px; max-width: 1280px; margin: 0 auto; font-family: system-ui, -apple-system, sans-serif;">
-      <h1 style="margin: 0;">One Billion Checkboxes (Cloudflare)</h1>
-      <p style="margin-top: 8px; color: #555;">
-        Scroll horizontally and vertically to navigate. Viewport is persisted per tab and synced in
-        realtime.
-      </p>
+    <main
+      class="billion-app"
+      style={`--billion-checkbox-size: ${CELL_SIZE_PX}px; --billion-grid-gap: ${CELL_GAP_PX}px;`}
+    >
+      <header class="billion-header">
+        <h1 class="billion-title">One Billion Checkboxes</h1>
+        <p class="billion-subtitle">
+          Scroll horizontally and vertically to navigate. Viewport is persisted per tab and synced
+          in realtime.
+        </p>
+        <StatsCard
+          checkedCount={props.snapshot.checkedCount}
+          x={props.snapshot.x}
+          y={props.snapshot.y}
+        />
+      </header>
 
-      <StatsCard
-        checkedCount={props.snapshot.checkedCount}
-        x={props.snapshot.x}
-        y={props.snapshot.y}
-      />
-      <ScrollableBoard snapshot={props.snapshot} />
+      <section class="billion-main">
+        <ScrollableBoard snapshot={props.snapshot} />
+      </section>
     </main>
   )
 }
@@ -143,5 +151,3 @@ export function StatsRegion(props: { snapshot: ViewportSnapshot }) {
 export function BoardRegionPatch(props: { snapshot: ViewportSnapshot }) {
   return <BoardRegion snapshot={props.snapshot} />
 }
-
-const checkboxStyle = `width: ${CELL_SIZE_PX}px; height: ${CELL_SIZE_PX}px; margin: 0; cursor: pointer; accent-color: #111827; border-radius: 4px;`
