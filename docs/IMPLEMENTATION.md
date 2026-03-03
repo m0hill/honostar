@@ -29,7 +29,7 @@ For key exports like:
 Use:
 
 - `@param` for every parameter (explain constraints and defaults)
-- `@returns` (especially when returning `Response | FxResponse`)
+- `@returns` (especially when returning `Response`)
 - `@example` blocks (realistic, copy/pastable)
 
 Example (domain events):
