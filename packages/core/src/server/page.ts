@@ -107,8 +107,6 @@ export interface PageDefinition<T extends Record<string, unknown> = {}> {
    *
    * Regions are rendered in the DOM using `regionAttrs(...)` / `<Region .../>` and can be patched
    * using `["patch-region", { region, html, options }]` effects (instead of string selectors).
-   *
-   * Note: `kind` is currently semantics-only (devtools/docs), not runtime behavior.
    */
   regions?: RegionDeclaration[]
   topics?: PageTopics

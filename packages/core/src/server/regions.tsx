@@ -2,17 +2,20 @@ import type { JSX } from "hono/jsx/jsx-runtime"
 import type { ElementPatchMode, PatchElementsOptions } from "../common/types"
 import { envGet, envIsProduction } from "./runtime-env"
 
-export const HonostarRegionAttr = "data-honostar-region"
-export const HonostarRegionKindAttr = "data-honostar-region-kind"
-
 export type RegionId = string
-
-// `kind` is currently semantics-only (devtools/docs), not runtime behavior.
-export type RegionKind = string
 
 export type RegionDeclaration = {
   id: RegionId
-  kind?: RegionKind
+  /**
+   * Optional selector to use when patching this region.
+   *
+   * By default, Honostar patches regions by a derived DOM id (`regionDomId(...)`), which is stable
+   * even when region ids contain characters not valid in HTML id attributes.
+   *
+   * Use `selector` only when you need to target an existing stable element in your layout
+   * (e.g. `#ds-overlays`, `#toast-container`).
+   */
+  selector?: string
   /**
    * Patch modes explicitly allowed for this region.
    *
@@ -60,41 +63,8 @@ export function regionDomId(regionId: RegionId): string {
   return `honostar-region--${base64urlEncodeUtf8(regionId)}`
 }
 
-function cssAttributeValueEscape(value: string): string {
-  let out = ""
-  for (const ch of value) {
-    const code = ch.codePointAt(0) ?? 0
-    if (ch === "\\") {
-      out += "\\\\"
-      continue
-    }
-    if (ch === '"') {
-      out += '\\"'
-      continue
-    }
-    if (ch === "\n") {
-      out += "\\A "
-      continue
-    }
-    if (ch === "\r") {
-      out += "\\D "
-      continue
-    }
-    if (ch === "\f") {
-      out += "\\C "
-      continue
-    }
-    if (code < 0x20 || code === 0x7f) {
-      out += `\\${code.toString(16)} `
-      continue
-    }
-    out += ch
-  }
-  return out
-}
-
 export function regionSelector(regionId: RegionId): string {
-  return `[${HonostarRegionAttr}="${cssAttributeValueEscape(regionId)}"]`
+  return `#${regionDomId(regionId)}`
 }
 
 function base64urlDecodeToUtf8(value: string): string | null {
@@ -124,14 +94,6 @@ function base64urlDecodeToUtf8(value: string): string | null {
 }
 
 function parseRegionIdFromSelector(selector: string): string | null {
-  const attrMatch = selector.match(
-    /\[\s*data-honostar-region\s*=\s*(?:"([^"]+)"|'([^']+)'|([^\]\s]+))\s*\]/i
-  )
-  if (attrMatch) {
-    const regionId = attrMatch[1] ?? attrMatch[2] ?? attrMatch[3]
-    return regionId ?? null
-  }
-
   const domIdMatch = selector.match(/#honostar-region--([A-Za-z0-9_-]+)/)
   if (domIdMatch?.[1]) {
     return base64urlDecodeToUtf8(domIdMatch[1])
@@ -140,20 +102,16 @@ function parseRegionIdFromSelector(selector: string): string | null {
   return null
 }
 
-export function regionAttrs(regionId: RegionId, options?: { kind?: RegionKind }) {
-  const attrs: Record<string, string> = {
-    [HonostarRegionAttr]: regionId,
-  }
-  if (options?.kind) attrs[HonostarRegionKindAttr] = options.kind
-  return attrs
+export function regionAttrs(regionId: RegionId): { id: string } {
+  return { id: regionDomId(regionId) }
 }
 
-export function Region(props: { id: RegionId; kind?: RegionKind } & JSX.IntrinsicElements["div"]) {
-  const { id, kind, children, ...rest } = props
+export function Region(props: { id: RegionId } & JSX.IntrinsicElements["div"]) {
+  const { id, children, ...rest } = props
   // Note: we intentionally do not allow callers to override `id`; it must be stable.
   const { id: _ignored, ...restNoId } = rest as { id?: unknown }
   return (
-    <div id={regionDomId(id)} {...restNoId} {...regionAttrs(id, kind ? { kind } : undefined)}>
+    <div {...restNoId} {...regionAttrs(id)}>
       {children}
     </div>
   )
@@ -218,8 +176,8 @@ export class RegionRegistry {
 export function createRegionRegistry(): RegionRegistry {
   const registry = new RegionRegistry()
   registry.registerAll([
-    { id: "ui:overlays", kind: "overlay", allowModes: ["append"] },
-    { id: "ui:toasts", kind: "list", allowModes: ["append"] },
+    { id: "ui:overlays", selector: "#ds-overlays", allowModes: ["append"] },
+    { id: "ui:toasts", selector: "#toast-container", allowModes: ["append"] },
   ])
   return registry
 }
@@ -284,8 +242,10 @@ export function resolveRegionPatchOptions(
     }
   }
 
+  const selector = registry.get(patch.region)?.selector ?? regionSelector(patch.region)
+
   return {
     ...opts,
-    selector: regionSelector(patch.region),
+    selector,
   }
 }

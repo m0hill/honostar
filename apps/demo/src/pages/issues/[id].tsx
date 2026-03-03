@@ -1,4 +1,4 @@
-import { defineQueryPage, patchRegion, type QueryHandler } from "@honostar/core/server"
+import { defineQueryPage, patchRegion, regionAttrs, type QueryHandler } from "@honostar/core/server"
 import { z } from "zod"
 import { CommentsSection } from "@/components/CommentsSection"
 import { Badge } from "@/components/ui/badge"
@@ -86,11 +86,7 @@ function IssueDetailCard({ issue }: { issue: IssueWithDetails }) {
   const toggleLabel = issue.status === "open" ? "Close issue" : "Reopen issue"
 
   return (
-    <Card
-      id="issue-detail"
-      data-honostar-region={`issue:${issue.id}:detail`}
-      data-honostar-region-kind="card"
-    >
+    <Card {...regionAttrs(`issue:${issue.id}:detail`)}>
       <CardHeader class="border-b">
         <div class="flex items-start justify-between gap-4">
           <div class="min-w-0">

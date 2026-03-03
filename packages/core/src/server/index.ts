@@ -55,14 +55,11 @@ export { csrf, canonicalizeTopics, signTopics, verifyTopics } from "./security"
 export type {
   RegionDeclaration,
   RegionId,
-  RegionKind,
   RegionPatch,
   RegionPatchOptions,
   RegionPatchSeq,
 } from "./regions"
 export {
-  HonostarRegionAttr,
-  HonostarRegionKindAttr,
   Region,
   createRegionRegistry,
   patchRegion,

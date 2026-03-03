@@ -84,7 +84,7 @@ Use region APIs consistently:
 
 Avoid direct selector patching for regions:
 
-- `["patch-elements", ..., { selector: "[data-honostar-region='issues:list']" }]`
+- `["patch-elements", ..., { selector: regionSelector("issues:list") }]`
 
 In dev, HonoStar warns when `patch-elements` targets a region-like selector that is not registered in the request registry.
 

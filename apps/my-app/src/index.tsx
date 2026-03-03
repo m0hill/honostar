@@ -6,6 +6,7 @@ import {
   fxResponder,
   initContext,
   patchRegion,
+  regionAttrs,
   renderer,
   type AppEnv,
   type EffectDefinition,
@@ -250,8 +251,7 @@ function Home(props: { count: number; items: Todo[]; messages: ChatMessage[] }) 
 function CounterCard(props: { count: number }) {
   return (
     <section
-      data-honostar-region={REGION_COUNTER}
-      data-honostar-region-kind="card"
+      {...regionAttrs(REGION_COUNTER)}
       style="border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin-bottom: 16px;"
     >
       <h2 style="margin-top: 0;">Counter</h2>
@@ -335,7 +335,7 @@ function TodoCard(props: { items: Todo[] }) {
 
 function TodoList(props: { items: Todo[] }) {
   return (
-    <div data-honostar-region={REGION_TODOS} data-honostar-region-kind="list">
+    <div {...regionAttrs(REGION_TODOS)}>
       {props.items.length === 0 ? (
         <p style="color: #999; font-style: italic;">No todos yet.</p>
       ) : (
@@ -416,8 +416,7 @@ function ChatCard(props: { messages: ChatMessage[] }) {
 function ChatLog(props: { messages: ChatMessage[] }) {
   return (
     <div
-      data-honostar-region={REGION_CHAT}
-      data-honostar-region-kind="list"
+      {...regionAttrs(REGION_CHAT)}
       style="max-height: 250px; overflow-y: auto; border: 1px solid #eee; border-radius: 4px; padding: 8px; background: #fafafa;"
     >
       {props.messages.length === 0 ? (

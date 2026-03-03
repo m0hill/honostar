@@ -1,16 +1,12 @@
 import { routes } from "@/generated/routes"
 import type { IssueWithAuthor } from "@/types"
+import { regionAttrs } from "@honostar/core/server"
 import { Badge } from "./ui/badge"
 import { Card } from "./ui/card"
 
 export default function IssuesList({ issues }: { issues: IssueWithAuthor[] }) {
   return (
-    <Card
-      id="issues-list"
-      class="gap-0 py-0"
-      data-honostar-region="issues:list"
-      data-honostar-region-kind="list"
-    >
+    <Card class="gap-0 py-0" {...regionAttrs("issues:list")}>
       <ul class="divide-y divide-border">
         {issues.length > 0 ? (
           issues.map((issue) => (

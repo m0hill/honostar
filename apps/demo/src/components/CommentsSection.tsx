@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card"
 import type { CommentWithAuthor } from "@/types"
+import { regionAttrs } from "@honostar/core/server"
 
 const formatDate = (date: Date) =>
   new Intl.DateTimeFormat("en-US", {
@@ -16,13 +17,7 @@ export function CommentsSection({
   regionId?: string
 }) {
   return (
-    <div
-      id="comments-section"
-      class="mt-8 space-y-4"
-      {...(regionId
-        ? { "data-honostar-region": regionId, "data-honostar-region-kind": "list" }
-        : {})}
-    >
+    <div class="mt-8 space-y-4" {...(regionId ? regionAttrs(regionId) : {})}>
       {comments.map((comment) => (
         <Card key={comment.id} class="gap-0">
           <CardContent class="pt-6">

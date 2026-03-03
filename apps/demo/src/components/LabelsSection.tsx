@@ -1,11 +1,12 @@
 import { routes } from "@/generated/routes"
 import type { Label } from "@/types"
+import { regionAttrs } from "@honostar/core/server"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
 
 export default function LabelsSection({ labels }: { labels: Label[] }) {
   return (
-    <div id="labels-section" data-honostar-region="labels:list" data-honostar-region-kind="list">
+    <div {...regionAttrs("labels:list")}>
       <div class="max-h-40 overflow-y-auto pr-2">
         <div class="flex flex-wrap gap-2">
           {labels.map((l) => (

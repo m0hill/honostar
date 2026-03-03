@@ -11,13 +11,12 @@ import {
 describe("regions", () => {
   test("derives a stable DOM id + selector from region id", () => {
     expect(regionDomId("issues:list")).toBe("honostar-region--aXNzdWVzOmxpc3Q")
-    expect(regionSelector("issues:list")).toBe('[data-honostar-region="issues:list"]')
+    expect(regionSelector("issues:list")).toBe("#honostar-region--aXNzdWVzOmxpc3Q")
   })
 
-  test("regionAttrs includes semantics attributes", () => {
-    expect(regionAttrs("issues:list", { kind: "list" })).toEqual({
-      "data-honostar-region": "issues:list",
-      "data-honostar-region-kind": "list",
+  test("regionAttrs includes region attributes", () => {
+    expect(regionAttrs("issues:list")).toEqual({
+      id: "honostar-region--aXNzdWVzOmxpc3Q",
     })
   })
 
@@ -60,7 +59,7 @@ describe("regions", () => {
     const warnings: unknown[][] = []
     console.warn = (...args) => warnings.push(args)
     try {
-      warnOnUnregisteredRegionSelector('[data-honostar-region="test:regions:missing-1"]')
+      warnOnUnregisteredRegionSelector(`#${regionDomId("test:regions:missing-1")}`)
       expect(warnings.length).toBe(1)
       expect(String(warnings[0]?.[0])).toContain("not registered")
     } finally {
@@ -76,7 +75,7 @@ describe("regions", () => {
       const registry = new RegionRegistry()
       registry.registerAll([{ id: "test:regions:registered-1" }])
       warnOnUnregisteredRegionSelector(
-        '[data-honostar-region="test:regions:registered-1"]',
+        `#${regionDomId("test:regions:registered-1")}`,
         registry
       )
       expect(warnings.length).toBe(0)

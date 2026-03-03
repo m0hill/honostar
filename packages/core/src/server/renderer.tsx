@@ -7,7 +7,6 @@ import { createConfig } from "./config"
 import { factory } from "./middleware"
 import { signTopics } from "./security/topics"
 import { envIsProduction } from "./runtime-env"
-import { regionAttrs } from "./regions"
 
 function stripDoctype(html: string): string {
   return html.replace(/^\s*<!DOCTYPE html>\s*/i, "")
@@ -289,17 +288,12 @@ export const renderer = (userConfig?: DeepPartial<HonostarConfig>) => {
               <pre id="ds-inspector-signals" data-json-signals style="display:none;"></pre>
             </div>
             {/* Global overlay host for modals/overlays, persists across in-app navigations */}
-            <div
-              id="ds-overlays"
-              aria-live="polite"
-              {...regionAttrs("ui:overlays", { kind: "overlay" })}
-            ></div>
+            <div id="ds-overlays" aria-live="polite"></div>
             {/* Toast notification container, fixed to top-right */}
             <div
               id="toast-container"
               class="fixed top-4 right-4 z-50 flex flex-col items-end gap-2"
               aria-live="polite"
-              {...regionAttrs("ui:toasts", { kind: "list" })}
             ></div>
           </body>
         </html>
