@@ -1,103 +1,103 @@
-// Datastar v1.0.0-RC.7
-var at = /🖕JS_DS🚀/.source,
-  je = at.slice(0, 5),
-  Ge = at.slice(4),
-  q = "datastar-fetch",
-  Z = "datastar-signal-patch"
-var C = Object.hasOwn ?? Object.prototype.hasOwnProperty.call
-var U = (e) =>
+// Datastar v1.0.0-RC.8
+var ut = /🖕JS_DS🚀/.source,
+  Ge = ut.slice(0, 5),
+  je = ut.slice(4),
+  j = "datastar-fetch",
+  ee = "datastar-signal-patch"
+var P = Object.hasOwn ?? Object.prototype.hasOwnProperty.call
+var J = (e) =>
     e !== null &&
     typeof e == "object" &&
     (Object.getPrototypeOf(e) === Object.prototype || Object.getPrototypeOf(e) === null),
-  ct = (e) => {
-    for (let t in e) if (C(e, t)) return !1
+  ft = (e) => {
+    for (let t in e) if (P(e, t)) return !1
     return !0
   },
-  Y = (e, t) => {
+  te = (e, t) => {
     for (let n in e) {
       let r = e[n]
-      U(r) || Array.isArray(r) ? Y(r, t) : (e[n] = t(r))
+      J(r) || Array.isArray(r) ? te(r, t) : (e[n] = t(r))
     }
   },
-  Me = (e) => {
+  Re = (e) => {
     let t = {}
     for (let [n, r] of e) {
       let s = n.split("."),
-        o = s.pop(),
-        i = s.reduce((a, c) => (a[c] ??= {}), t)
-      i[o] = r
+        i = s.pop(),
+        o = s.reduce((a, c) => (a[c] ??= {}), t)
+      o[i] = r
     }
     return t
   }
-var xe = [],
-  Be = [],
+var Me = [],
+  We = [],
   Oe = 0,
-  Le = 0,
-  We = 0,
+  xe = 0,
+  Be = 0,
   Ue,
-  j,
-  Ne = 0,
+  W,
+  Le = 0,
   M = () => {
     Oe++
   },
   x = () => {
-    --Oe || (ft(), J())
+    --Oe || (pt(), K())
   },
-  F = (e) => {
-    ;((Ue = j), (j = e))
+  k = (e) => {
+    ;((Ue = W), (W = e))
   },
-  P = () => {
-    ;((j = Ue), (Ue = void 0))
+  H = () => {
+    ;((W = Ue), (Ue = void 0))
   },
-  pe = (e) => Ut.bind(0, { previousValue: e, t: e, e: 1 }),
+  pe = (e) => Zt.bind(0, { previousValue: e, t: e, e: 1 }),
   Je = Symbol("computed"),
-  ke = (e) => {
-    let t = Jt.bind(0, { e: 17, getter: e })
+  Pe = (e) => {
+    let t = Yt.bind(0, { e: 17, getter: e })
     return ((t[Je] = 1), t)
   },
-  S = (e) => {
+  T = (e) => {
     let t = { d: e, e: 2 }
-    ;(j && ze(t, j), F(t), M())
+    ;(W && ze(t, W), k(t), M())
     try {
       t.d()
     } finally {
-      ;(x(), P())
+      ;(x(), H())
     }
-    return gt.bind(0, t)
+    return bt.bind(0, t)
   },
-  ft = () => {
-    for (; Le < We; ) {
-      let e = Be[Le]
-      ;((Be[Le++] = void 0), pt(e, (e.e &= -65)))
+  pt = () => {
+    for (; xe < Be; ) {
+      let e = We[xe]
+      ;((We[xe++] = void 0), yt(e, (e.e &= -65)))
     }
-    ;((Le = 0), (We = 0))
+    ;((xe = 0), (Be = 0))
   },
-  lt = (e) => ("getter" in e ? dt(e) : mt(e, e.t)),
-  dt = (e) => {
-    ;(F(e), ht(e))
+  dt = (e) => ("getter" in e ? gt(e) : ht(e, e.t)),
+  gt = (e) => {
+    ;(k(e), vt(e))
     try {
       let t = e.t
       return t !== (e.t = e.getter(t))
     } finally {
-      ;(P(), yt(e))
+      ;(H(), Et(e))
     }
   },
-  mt = (e, t) => ((e.e = 1), e.previousValue !== (e.previousValue = t)),
+  ht = (e, t) => ((e.e = 1), e.previousValue !== (e.previousValue = t)),
   Ke = (e) => {
     let t = e.e
     if (!(t & 64)) {
       e.e = t | 64
       let n = e.r
-      n ? Ke(n.o) : (Be[We++] = e)
+      n ? Ke(n.o) : (We[Be++] = e)
     }
   },
-  pt = (e, t) => {
-    if (t & 16 || (t & 32 && bt(e.s, e))) {
-      ;(F(e), ht(e), M())
+  yt = (e, t) => {
+    if (t & 16 || (t & 32 && St(e.s, e))) {
+      ;(k(e), vt(e), M())
       try {
         e.d()
       } finally {
-        ;(x(), P(), yt(e))
+        ;(x(), H(), Et(e))
       }
       return
     }
@@ -106,36 +106,36 @@ var xe = [],
     for (; n; ) {
       let r = n.c,
         s = r.e
-      ;(s & 64 && pt(r, (r.e = s & -65)), (n = n.i))
+      ;(s & 64 && yt(r, (r.e = s & -65)), (n = n.i))
     }
   },
-  Ut = (e, ...t) => {
+  Zt = (e, ...t) => {
     if (t.length) {
       if (e.t !== (e.t = t[0])) {
         e.e = 17
         let r = e.r
-        return (r && (Kt(r), Oe || ft()), !0)
+        return (r && (Xt(r), Oe || pt()), !0)
       }
       return !1
     }
     let n = e.t
-    if (e.e & 16 && mt(e, n)) {
+    if (e.e & 16 && ht(e, n)) {
       let r = e.r
-      r && Pe(r)
+      r && Ce(r)
     }
-    return (j && ze(e, j), n)
+    return (W && ze(e, W), n)
   },
-  Jt = (e) => {
+  Yt = (e) => {
     let t = e.e
-    if (t & 16 || (t & 32 && bt(e.s, e))) {
-      if (dt(e)) {
+    if (t & 16 || (t & 32 && St(e.s, e))) {
+      if (gt(e)) {
         let n = e.r
-        n && Pe(n)
+        n && Ce(n)
       }
     } else t & 32 && (e.e = t & -33)
-    return (j && ze(e, j), e.t)
+    return (W && ze(e, W), e.t)
   },
-  gt = (e) => {
+  bt = (e) => {
     let t = e.s
     for (; t; ) t = Fe(t, e)
     let n = e.r
@@ -146,23 +146,23 @@ var xe = [],
     if (n && n.c === e) return
     let r = n ? n.i : t.s
     if (r && r.c === e) {
-      ;((r.m = Ne), (t.a = r))
+      ;((r.m = Le), (t.a = r))
       return
     }
     let s = e.p
-    if (s && s.m === Ne && s.o === t) return
-    let o = (t.a = e.p = { m: Ne, c: e, o: t, l: n, i: r, u: s })
-    ;(r && (r.l = o), n ? (n.i = o) : (t.s = o), s ? (s.n = o) : (e.r = o))
+    if (s && s.m === Le && s.o === t) return
+    let i = (t.a = e.p = { m: Le, c: e, o: t, l: n, i: r, u: s })
+    ;(r && (r.l = i), n ? (n.i = i) : (t.s = i), s ? (s.n = i) : (e.r = i))
   },
   Fe = (e, t = e.o) => {
     let n = e.c,
       r = e.l,
       s = e.i,
-      o = e.n,
-      i = e.u
-    if ((s ? (s.l = r) : (t.a = r), r ? (r.i = s) : (t.s = s), o ? (o.u = i) : (n.p = i), i))
-      i.n = o
-    else if (!(n.r = o))
+      i = e.n,
+      o = e.u
+    if ((s ? (s.l = r) : (t.a = r), r ? (r.i = s) : (t.s = s), i ? (i.u = o) : (n.p = o), o))
+      o.n = i
+    else if (!(n.r = i))
       if ("getter" in n) {
         let a = n.s
         if (a) {
@@ -170,10 +170,10 @@ var xe = [],
           do a = Fe(a, n)
           while (a)
         }
-      } else "previousValue" in n || gt(n)
+      } else "previousValue" in n || bt(n)
     return s
   },
-  Kt = (e) => {
+  Xt = (e) => {
     let t = e.n,
       n
     e: for (;;) {
@@ -183,7 +183,7 @@ var xe = [],
         (s & 60
           ? s & 12
             ? s & 4
-              ? !(s & 48) && zt(e, r)
+              ? !(s & 48) && en(e, r)
                 ? ((r.e = s | 40), (s &= 1))
                 : (s = 0)
               : (r.e = (s & -9) | 32)
@@ -192,10 +192,10 @@ var xe = [],
         s & 2 && Ke(r),
         s & 1)
       ) {
-        let o = r.r
-        if (o) {
-          let i = (e = o).n
-          i && ((n = { t, f: n }), (t = i))
+        let i = r.r
+        if (i) {
+          let o = (e = i).n
+          o && ((n = { t, f: n }), (t = o))
           continue
         }
       }
@@ -211,30 +211,30 @@ var xe = [],
       break
     }
   },
-  ht = (e) => {
-    ;(Ne++, (e.a = void 0), (e.e = (e.e & -57) | 4))
+  vt = (e) => {
+    ;(Le++, (e.a = void 0), (e.e = (e.e & -57) | 4))
   },
-  yt = (e) => {
+  Et = (e) => {
     let t = e.a,
       n = t ? t.i : e.s
     for (; n; ) n = Fe(n, e)
     e.e &= -5
   },
-  bt = (e, t) => {
+  St = (e, t) => {
     let n,
       r = 0,
       s = !1
     e: for (;;) {
-      let o = e.c,
-        i = o.e
+      let i = e.c,
+        o = i.e
       if (t.e & 16) s = !0
-      else if ((i & 17) === 17) {
-        if (lt(o)) {
-          let a = o.r
-          ;(a.n && Pe(a), (s = !0))
+      else if ((o & 17) === 17) {
+        if (dt(i)) {
+          let a = i.r
+          ;(a.n && Ce(a), (s = !0))
         }
-      } else if ((i & 33) === 33) {
-        ;((e.n || e.u) && (n = { t: e, f: n }), (e = o.s), (t = o), ++r)
+      } else if ((o & 33) === 33) {
+        ;((e.n || e.u) && (n = { t: e, f: n }), (e = i.s), (t = i), ++r)
         continue
       }
       if (!s) {
@@ -248,8 +248,8 @@ var xe = [],
         let a = t.r,
           c = a.n
         if ((c ? ((e = n.t), (n = n.f)) : (e = a), s)) {
-          if (lt(t)) {
-            ;(c && Pe(a), (t = e.o))
+          if (dt(t)) {
+            ;(c && Ce(a), (t = e.o))
             continue
           }
           s = !1
@@ -262,14 +262,14 @@ var xe = [],
       return s
     }
   },
-  Pe = (e) => {
+  Ce = (e) => {
     do {
       let t = e.o,
         n = t.e
       ;(n & 48) === 32 && ((t.e = n | 16), n & 2 && Ke(t))
     } while ((e = e.n))
   },
-  zt = (e, t) => {
+  en = (e, t) => {
     let n = t.a
     for (; n; ) {
       if (n === e) return !0
@@ -277,108 +277,108 @@ var xe = [],
     }
     return !1
   },
-  oe = (e) => {
-    let t = X,
+  ie = (e) => {
+    let t = ne,
       n = e.split(".")
     for (let r of n) {
-      if (t == null || !C(t, r)) return
+      if (t == null || !P(t, r)) return
       t = t[r]
     }
     return t
   },
-  Ce = (e, t = "") => {
+  Ne = (e, t = "") => {
     let n = Array.isArray(e)
-    if (n || U(e)) {
+    if (n || J(e)) {
       let r = n ? [] : {}
-      for (let o in e) r[o] = pe(Ce(e[o], `${t + o}.`))
+      for (let i in e) r[i] = pe(Ne(e[i], `${t + i}.`))
       let s = pe(0)
       return new Proxy(r, {
-        get(o, i) {
-          if (!(i === "toJSON" && !C(r, i)))
-            return n && i in Array.prototype
-              ? (s(), r[i])
-              : typeof i == "symbol"
-                ? r[i]
-                : ((!C(r, i) || r[i]() == null) && ((r[i] = pe("")), J(t + i, ""), s(s() + 1)),
-                  r[i]())
+        get(i, o) {
+          if (!(o === "toJSON" && !P(r, o)))
+            return n && o in Array.prototype
+              ? (s(), r[o])
+              : typeof o == "symbol"
+                ? r[o]
+                : ((!P(r, o) || r[o]() == null) && ((r[o] = pe("")), K(t + o, ""), s(s() + 1)),
+                  r[o]())
         },
-        set(o, i, a) {
-          let c = t + i
-          if (n && i === "length") {
-            let l = r[i] - a
-            if (((r[i] = a), l > 0)) {
+        set(i, o, a) {
+          let c = t + o
+          if (n && o === "length") {
+            let l = r[o] - a
+            if (((r[o] = a), l > 0)) {
               let u = {}
-              for (let d = a; d < r[i]; d++) u[d] = null
-              ;(J(t.slice(0, -1), u), s(s() + 1))
+              for (let d = a; d < r[o]; d++) u[d] = null
+              ;(K(t.slice(0, -1), u), s(s() + 1))
             }
-          } else if (C(r, i))
-            if (a == null) delete r[i]
-            else if (C(a, Je)) ((r[i] = a), J(c, ""))
+          } else if (P(r, o))
+            if (a == null) delete r[o]
+            else if (P(a, Je)) ((r[o] = a), K(c, ""))
             else {
-              let l = r[i](),
+              let l = r[o](),
                 u = `${c}.`
-              if (U(l) && U(a)) {
-                for (let d in l) C(a, d) || (delete l[d], J(u + d, null))
+              if (J(l) && J(a)) {
+                for (let d in l) P(a, d) || (delete l[d], K(u + d, null))
                 for (let d in a) {
                   let h = a[d]
                   l[d] !== h && (l[d] = h)
                 }
-              } else r[i](Ce(a, u)) && J(c, a)
+              } else r[o](Ne(a, u)) && K(c, a)
             }
           else
             a != null &&
-              (C(a, Je) ? ((r[i] = a), J(c, "")) : ((r[i] = pe(Ce(a, `${c}.`))), J(c, a)),
+              (P(a, Je) ? ((r[o] = a), K(c, "")) : ((r[o] = pe(Ne(a, `${c}.`))), K(c, a)),
               s(s() + 1))
           return !0
         },
-        deleteProperty(o, i) {
-          return (delete r[i], s(s() + 1), !0)
+        deleteProperty(i, o) {
+          return (delete r[o], s(s() + 1), !0)
         },
         ownKeys() {
           return (s(), Reflect.ownKeys(r))
         },
-        has(o, i) {
-          return (s(), i in r)
+        has(i, o) {
+          return (s(), o in r)
         },
       })
     }
     return e
   },
-  J = (e, t) => {
-    if ((e !== void 0 && t !== void 0 && xe.push([e, t]), !Oe && xe.length)) {
-      let n = Me(xe)
-      ;((xe.length = 0), document.dispatchEvent(new CustomEvent(Z, { detail: n })))
+  K = (e, t) => {
+    if ((e !== void 0 && t !== void 0 && Me.push([e, t]), !Oe && Me.length)) {
+      let n = Re(Me)
+      ;((Me.length = 0), document.dispatchEvent(new CustomEvent(ee, { detail: n })))
     }
   },
-  O = (e, { ifMissing: t } = {}) => {
+  _ = (e, { ifMissing: t } = {}) => {
     M()
-    for (let n in e) e[n] == null ? t || delete X[n] : vt(e[n], n, X, "", t)
+    for (let n in e) e[n] == null ? t || delete ne[n] : Tt(e[n], n, ne, "", t)
     x()
   },
-  T = (e, t) => O(Me(e), t),
-  vt = (e, t, n, r, s) => {
-    if (U(e)) {
-      ;(C(n, t) && (U(n[t]) || Array.isArray(n[t]))) || (n[t] = {})
-      for (let o in e) e[o] == null ? s || delete n[t][o] : vt(e[o], o, n[t], `${r + t}.`, s)
-    } else (s && C(n, t)) || (n[t] = e)
+  A = (e, t) => _(Re(e), t),
+  Tt = (e, t, n, r, s) => {
+    if (J(e)) {
+      ;(P(n, t) && (J(n[t]) || Array.isArray(n[t]))) || (n[t] = {})
+      for (let i in e) e[i] == null ? s || delete n[t][i] : Tt(e[i], i, n[t], `${r + t}.`, s)
+    } else (s && P(n, t)) || (n[t] = e)
   },
-  ut = (e) => (typeof e == "string" ? RegExp(e.replace(/^\/|\/$/g, "")) : e),
-  _ = ({ include: e = /.*/, exclude: t = /(?!)/ } = {}, n = X) => {
-    let r = ut(e),
-      s = ut(t),
-      o = [],
-      i = [[n, ""]]
-    for (; i.length; ) {
-      let [a, c] = i.pop()
+  mt = (e) => (typeof e == "string" ? RegExp(e.replace(/^\/|\/$/g, "")) : e),
+  $ = ({ include: e = /.*/, exclude: t = /(?!)/ } = {}, n = ne) => {
+    let r = mt(e),
+      s = mt(t),
+      i = [],
+      o = [[n, ""]]
+    for (; o.length; ) {
+      let [a, c] = o.pop()
       for (let l in a) {
         let u = c + l
-        U(a[l]) ? i.push([a[l], `${u}.`]) : r.test(u) && !s.test(u) && o.push([u, oe(u)])
+        J(a[l]) ? o.push([a[l], `${u}.`]) : r.test(u) && !s.test(u) && i.push([u, ie(u)])
       }
     }
-    return Me(o)
+    return Re(i)
   },
-  X = Ce({})
-var K = (e) => e instanceof HTMLElement || e instanceof SVGElement || e instanceof MathMLElement
+  ne = Ne({})
+var z = (e) => e instanceof HTMLElement || e instanceof SVGElement || e instanceof MathMLElement
 var ge = (e) =>
   e
     .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
@@ -386,42 +386,57 @@ var ge = (e) =>
     .replace(/([0-9]+)([a-z])/gi, "$1-$2")
     .replace(/[\s_]+/g, "-")
     .toLowerCase()
-var Et = (e) => ge(e).replace(/-/g, "_")
-var ae = (e) => {
+var At = (e) => ge(e).replace(/-/g, "_")
+var tn = /^(?:(?:async\s+)?function\b|(?:async\s*)?(?:\([^)]*\)|[A-Za-z_$][\w$]*)\s*=>)/,
+  oe = (e, t = {}) => {
+    let { reviveFunctionStrings: n = !1 } = t
     try {
-      return JSON.parse(e)
+      return n
+        ? JSON.parse(e, (r, s) => {
+            if (typeof s != "string") return s
+            let i = s.trim()
+            if (!tn.test(i)) return s
+            try {
+              let o = Function(`return (${i})`)()
+              return typeof o == "function" ? o : s
+            } catch {
+              return s
+            }
+          })
+        : JSON.parse(e)
     } catch {
       return Function(`return (${e})`)()
     }
   },
-  St = {
+  wt = {
     camel: (e) => e.replace(/-[a-z]/g, (t) => t[1].toUpperCase()),
     snake: (e) => e.replace(/-/g, "_"),
-    pascal: (e) => e[0].toUpperCase() + St.camel(e.slice(1)),
+    pascal: (e) => e[0].toUpperCase() + wt.camel(e.slice(1)),
   },
   L = (e, t, n = "camel") => {
-    for (let r of t.get("case") || [n]) e = St[r]?.(e) || e
+    for (let r of t.get("case") || [n]) e = wt[r]?.(e) || e
     return e
   },
-  G = (e) => `data-${e}`
-var Qt = "https://data-star.dev/errors",
+  B = (e) => `data-${e}`,
+  Qe = (e) => e
+var nn = "https://data-star.dev/errors",
   he = (e, t, n = {}) => {
     Object.assign(n, e)
     let r = new Error(),
-      s = Et(t),
-      o = new URLSearchParams({ metadata: JSON.stringify(n) }).toString(),
-      i = JSON.stringify(n, null, 2)
+      s = At(t),
+      i = new URLSearchParams({ metadata: JSON.stringify(n) }).toString(),
+      o = JSON.stringify(n, null, 2)
     return (
       (r.message = `${t}
-More info: ${Qt}/${s}?${o}
-Context: ${i}`),
+More info: ${nn}/${s}?${i}
+Context: ${o}`),
       r
     )
   },
   ye = new Map(),
-  Qe = new Map(),
-  At = new Map(),
-  Rt = new Proxy(
+  Ze = new Map(),
+  Mt = new Map(),
+  xt = new Proxy(
     {},
     {
       get: (e, t) => ye.get(t)?.apply,
@@ -432,22 +447,22 @@ Context: ${i}`),
     }
   ),
   be = new Map(),
-  He = [],
-  Ze = new Set(),
-  Zt = new WeakSet(),
-  p = (e) => {
-    ;(He.push(e),
-      He.length === 1 &&
+  ke = [],
+  Ye = new Set(),
+  rn = new WeakSet(),
+  g = (e) => {
+    ;(ke.push(e),
+      ke.length === 1 &&
         setTimeout(() => {
-          for (let t of He) (Ze.add(t.name), Qe.set(t.name, t))
-          ;((He.length = 0), nn(), Ze.clear())
+          for (let t of ke) (Ye.add(t.name), Ze.set(t.name, t))
+          ;((ke.length = 0), ln(), Ye.clear())
         }))
   },
-  k = (e) => {
+  V = (e) => {
     ye.set(e.name, e)
   }
-document.addEventListener(q, (e) => {
-  let t = At.get(e.detail.type)
+document.addEventListener(j, (e) => {
+  let t = Mt.get(e.detail.type)
   t &&
     t.apply(
       {
@@ -460,118 +475,129 @@ document.addEventListener(q, (e) => {
     )
 })
 var ve = (e) => {
-    At.set(e.name, e)
+    Mt.set(e.name, e)
   },
-  Tt = (e) => {
+  Rt = (e) => {
     for (let t of e) {
       let n = be.get(t)
       if (n && be.delete(t)) for (let r of n.values()) for (let s of r.values()) s()
     }
   },
-  wt = G("ignore"),
-  Yt = `[${wt}]`,
-  Mt = (e) => e.hasAttribute(`${wt}__self`) || !!e.closest(Yt),
-  _e = (e, t) => {
+  Lt = B("ignore"),
+  sn = `[${Lt}]`,
+  Nt = (e) => e.hasAttribute(`${Lt}__self`) || !!e.closest(sn),
+  He = (e, t) => {
     for (let n of e)
-      if (!Mt(n))
-        for (let r in n.dataset) xt(n, r.replace(/[A-Z]/g, "-$&").toLowerCase(), n.dataset[r], t)
+      if (!Nt(n)) {
+        let r = new Set()
+        for (let s in n.dataset) {
+          let i = s.replace(/[A-Z]/g, "-$&").toLowerCase()
+          ;(r.add(i), Xe(n, i, n.dataset[s], t))
+        }
+        for (let s of Array.from(n.attributes)) {
+          if (!s.name.startsWith("data-")) continue
+          let i = s.name.slice(5)
+          r.has(i) || Xe(n, i, s.value, t)
+        }
+      }
   },
-  Xt = (e) => {
-    for (let { target: t, type: n, attributeName: r, addedNodes: s, removedNodes: o } of e)
+  on = (e) => {
+    for (let { target: t, type: n, attributeName: r, addedNodes: s, removedNodes: i } of e)
       if (n === "childList") {
-        for (let i of o) K(i) && (Tt([i]), Tt(i.querySelectorAll("*")))
-        for (let i of s) K(i) && (_e([i]), _e(i.querySelectorAll("*")))
-      } else if (n === "attributes" && r.startsWith("data-") && K(t) && !Mt(t)) {
-        let i = r.slice(5),
-          a = t.getAttribute(r)
-        if (a === null) {
-          let c = be.get(t)
-          if (c) {
-            let l = c.get(i)
-            if (l) {
-              for (let u of l.values()) u()
-              c.delete(i)
+        for (let o of i) z(o) && (Rt([o]), Rt(o.querySelectorAll("*")))
+        for (let o of s) z(o) && (He([o]), He(o.querySelectorAll("*")))
+      } else if (n === "attributes" && r.startsWith("data-") && z(t) && !Nt(t)) {
+        let o = r.slice(5),
+          a = Qe(o)
+        if (!a) continue
+        let c = t.getAttribute(r)
+        if (c === null) {
+          let l = be.get(t)
+          if (l) {
+            let u = l.get(a)
+            if (u) {
+              for (let d of u.values()) d()
+              l.delete(a)
             }
           }
-        } else xt(t, i, a)
+        } else Xe(t, o, c)
       }
   },
-  en = new MutationObserver(Xt),
-  tn = (e) => {
+  an = new MutationObserver(on),
+  cn = (e) => {
     let [t, ...n] = e.split("__"),
       [r, s] = t.split(/:(.+)/),
-      o = new Map()
-    for (let i of n) {
-      let [a, ...c] = i.split(".")
-      o.set(a, new Set(c))
+      i = new Map()
+    for (let o of n) {
+      let [a, ...c] = o.split(".")
+      i.set(a, new Set(c))
     }
-    return { pluginName: r, key: s, mods: o }
+    return { pluginName: r, key: s, mods: i }
   }
-var nn = (e = document.documentElement, t = !0) => {
-    ;(K(e) && _e([e], !0),
-      _e(e.querySelectorAll("*"), !0),
-      t && (en.observe(e, { subtree: !0, childList: !0, attributes: !0 }), Zt.add(e)))
-  },
-  xt = (e, t, n, r) => {
-    {
-      let s = t,
-        { pluginName: o, key: i, mods: a } = tn(s),
-        c = Qe.get(o)
-      if ((!r || Ze.has(o)) && c) {
-        let l = {
-            el: e,
-            rawKey: s,
-            mods: a,
-            error: he.bind(0, {
-              plugin: { type: "attribute", name: c.name },
-              element: { id: e.id, tag: e.tagName },
-              expression: { rawKey: s, key: i, value: n },
-            }),
-            key: i,
-            value: n,
-            loadedPluginNames: { actions: new Set(ye.keys()), attributes: new Set(Qe.keys()) },
-            rx: void 0,
-          },
-          u =
-            (c.requirement &&
-              (typeof c.requirement == "string" ? c.requirement : c.requirement.key)) ||
-            "allowed",
-          d =
-            (c.requirement &&
-              (typeof c.requirement == "string" ? c.requirement : c.requirement.value)) ||
-            "allowed",
-          h = i != null && i !== "",
-          f = n != null && n !== ""
-        if (h) {
-          if (u === "denied") throw l.error("KeyNotAllowed")
-        } else if (u === "must") throw l.error("KeyRequired")
-        if (f) {
-          if (d === "denied") throw l.error("ValueNotAllowed")
-        } else if (d === "must") throw l.error("ValueRequired")
-        if (u === "exclusive" || d === "exclusive") {
-          if (h && f) throw l.error("KeyAndValueProvided")
-          if (!h && !f) throw l.error("KeyOrValueRequired")
-        }
-        let m = new Map()
-        if (f) {
-          let v
-          l.rx = (...A) => (
-            v || (v = rn(n, { returnsValue: c.returnsValue, argNames: c.argNames, cleanups: m })),
-            v(e, ...A)
-          )
-        }
-        let y = c.apply(l)
-        y && m.set("attribute", y)
-        let b = be.get(e)
-        if (b) {
-          let v = b.get(s)
-          if (v) for (let A of v.values()) A()
-        } else ((b = new Map()), be.set(e, b))
-        b.set(s, m)
+var ln = (e = document.documentElement, t = !0) => {
+  ;(z(e) && He([e], !0),
+    He(e.querySelectorAll("*"), !0),
+    t && (an.observe(e, { subtree: !0, childList: !0, attributes: !0 }), rn.add(e)))
+}
+var Xe = (e, t, n, r) => {
+    let s = Qe(t)
+    if (!s) return
+    let { pluginName: i, key: o, mods: a } = cn(s),
+      c = Ze.get(i)
+    if ((!r || Ye.has(i)) && !!c) {
+      let u = {
+          el: e,
+          rawKey: s,
+          mods: a,
+          error: he.bind(0, {
+            plugin: { type: "attribute", name: c.name },
+            element: { id: e.id, tag: e.tagName },
+            expression: { rawKey: s, key: o, value: n },
+          }),
+          key: o,
+          value: n,
+          loadedPluginNames: { actions: new Set(ye.keys()), attributes: new Set(Ze.keys()) },
+          rx: void 0,
+        },
+        d =
+          (c.requirement &&
+            (typeof c.requirement == "string" ? c.requirement : c.requirement.key)) ||
+          "allowed",
+        h =
+          (c.requirement &&
+            (typeof c.requirement == "string" ? c.requirement : c.requirement.value)) ||
+          "allowed",
+        f = o != null && o !== "",
+        p = n != null && n !== ""
+      if (f) {
+        if (d === "denied") throw u.error("KeyNotAllowed")
+      } else if (d === "must") throw u.error("KeyRequired")
+      if (p) {
+        if (h === "denied") throw u.error("ValueNotAllowed")
+      } else if (h === "must") throw u.error("ValueRequired")
+      if (d === "exclusive" || h === "exclusive") {
+        if (f && p) throw u.error("KeyAndValueProvided")
+        if (!f && !p) throw u.error("KeyOrValueRequired")
       }
+      let m = new Map()
+      if (p) {
+        let v
+        u.rx = (...C) => (
+          v || (v = un(n, { returnsValue: c.returnsValue, argNames: c.argNames, cleanups: m })),
+          v(e, ...C)
+        )
+      }
+      let b = c.apply(u)
+      b && m.set("attribute", b)
+      let R = be.get(e)
+      if (R) {
+        let v = R.get(s)
+        if (v) for (let C of v.values()) C()
+      } else ((R = new Map()), be.set(e, R))
+      R.set(s, m)
     }
   },
-  rn = (e, { returnsValue: t = !1, argNames: n = [], cleanups: r = new Map() } = {}) => {
+  un = (e, { returnsValue: t = !1, argNames: n = [], cleanups: r = new Map() } = {}) => {
     let s = ""
     if (t) {
       let c =
@@ -585,36 +611,40 @@ var nn = (e = document.documentElement, t = !0) => {
 `)))
       }
     } else s = e.trim()
-    let o = new Map(),
-      i = RegExp(`(?:${je})(.*?)(?:${Ge})`, "gm"),
+    let i = new Map(),
+      o = RegExp(`(?:${Ge})(.*?)(?:${je})`, "gm"),
       a = 0
-    for (let c of s.matchAll(i)) {
+    for (let c of s.matchAll(o)) {
       let l = c[1],
         u = `__escaped${a++}`
-      ;(o.set(u, l), (s = s.replace(je + l + Ge, u)))
+      ;(i.set(u, l), (s = s.replace(Ge + l + je, u)))
     }
-    ;((s = s
-      .replace(/\$\['([a-zA-Z_$\d][\w$]*)'\]/g, "$$$1")
-      .replace(/\$([a-zA-Z_\d]\w*(?:[.-]\w+)*)/g, (c, l) =>
-        l.split(".").reduce((u, d) => `${u}['${d}']`, "$")
-      )),
+    ;((s = s.replace(
+      /("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\$]|\$(?!\{))*`)|\$\{([^{}]*)\}|\$([a-zA-Z_\d]\w*(?:[.-]\w+)*)/g,
+      (c, l, u, d) =>
+        l
+          ? c
+          : u !== void 0
+            ? `\${${u.replace(/\$([a-zA-Z_\d]\w*(?:[.-]\w+)*)/g, (h, f) => f.split(".").reduce((p, m) => `${p}['${m}']`, "$"))}}`
+            : d.split(".").reduce((h, f) => `${h}['${f}']`, "$")
+    )),
       (s = s.replaceAll(/@([A-Za-z_$][\w$]*)\(/g, '__action("$1",evt,')))
-    for (let [c, l] of o) s = s.replace(c, l)
+    for (let [c, l] of i) s = s.replace(c, l)
     try {
       let c = Function("el", "$", "__action", "evt", ...n, s)
       return (l, ...u) => {
-        let d = (h, f, ...m) => {
-          let y = he.bind(0, {
+        let d = (h, f, ...p) => {
+          let m = he.bind(0, {
               plugin: { type: "action", name: h },
               element: { id: l.id, tag: l.tagName },
               expression: { fnContent: s, value: e },
             }),
-            b = Rt[h]
-          if (b) return b({ el: l, evt: f, error: y, cleanups: r }, ...m)
-          throw y("UndefinedAction")
+            b = xt[h]
+          if (b) return b({ el: l, evt: f, error: m, cleanups: r }, ...p)
+          throw m("UndefinedAction")
         }
         try {
-          return c(l, X, d, void 0, ...u)
+          return c(l, ne, d, void 0, ...u)
         } catch (h) {
           throw (
             console.error(h),
@@ -636,179 +666,188 @@ var nn = (e = document.documentElement, t = !0) => {
       )
     }
   }
-k({
+V({
   name: "peek",
   apply(e, t) {
-    F()
+    k()
     try {
       return t()
     } finally {
-      P()
+      H()
     }
   },
 })
-k({
+V({
   name: "setAll",
   apply(e, t, n) {
-    F()
-    let r = _(n)
-    ;(Y(r, () => t), O(r), P())
+    k()
+    let r = $(n)
+    ;(te(r, () => t), _(r), H())
   },
 })
-k({
+V({
   name: "toggleAll",
   apply(e, t) {
-    F()
-    let n = _(t)
-    ;(Y(n, (r) => !r), O(n), P())
+    k()
+    let n = $(t)
+    ;(te(n, (r) => !r), _(n), H())
   },
 })
-var Ee = (e, t, n = !0) =>
-  k({
-    name: e,
-    apply: async (
-      { el: r, evt: s, error: o, cleanups: i },
-      a,
-      {
-        selector: c,
-        headers: l,
-        contentType: u = "json",
-        filterSignals: { include: d = /.*/, exclude: h = /(^|\.)_/ } = {},
-        openWhenHidden: f = n,
-        payload: m,
-        requestCancellation: y = "auto",
-        retry: b = "auto",
-        retryInterval: v = 1e3,
-        retryScaler: A = 2,
-        retryMaxWaitMs: I = 3e4,
-        retryMaxCount: ne = 10,
-      } = {}
-    ) => {
-      let de = y instanceof AbortController ? y : new AbortController()
-      y === "auto" &&
-        (i.get(`@${e}`)?.(),
-        i.set(`@${e}`, async () => {
-          ;(de.abort(), await Promise.resolve())
-        }))
-      let D = null
-      try {
-        if (!a?.length) throw o("FetchNoUrlProvided", { action: k })
-        let V = { Accept: "text/event-stream, text/html, application/json", "Datastar-Request": !0 }
-        u === "json" && (V["Content-Type"] = "application/json")
-        let Ae = Object.assign({}, V, l),
-          re = {
-            method: t,
-            headers: Ae,
-            openWhenHidden: f,
-            retry: b,
-            retryInterval: v,
-            retryScaler: A,
-            retryMaxWaitMs: I,
-            retryMaxCount: ne,
-            signal: de.signal,
-            onopen: async (g) => {
-              g.status >= 400 && ee(sn, r, { status: g.status.toString() })
-            },
-            onmessage: (g) => {
-              if (!g.event.startsWith("datastar")) return
-              let B = g.event,
-                E = {}
-              for (let R of g.data.split(`
-`)) {
-                let w = R.indexOf(" "),
-                  W = R.slice(0, w),
-                  De = R.slice(w + 1)
-                ;(E[W] ||= []).push(De)
-              }
-              let N = Object.fromEntries(
-                Object.entries(E).map(([R, w]) => [
-                  R,
-                  w.join(`
-`),
-                ])
-              )
-              ee(B, r, N)
-            },
-            onerror: (g) => {
-              if (Lt(g)) throw g("FetchExpectedTextEventStream", { url: a })
-              g && (console.error(g.message), ee(on, r, { message: g.message }))
-            },
-          },
-          se = new URL(a, document.baseURI),
-          ie = new URLSearchParams(se.search)
-        if (u === "json") {
-          ;(F(), (m = m !== void 0 ? m : _({ include: d, exclude: h })), P())
-          let g = JSON.stringify(m)
-          t === "GET" ? ie.set("datastar", g) : (re.body = g)
-        } else if (u === "form") {
-          let g = c ? document.querySelector(c) : r.closest("form")
-          if (!g) throw o("FetchFormNotFound", { action: k, selector: c })
-          if (!g.noValidate && !g.checkValidity()) {
-            g.reportValidity()
-            return
-          }
-          let B = new FormData(g),
-            E = r
-          if (r === g && s instanceof SubmitEvent) E = s.submitter
-          else {
-            let w = (W) => W.preventDefault()
-            ;(g.addEventListener("submit", w),
-              (D = () => {
-                g.removeEventListener("submit", w)
-              }))
-          }
-          if (E instanceof HTMLButtonElement) {
-            let w = E.getAttribute("name")
-            w && B.append(w, E.value)
-          }
-          let N = g.getAttribute("enctype") === "multipart/form-data"
-          N || (Ae["Content-Type"] = "application/x-www-form-urlencoded")
-          let R = new URLSearchParams(B)
-          if (t === "GET") for (let [w, W] of R) ie.append(w, W)
-          else N ? (re.body = B) : (re.body = R)
-        } else throw o("FetchInvalidContentType", { action: k, contentType: u })
-        ;(ee(Ye, r, {}), (se.search = ie.toString()))
+var Ft = new WeakMap(),
+  Ee = (e, t, n = !0) =>
+    V({
+      name: e,
+      apply: async (
+        { el: r, evt: s, error: i, cleanups: o },
+        a,
+        {
+          selector: c,
+          headers: l,
+          contentType: u = "json",
+          filterSignals: { include: d = /.*/, exclude: h = /(^|\.)_/ } = {},
+          openWhenHidden: f = n,
+          payload: p,
+          requestCancellation: m = "auto",
+          retry: b = "auto",
+          retryInterval: R = 1e3,
+          retryScaler: v = 2,
+          retryMaxWaitMs: C = 3e4,
+          retryMaxCount: _e = 10,
+        } = {}
+      ) => {
+        let Y = m instanceof AbortController ? m : new AbortController()
+        ;((m === "auto" || m === "cleanup") && (Ft.get(r)?.abort(), Ft.set(r, Y)),
+          m === "cleanup" &&
+            (o.get(`@${e}`)?.(),
+            o.set(`@${e}`, async () => {
+              ;(Y.abort(), await Promise.resolve())
+            })))
+        let X = () => {}
         try {
-          await dn(se.toString(), r, re)
-        } catch (g) {
-          if (!Lt(g)) throw o("FetchFailed", { method: t, url: a, error: g.message })
+          if (!a?.length) throw i("FetchNoUrlProvided", { action: V })
+          let fe = {
+            Accept: "text/event-stream, text/html, application/json",
+            "Datastar-Request": !0,
+          }
+          u === "json" && (fe["Content-Type"] = "application/json")
+          let q = Object.assign({}, fe, l),
+            N = {
+              input: "",
+              method: t,
+              headers: q,
+              openWhenHidden: f,
+              retry: b,
+              retryInterval: R,
+              retryScaler: v,
+              retryMaxWaitMs: C,
+              retryMaxCount: _e,
+              signal: Y.signal,
+              onopen: async (y) => {
+                y.status >= 400 && re(fn, r, { status: y.status.toString() })
+              },
+              onmessage: (y) => {
+                if (!y.event.startsWith("datastar")) return
+                let U = y.event,
+                  E = {}
+                for (let F of y.data.split(`
+`)) {
+                  let S = F.indexOf(" "),
+                    O = F.slice(0, S),
+                    w = F.slice(S + 1)
+                  ;(E[O] ||= []).push(w)
+                }
+                let D = Object.fromEntries(
+                  Object.entries(E).map(([F, S]) => [
+                    F,
+                    S.join(`
+`),
+                  ])
+                )
+                re(U, r, D)
+              },
+              onerror: (y) => {
+                if (Ct(y)) throw y("FetchExpectedTextEventStream", { url: a })
+                y && (console.error(y.message), re(dn, r, { message: y.message }))
+              },
+            },
+            Ve = () => {
+              let y = new URL(a, document.baseURI),
+                U = new URLSearchParams(y.search)
+              if (u === "json") {
+                ;(k(), (p = p !== void 0 ? p : $({ include: d, exclude: h })), H())
+                let E = JSON.stringify(p)
+                t === "GET" ? U.set("datastar", E) : (N.body = E)
+              } else if (u === "form") {
+                let E = c ? document.querySelector(c) : r.closest("form")
+                if (!E) throw i("FetchFormNotFound", { action: V, selector: c })
+                if (!E.noValidate && !E.checkValidity()) {
+                  E.reportValidity()
+                  return
+                }
+                let D = new FormData(E),
+                  F = r
+                if (r === E && s instanceof SubmitEvent) F = s.submitter
+                else {
+                  let w = (de) => de.preventDefault()
+                  ;(E.addEventListener("submit", w),
+                    (X = () => {
+                      E.removeEventListener("submit", w)
+                    }))
+                }
+                if (F instanceof HTMLButtonElement) {
+                  let w = F.getAttribute("name")
+                  w && D.append(w, F.value)
+                }
+                let S = E.getAttribute("enctype") === "multipart/form-data"
+                S || (q["Content-Type"] = "application/x-www-form-urlencoded")
+                let O = new URLSearchParams(D)
+                if (t === "GET") for (let [w, de] of O) U.append(w, de)
+                else S ? (N.body = D) : (N.body = O)
+              } else throw i("FetchInvalidContentType", { action: V, contentType: u })
+              return ((y.search = U.toString()), (N.input = y.toString()), N)
+            }
+          re(et, r, {})
+          try {
+            await bn(r, Ve)
+          } catch (y) {
+            if (!Ct(y)) throw i("FetchFailed", { method: t, url: a, error: y.message })
+          }
+        } finally {
+          ;(re(tt, r, {}), X(), o.delete(`@${e}`))
         }
-      } finally {
-        ;(ee(Xe, r, {}), D?.(), i.delete(`@${e}`))
-      }
-    },
-  })
+      },
+    })
 Ee("get", "GET", !1)
 Ee("patch", "PATCH")
 Ee("post", "POST")
 Ee("put", "PUT")
 Ee("delete", "DELETE")
-var Ye = "started",
-  Xe = "finished",
-  sn = "error",
-  on = "retrying",
-  an = "retries-failed",
-  ee = (e, t, n) =>
-    document.dispatchEvent(new CustomEvent(q, { detail: { type: e, el: t, argsRaw: n } })),
-  Lt = (e) => `${e}`.includes("text/event-stream"),
-  cn = async (e, t) => {
+var et = "started",
+  tt = "finished",
+  fn = "error",
+  dn = "retrying",
+  mn = "retries-failed",
+  re = (e, t, n) =>
+    document.dispatchEvent(new CustomEvent(j, { detail: { type: e, el: t, argsRaw: n } })),
+  Ct = (e) => `${e}`.includes("text/event-stream"),
+  pn = async (e, t) => {
     let n = e.getReader(),
       r = await n.read()
     for (; !r.done; ) (t(r.value), (r = await n.read()))
   },
-  ln = (e) => {
+  gn = (e) => {
     let t,
       n,
       r,
       s = !1
-    return (o) => {
-      t ? (t = fn(t, o)) : ((t = o), (n = 0), (r = -1))
-      let i = t.length,
+    return (i) => {
+      t ? (t = yn(t, i)) : ((t = i), (n = 0), (r = -1))
+      let o = t.length,
         a = 0
-      for (; n < i; ) {
+      for (; n < o; ) {
         s && (t[n] === 10 && (a = ++n), (s = !1))
         let c = -1
-        for (; n < i && c === -1; ++n)
+        for (; n < o && c === -1; ++n)
           switch (t[n]) {
             case 58:
               r === -1 && (r = n - a)
@@ -822,18 +861,18 @@ var Ye = "started",
         if (c === -1) break
         ;(e(t.subarray(a, c), r), (a = n), (r = -1))
       }
-      a === i ? (t = void 0) : a && ((t = t.subarray(a)), (n -= a))
+      a === o ? (t = void 0) : a && ((t = t.subarray(a)), (n -= a))
     }
   },
-  un = (e, t, n) => {
-    let r = Nt(),
+  hn = (e, t, n) => {
+    let r = Ot(),
       s = new TextDecoder()
-    return (o, i) => {
-      if (!o.length) (n?.(r), (r = Nt()))
-      else if (i > 0) {
-        let a = s.decode(o.subarray(0, i)),
-          c = i + (o[i + 1] === 32 ? 2 : 1),
-          l = s.decode(o.subarray(c))
+    return (i, o) => {
+      if (!i.length) (n?.(r), (r = Ot()))
+      else if (o > 0) {
+        let a = s.decode(i.subarray(0, o)),
+          c = o + (i[o + 1] === 32 ? 2 : 1),
+          l = s.decode(i.subarray(c))
         switch (a) {
           case "data":
             r.data = r.data
@@ -856,142 +895,144 @@ ${l}`
       }
     }
   },
-  fn = (e, t) => {
+  yn = (e, t) => {
     let n = new Uint8Array(e.length + t.length)
     return (n.set(e), n.set(t, e.length), n)
   },
-  Nt = () => ({ data: "", event: "", id: "", retry: void 0 }),
-  dn = (
-    e,
-    t,
-    {
-      signal: n,
-      headers: r,
-      onopen: s,
-      onmessage: o,
-      onclose: i,
-      onerror: a,
-      openWhenHidden: c,
-      fetch: l,
-      retry: u = "auto",
-      retryInterval: d = 1e3,
-      retryScaler: h = 2,
-      retryMaxWaitMs: f = 3e4,
-      retryMaxCount: m = 10,
-      responseOverrides: y,
-      ...b
-    }
-  ) =>
-    new Promise((v, A) => {
-      let I = { ...r },
-        ne,
-        de = () => {
-          ;(ne.abort(), document.hidden || g())
+  Ot = () => ({ data: "", event: "", id: "", retry: void 0 }),
+  bn = (e, t) =>
+    new Promise((n, r) => {
+      let s = t()
+      if (!s) return
+      let {
+          input: i,
+          signal: o,
+          headers: a,
+          onopen: c,
+          onmessage: l,
+          onclose: u,
+          onerror: d,
+          openWhenHidden: h,
+          fetch: f,
+          retry: p = "auto",
+          retryInterval: m = 1e3,
+          retryScaler: b = 2,
+          retryMaxWaitMs: R = 3e4,
+          retryMaxCount: v = 10,
+          responseOverrides: C,
+          ..._e
+        } = s,
+        Y = { ...a },
+        X,
+        fe = () => {
+          ;(X.abort(), document.hidden || D())
         }
-      c || document.addEventListener("visibilitychange", de)
-      let D,
-        V = () => {
-          ;(document.removeEventListener("visibilitychange", de), clearTimeout(D), ne.abort())
+      h || document.addEventListener("visibilitychange", fe)
+      let q,
+        N = () => {
+          ;(document.removeEventListener("visibilitychange", fe), clearTimeout(q), X.abort())
         }
-      n?.addEventListener("abort", () => {
-        ;(V(), v())
+      o?.addEventListener("abort", () => {
+        ;(N(), n())
       })
-      let Ae = l || window.fetch,
-        re = s || (() => {}),
-        se = 0,
-        ie = d,
-        g = async () => {
-          ne = new AbortController()
-          let B = ne.signal
+      let Ve = f || window.fetch,
+        y = c || (() => {}),
+        U = 0,
+        E = m,
+        D = async () => {
+          X = new AbortController()
+          let F = X.signal
           try {
-            let E = await Ae(e, { ...b, headers: I, signal: B })
-            await re(E)
-            let N = async ($, me, $e, Re, ...Wt) => {
-                let ot = { [$e]: await me.text() }
-                for (let Ie of Wt) {
-                  let qe = me.headers.get(`datastar-${ge(Ie)}`)
-                  if (Re) {
-                    let we = Re[Ie]
+            let S = await Ve(i, { ..._e, headers: Y, signal: F })
+            await y(S)
+            let O = async (G, me, De, Ae, ...Qt) => {
+                let lt = { [De]: await me.text() }
+                for (let $e of Qt) {
+                  let qe = me.headers.get(`datastar-${ge($e)}`)
+                  if (Ae) {
+                    let we = Ae[$e]
                     we && (qe = typeof we == "string" ? we : JSON.stringify(we))
                   }
-                  qe && (ot[Ie] = qe)
+                  qe && (lt[$e] = qe)
                 }
-                ;(ee($, t, ot), V(), v())
+                ;(re(G, e, lt), N(), n())
               },
-              R = E.status,
-              w = R === 204,
-              W = R >= 300 && R < 400,
-              De = R >= 400 && R < 600
-            if (R !== 200) {
-              if ((i?.(), u !== "never" && !w && !W && (u === "always" || (u === "error" && De)))) {
-                ;(clearTimeout(D), (D = setTimeout(g, d)))
+              w = S.status,
+              de = w === 204,
+              ct = w >= 300 && w < 400,
+              zt = w >= 400 && w < 600
+            if (w !== 200) {
+              if (
+                (u?.(), p !== "never" && !de && !ct && (p === "always" || (p === "error" && zt)))
+              ) {
+                ;(clearTimeout(q), (q = setTimeout(D, m)))
                 return
               }
-              ;(V(), v())
+              ;(N(), n())
               return
             }
-            ;((se = 0), (d = ie))
-            let Ve = E.headers.get("Content-Type")
-            if (Ve?.includes("text/html"))
-              return await N(
+            ;((U = 0), (m = E))
+            let Ie = S.headers.get("Content-Type")
+            if (Ie?.includes("text/html"))
+              return await O(
                 "datastar-patch-elements",
-                E,
+                S,
                 "elements",
-                y,
+                C,
                 "selector",
                 "mode",
                 "namespace",
                 "useViewTransition"
               )
-            if (Ve?.includes("application/json"))
-              return await N("datastar-patch-signals", E, "signals", y, "onlyIfMissing")
-            if (Ve?.includes("text/javascript")) {
-              let $ = document.createElement("script"),
-                me = E.headers.get("datastar-script-attributes")
-              if (me) for (let [$e, Re] of Object.entries(JSON.parse(me))) $.setAttribute($e, Re)
-              ;(($.textContent = await E.text()), document.head.appendChild($), V())
+            if (Ie?.includes("application/json"))
+              return await O("datastar-patch-signals", S, "signals", C, "onlyIfMissing")
+            if (Ie?.includes("text/javascript")) {
+              let G = document.createElement("script"),
+                me = S.headers.get("datastar-script-attributes")
+              if (me) for (let [De, Ae] of Object.entries(JSON.parse(me))) G.setAttribute(De, Ae)
+              ;((G.textContent = await S.text()), document.head.appendChild(G), N())
               return
             }
             if (
-              (await cn(
-                E.body,
-                ln(
-                  un(
-                    ($) => {
-                      $ ? (I["last-event-id"] = $) : delete I["last-event-id"]
+              (await pn(
+                S.body,
+                gn(
+                  hn(
+                    (G) => {
+                      G ? (Y["last-event-id"] = G) : delete Y["last-event-id"]
                     },
-                    ($) => {
-                      ie = d = $
+                    (G) => {
+                      E = m = G
                     },
-                    o
+                    l
                   )
                 )
               ),
-              i?.(),
-              u === "always" && !W)
+              u?.(),
+              p === "always" && !ct)
             ) {
-              ;(clearTimeout(D), (D = setTimeout(g, d)))
+              ;(clearTimeout(q), (q = setTimeout(D, m)))
               return
             }
-            ;(V(), v())
-          } catch (E) {
-            if (!B.aborted)
+            ;(N(), n())
+          } catch (S) {
+            if (!F.aborted)
               try {
-                let N = a?.(E) || d
-                ;(clearTimeout(D),
-                  (D = setTimeout(g, N)),
-                  (d = Math.min(d * h, f)),
-                  ++se >= m
-                    ? (ee(an, t, {}), V(), A("Max retries reached."))
-                    : console.error(`Datastar failed to reach ${e.toString()} retrying in ${N}ms.`))
-              } catch (N) {
-                ;(V(), A(N))
+                let O = d?.(S) || m
+                ;(clearTimeout(q),
+                  (q = setTimeout(D, O)),
+                  (m = Math.min(m * b, R)),
+                  ++U >= v
+                    ? (re(mn, e, {}), N(), r("Max retries reached."))
+                    : console.error(`Datastar failed to reach ${i.toString()} retrying in ${O}ms.`))
+              } catch (O) {
+                ;(N(), r(O))
               }
           }
         }
-      g()
+      D()
     })
-p({
+g({
   name: "attr",
   requirement: { value: "must" },
   returnsValue: !0,
@@ -1003,37 +1044,42 @@ p({
             ? e.removeAttribute(a)
             : typeof c == "string"
               ? e.setAttribute(a, c)
-              : e.setAttribute(a, JSON.stringify(c))
+              : typeof c == "function"
+                ? e.setAttribute(a, c.toString())
+                : e.setAttribute(
+                    a,
+                    JSON.stringify(c, (l, u) => (typeof u == "function" ? u.toString() : u))
+                  )
       },
       s = t
         ? () => {
-            o.disconnect()
+            i.disconnect()
             let a = n()
-            ;(r(t, a), o.observe(e, { attributeFilter: [t] }))
+            ;(r(t, a), i.observe(e, { attributeFilter: [t] }))
           }
         : () => {
-            o.disconnect()
+            i.disconnect()
             let a = n(),
               c = Object.keys(a)
             for (let l of c) r(l, a[l])
-            o.observe(e, { attributeFilter: c })
+            i.observe(e, { attributeFilter: c })
           },
-      o = new MutationObserver(s),
-      i = S(s)
+      i = new MutationObserver(s),
+      o = T(s)
     return () => {
-      ;(o.disconnect(), i())
+      ;(i.disconnect(), o())
     }
   },
 })
-var mn = /^data:(?<mime>[^;]+);base64,(?<contents>.*)$/,
-  Ct = Symbol("empty"),
-  Ft = G("bind")
-p({
+var vn = /^data:(?<mime>[^;]+);base64,(?<contents>.*)$/,
+  Pt = Symbol("empty"),
+  kt = B("bind")
+g({
   name: "bind",
   requirement: "exclusive",
   apply({ el: e, key: t, mods: n, value: r, error: s }) {
-    let o = t != null ? L(t, n) : r,
-      i = (f, m) => (m === "number" ? +f.value : f.value),
+    let i = t != null ? L(t, n) : r,
+      o = (f, p) => (p === "number" ? +f.value : f.value),
       a = (f) => {
         e.value = `${f}`
       }
@@ -1041,17 +1087,17 @@ p({
       switch (e.type) {
         case "range":
         case "number":
-          i = (f, m) => (m === "string" ? f.value : +f.value)
+          o = (f, p) => (p === "string" ? f.value : +f.value)
           break
         case "checkbox":
-          ;((i = (f, m) =>
+          ;((o = (f, p) =>
             f.value !== "on"
-              ? m === "boolean"
+              ? p === "boolean"
                 ? f.checked
                 : f.checked
                   ? f.value
                   : ""
-              : m === "string"
+              : p === "string"
                 ? f.checked
                   ? f.value
                   : ""
@@ -1061,34 +1107,34 @@ p({
             }))
           break
         case "radio":
-          ;(e.getAttribute("name")?.length || e.setAttribute("name", o),
-            (i = (f, m) => (f.checked ? (m === "number" ? +f.value : f.value) : Ct)),
+          ;(e.getAttribute("name")?.length || e.setAttribute("name", i),
+            (o = (f, p) => (f.checked ? (p === "number" ? +f.value : f.value) : Pt)),
             (a = (f) => {
               e.checked = f === (typeof f == "number" ? +e.value : e.value)
             }))
           break
         case "file": {
           let f = () => {
-            let m = [...(e.files || [])],
-              y = []
+            let p = [...(e.files || [])],
+              m = []
             Promise.all(
-              m.map(
+              p.map(
                 (b) =>
-                  new Promise((v) => {
-                    let A = new FileReader()
-                    ;((A.onload = () => {
-                      if (typeof A.result != "string")
-                        throw s("InvalidFileResultType", { resultType: typeof A.result })
-                      let I = A.result.match(mn)
-                      if (!I?.groups) throw s("InvalidDataUri", { result: A.result })
-                      y.push({ name: b.name, contents: I.groups.contents, mime: I.groups.mime })
+                  new Promise((R) => {
+                    let v = new FileReader()
+                    ;((v.onload = () => {
+                      if (typeof v.result != "string")
+                        throw s("InvalidFileResultType", { resultType: typeof v.result })
+                      let C = v.result.match(vn)
+                      if (!C?.groups) throw s("InvalidDataUri", { result: v.result })
+                      m.push({ name: b.name, contents: C.groups.contents, mime: C.groups.mime })
                     }),
-                      (A.onloadend = () => v()),
-                      A.readAsDataURL(b))
+                      (v.onloadend = () => R()),
+                      v.readAsDataURL(b))
                   })
               )
             ).then(() => {
-              T([[o, y]])
+              A([[i, m]])
             })
           }
           return (
@@ -1103,76 +1149,76 @@ p({
     else if (e instanceof HTMLSelectElement) {
       if (e.multiple) {
         let f = new Map()
-        ;((i = (m) =>
-          [...m.selectedOptions].map((y) => {
-            let b = f.get(y.value)
-            return b === "string" || b == null ? y.value : +y.value
+        ;((o = (p) =>
+          [...p.selectedOptions].map((m) => {
+            let b = f.get(m.value)
+            return b === "string" || b == null ? m.value : +m.value
           })),
-          (a = (m) => {
-            for (let y of e.options)
-              m.includes(y.value)
-                ? (f.set(y.value, "string"), (y.selected = !0))
-                : m.includes(+y.value)
-                  ? (f.set(y.value, "number"), (y.selected = !0))
-                  : (y.selected = !1)
+          (a = (p) => {
+            for (let m of e.options)
+              p.includes(m.value)
+                ? (f.set(m.value, "string"), (m.selected = !0))
+                : p.includes(+m.value)
+                  ? (f.set(m.value, "number"), (m.selected = !0))
+                  : (m.selected = !1)
           }))
       }
     } else
       e instanceof HTMLTextAreaElement ||
-        ((i = (f) => ("value" in f ? f.value : f.getAttribute("value"))),
+        ((o = (f) => ("value" in f ? f.value : f.getAttribute("value"))),
         (a = (f) => {
           "value" in e ? (e.value = f) : e.setAttribute("value", f)
         }))
-    let c = oe(o),
+    let c = ie(i),
       l = typeof c,
-      u = o
+      u = i
     if (Array.isArray(c) && !(e instanceof HTMLSelectElement && e.multiple)) {
       let f = t || r,
-        m = document.querySelectorAll(`[${Ft}\\:${CSS.escape(f)}],[${Ft}="${CSS.escape(f)}"]`),
-        y = [],
+        p = document.querySelectorAll(`[${kt}\\:${CSS.escape(f)}],[${kt}="${CSS.escape(f)}"]`),
+        m = [],
         b = 0
-      for (let v of m) {
-        if ((y.push([`${u}.${b}`, i(v, "none")]), e === v)) break
+      for (let R of p) {
+        if ((m.push([`${u}.${b}`, o(R, "none")]), e === R)) break
         b++
       }
-      ;(T(y, { ifMissing: !0 }), (u = `${u}.${b}`))
-    } else T([[u, i(e, l)]], { ifMissing: !0 })
+      ;(A(m, { ifMissing: !0 }), (u = `${u}.${b}`))
+    } else A([[u, o(e, l)]], { ifMissing: !0 })
     let d = () => {
-      let f = oe(u)
+      let f = ie(u)
       if (f != null) {
-        let m = i(e, typeof f)
-        m !== Ct && T([[u, m]])
+        let p = o(e, typeof f)
+        p !== Pt && A([[u, p]])
       }
     }
     ;(e.addEventListener("input", d), e.addEventListener("change", d))
-    let h = S(() => {
-      a(oe(u))
+    let h = T(() => {
+      a(ie(u))
     })
     return () => {
       ;(h(), e.removeEventListener("input", d), e.removeEventListener("change", d))
     }
   },
 })
-p({
+g({
   name: "class",
   requirement: { value: "must" },
   returnsValue: !0,
   apply({ key: e, el: t, mods: n, rx: r }) {
     e &&= L(e, n, "kebab")
     let s,
-      o = () => {
-        ;(i.disconnect(), (s = e ? { [e]: r() } : r()))
+      i = () => {
+        ;(o.disconnect(), (s = e ? { [e]: r() } : r()))
         for (let c in s) {
           let l = c.split(/\s+/).filter((u) => u.length > 0)
           if (s[c]) for (let u of l) t.classList.contains(u) || t.classList.add(u)
           else for (let u of l) t.classList.contains(u) && t.classList.remove(u)
         }
-        i.observe(t, { attributeFilter: ["class"] })
+        o.observe(t, { attributeFilter: ["class"] })
       },
-      i = new MutationObserver(o),
-      a = S(o)
+      o = new MutationObserver(i),
+      a = T(i)
     return () => {
-      ;(i.disconnect(), a())
+      ;(o.disconnect(), a())
       for (let c in s) {
         let l = c.split(/\s+/).filter((u) => u.length > 0)
         for (let u of l) t.classList.remove(u)
@@ -1180,50 +1226,50 @@ p({
     }
   },
 })
-p({
+g({
   name: "computed",
   requirement: { value: "must" },
   returnsValue: !0,
   apply({ key: e, mods: t, rx: n, error: r }) {
-    if (e) T([[L(e, t), ke(n)]])
+    if (e) A([[L(e, t), Pe(n)]])
     else {
       let s = Object.assign({}, n())
-      ;(Y(s, (o) => {
-        if (typeof o == "function") return ke(o)
+      ;(te(s, (i) => {
+        if (typeof i == "function") return Pe(i)
         throw r("ComputedExpectedFunction")
       }),
-        O(s))
+        _(s))
     }
   },
 })
-p({ name: "effect", requirement: { key: "denied", value: "must" }, apply: ({ rx: e }) => S(e) })
-p({
+g({ name: "effect", requirement: { key: "denied", value: "must" }, apply: ({ rx: e }) => T(e) })
+g({
   name: "indicator",
   requirement: "exclusive",
   apply({ el: e, key: t, mods: n, value: r }) {
     let s = t != null ? L(t, n) : r
-    T([[s, !1]])
-    let o = (i) => {
-      let { type: a, el: c } = i.detail
+    A([[s, !1]])
+    let i = (o) => {
+      let { type: a, el: c } = o.detail
       if (c === e)
         switch (a) {
-          case Ye:
-            T([[s, !0]])
+          case et:
+            A([[s, !0]])
             break
-          case Xe:
-            T([[s, !1]])
+          case tt:
+            A([[s, !1]])
             break
         }
     }
     return (
-      document.addEventListener(q, o),
+      document.addEventListener(j, i),
       () => {
-        ;(T([[s, !1]]), document.removeEventListener(q, o))
+        ;(A([[s, !1]]), document.removeEventListener(j, i))
       }
     )
   },
 })
-var z = (e) => {
+var Q = (e) => {
     if (!e || e.size <= 0) return 0
     for (let t of e) {
       if (t.endsWith("ms")) return +t.replace("ms", "")
@@ -1234,187 +1280,192 @@ var z = (e) => {
     }
     return 0
   },
-  te = (e, t, n = !1) => (e ? e.has(t.toLowerCase()) : n)
-var et =
+  se = (e, t, n = !1) => (e ? e.has(t.toLowerCase()) : n),
+  Ht = (e, t = "") => {
+    if (e && e.size > 0) for (let n of e) return n
+    return t
+  }
+var nt =
     (e, t) =>
     (...n) => {
       setTimeout(() => {
         e(...n)
       }, t)
     },
-  Pt = (e, t, n = !0, r = !1, s = !1) => {
-    let o = null,
-      i = 0
+  _t = (e, t, n = !0, r = !1, s = !1) => {
+    let i = null,
+      o = 0
     return (...a) => {
-      ;(n && !i ? (e(...a), (o = null)) : (o = a),
-        (!i || s) &&
-          (i && clearTimeout(i),
-          (i = setTimeout(() => {
-            ;(r && o !== null && e(...o), (o = null), (i = 0))
+      ;(n && !o ? (e(...a), (i = null)) : (i = a),
+        (!o || s) &&
+          (o && clearTimeout(o),
+          (o = setTimeout(() => {
+            ;(r && i !== null && e(...i), (i = null), (o = 0))
           }, t))))
     }
   },
-  ce = (e, t) => {
+  ae = (e, t) => {
     let n = t.get("delay")
     if (n) {
-      let o = z(n)
-      e = et(e, o)
+      let i = Q(n)
+      e = nt(e, i)
     }
     let r = t.get("debounce")
     if (r) {
-      let o = z(r),
-        i = te(r, "leading", !1),
-        a = !te(r, "notrailing", !1)
-      e = Pt(e, o, i, a, !0)
+      let i = Q(r),
+        o = se(r, "leading", !1),
+        a = !se(r, "notrailing", !1)
+      e = _t(e, i, o, a, !0)
     }
     let s = t.get("throttle")
     if (s) {
-      let o = z(s),
-        i = !te(s, "noleading", !1),
-        a = te(s, "trailing", !1)
-      e = Pt(e, o, i, a)
+      let i = Q(s),
+        o = !se(s, "noleading", !1),
+        a = se(s, "trailing", !1)
+      e = _t(e, i, o, a)
     }
     return e
   }
-var tt = !!document.startViewTransition,
-  Q = (e, t) => {
-    if (t.has("viewtransition") && tt) {
+var rt = !!document.startViewTransition,
+  Z = (e, t) => {
+    if (t.has("viewtransition") && rt) {
       let n = e
       e = (...r) => document.startViewTransition(() => n(...r))
     }
     return e
   }
-p({
+g({
   name: "init",
   requirement: { key: "denied", value: "must" },
   apply({ rx: e, mods: t }) {
     let n = () => {
       ;(M(), e(), x())
     }
-    n = Q(n, t)
+    n = Z(n, t)
     let r = 0,
       s = t.get("delay")
-    ;(s && ((r = z(s)), r > 0 && (n = et(n, r))), n())
+    ;(s && ((r = Q(s)), r > 0 && (n = nt(n, r))), n())
   },
 })
-p({
+g({
   name: "json-signals",
   requirement: { key: "denied" },
   apply({ el: e, value: t, mods: n }) {
     let r = n.has("terse") ? 0 : 2,
       s = {}
-    t && (s = ae(t))
-    let o = () => {
-        ;(i.disconnect(),
-          (e.textContent = JSON.stringify(_(s), null, r)),
-          i.observe(e, { childList: !0, characterData: !0, subtree: !0 }))
+    t && (s = oe(t))
+    let i = () => {
+        ;(o.disconnect(),
+          (e.textContent = JSON.stringify($(s), null, r)),
+          o.observe(e, { childList: !0, characterData: !0, subtree: !0 }))
       },
-      i = new MutationObserver(o),
-      a = S(o)
+      o = new MutationObserver(i),
+      a = T(i)
     return () => {
-      ;(i.disconnect(), a())
+      ;(o.disconnect(), a())
     }
   },
 })
-p({
+g({
   name: "on",
   requirement: "must",
   argNames: ["evt"],
   apply({ el: e, key: t, mods: n, rx: r }) {
     let s = e
     n.has("window") && (s = window)
-    let o = (c) => {
+    let i = (c) => {
       ;(c && (n.has("prevent") && c.preventDefault(), n.has("stop") && c.stopPropagation()),
         M(),
         r(c),
         x())
     }
-    ;((o = Q(o, n)), (o = ce(o, n)))
-    let i = { capture: n.has("capture"), passive: n.has("passive"), once: n.has("once") }
+    ;((i = Z(i, n)), (i = ae(i, n)))
+    let o = { capture: n.has("capture"), passive: n.has("passive"), once: n.has("once") }
     if (n.has("outside")) {
       s = document
-      let c = o
-      o = (l) => {
+      let c = i
+      i = (l) => {
         e.contains(l?.target) || c(l)
       }
     }
     let a = L(t, n, "kebab")
-    if (((a === q || a === Z) && (s = document), e instanceof HTMLFormElement && a === "submit")) {
-      let c = o
-      o = (l) => {
+    if (((a === j || a === ee) && (s = document), e instanceof HTMLFormElement && a === "submit")) {
+      let c = i
+      i = (l) => {
         ;(l?.preventDefault(), c(l))
       }
     }
     return (
-      s.addEventListener(a, o, i),
+      s.addEventListener(a, i, o),
       () => {
-        s.removeEventListener(a, o)
+        s.removeEventListener(a, i)
       }
     )
   },
 })
-var Ot = (e, t, n) => Math.max(t, Math.min(n, e))
-var nt = new WeakSet()
-p({
+var Vt = (e, t, n) => Math.max(t, Math.min(n, e))
+var st = new WeakSet()
+g({
   name: "on-intersect",
   requirement: { key: "denied", value: "must" },
   apply({ el: e, mods: t, rx: n }) {
     let r = () => {
       ;(M(), n(), x())
     }
-    ;((r = Q(r, t)), (r = ce(r, t)))
+    ;((r = Z(r, t)), (r = ae(r, t)))
     let s = { threshold: 0 }
-    t.has("full")
-      ? (s.threshold = 1)
-      : t.has("half")
-        ? (s.threshold = 0.5)
-        : t.get("threshold") && (s.threshold = Ot(Number(t.get("threshold")), 0, 100) / 100)
-    let o = t.has("exit"),
-      i = new IntersectionObserver((a) => {
-        for (let c of a) c.isIntersecting !== o && (r(), i && nt.has(e) && i.disconnect())
+    if (t.has("full")) s.threshold = 1
+    else if (t.has("half")) s.threshold = 0.5
+    else {
+      let a = t.get("threshold")
+      a && (s.threshold = Vt(Number(Ht(a)), 0, 100) / 100)
+    }
+    let i = t.has("exit"),
+      o = new IntersectionObserver((a) => {
+        for (let c of a) c.isIntersecting !== i && (r(), o && st.has(e) && o.disconnect())
       }, s)
     return (
-      i.observe(e),
-      t.has("once") && nt.add(e),
+      o.observe(e),
+      t.has("once") && st.add(e),
       () => {
-        ;(t.has("once") || nt.delete(e), i && (i.disconnect(), (i = null)))
+        ;(t.has("once") || st.delete(e), o && (o.disconnect(), (o = null)))
       }
     )
   },
 })
-p({
+g({
   name: "on-interval",
   requirement: { key: "denied", value: "must" },
   apply({ mods: e, rx: t }) {
     let n = () => {
       ;(M(), t(), x())
     }
-    n = Q(n, e)
+    n = Z(n, e)
     let r = 1e3,
       s = e.get("duration")
-    s && ((r = z(s)), te(s, "leading", !1) && n())
-    let o = setInterval(n, r)
+    s && ((r = Q(s)), se(s, "leading", !1) && n())
+    let i = setInterval(n, r)
     return () => {
-      clearInterval(o)
+      clearInterval(i)
     }
   },
 })
-p({
+g({
   name: "on-signal-patch",
   requirement: { value: "must" },
   argNames: ["patch"],
   returnsValue: !0,
   apply({ el: e, key: t, mods: n, rx: r, error: s }) {
     if (t && t !== "filter") throw s("KeyNotAllowed")
-    let o = G(`${this.name}-filter`),
-      i = e.getAttribute(o),
+    let i = B(`${this.name}-filter`),
+      o = e.getAttribute(i),
       a = {}
-    i && (a = ae(i))
+    o && (a = oe(o))
     let c = !1,
-      l = ce((u) => {
+      l = ae((u) => {
         if (c) return
-        let d = _(a, u.detail)
-        if (!ct(d)) {
+        let d = $(a, u.detail)
+        if (!ft(d)) {
           ;((c = !0), M())
           try {
             r(d)
@@ -1424,83 +1475,86 @@ p({
         }
       }, n)
     return (
-      document.addEventListener(Z, l),
+      document.addEventListener(ee, l),
       () => {
-        document.removeEventListener(Z, l)
+        document.removeEventListener(ee, l)
       }
     )
   },
 })
-p({
+g({
   name: "ref",
   requirement: "exclusive",
   apply({ el: e, key: t, mods: n, value: r }) {
     let s = t != null ? L(t, n) : r
-    T([[s, e]])
+    A([[s, e]])
   },
 })
-var kt = "none",
-  Ht = "display"
-p({
+var It = "none",
+  Dt = "display"
+g({
   name: "show",
   requirement: { key: "denied", value: "must" },
   returnsValue: !0,
   apply({ el: e, rx: t }) {
     let n = () => {
         ;(r.disconnect(),
-          t() ? e.style.display === kt && e.style.removeProperty(Ht) : e.style.setProperty(Ht, kt),
+          t() ? e.style.display === It && e.style.removeProperty(Dt) : e.style.setProperty(Dt, It),
           r.observe(e, { attributeFilter: ["style"] }))
       },
       r = new MutationObserver(n),
-      s = S(n)
+      s = T(n)
     return () => {
       ;(r.disconnect(), s())
     }
   },
 })
-p({
+g({
   name: "signals",
   returnsValue: !0,
   apply({ key: e, mods: t, rx: n }) {
     let r = t.has("ifmissing")
-    if (e) ((e = L(e, t)), T([[e, n?.()]], { ifMissing: r }))
-    else {
+    if (e) {
+      e = L(e, t)
+      let s = n?.()
+      A([[e, s]], { ifMissing: r })
+    } else {
       let s = Object.assign({}, n?.())
-      O(s, { ifMissing: r })
+      _(s, { ifMissing: r })
     }
   },
 })
-p({
+g({
   name: "style",
   requirement: { value: "must" },
   returnsValue: !0,
   apply({ key: e, el: t, rx: n }) {
     let { style: r } = t,
       s = new Map(),
-      o = (l, u) => {
+      i = (l, u) => {
         let d = s.get(l)
         !u && u !== 0
           ? d !== void 0 && (d ? r.setProperty(l, d) : r.removeProperty(l))
           : (d === void 0 && s.set(l, r.getPropertyValue(l)), r.setProperty(l, String(u)))
       },
-      i = () => {
-        if ((a.disconnect(), e)) o(e, n())
+      o = () => {
+        if ((a.disconnect(), e)) i(e, n())
         else {
           let l = n()
           for (let [u, d] of s) u in l || (d ? r.setProperty(u, d) : r.removeProperty(u))
-          for (let u in l) o(ge(u), l[u])
+          for (let u in l) i(ge(u), l[u])
         }
         a.observe(t, { attributeFilter: ["style"] })
       },
-      a = new MutationObserver(i),
-      c = S(i)
+      a = new MutationObserver(o),
+      c = T(o)
     return () => {
       ;(a.disconnect(), c())
       for (let [l, u] of s) u ? r.setProperty(l, u) : r.removeProperty(l)
     }
   },
 })
-p({
+g({
   name: "text",
   requirement: { key: "denied", value: "must" },
   returnsValue: !0,
@@ -1511,201 +1565,214 @@ p({
           r.observe(e, { childList: !0, characterData: !0, subtree: !0 }))
       },
       r = new MutationObserver(n),
-      s = S(n)
+      s = T(n)
     return () => {
       ;(r.disconnect(), s())
     }
   },
 })
-var _t = (e, t) => e.includes(t),
-  pn = ["remove", "outer", "inner", "replace", "prepend", "append", "before", "after"],
-  gn = ["html", "svg", "mathml"]
+var $t = (e, t) => e.includes(t),
+  En = ["remove", "outer", "inner", "replace", "prepend", "append", "before", "after"],
+  Sn = ["html", "svg", "mathml"]
 ve({
   name: "datastar-patch-elements",
-  apply(
-    e,
-    {
-      selector: t = "",
-      mode: n = "outer",
-      namespace: r = "html",
-      useViewTransition: s = "",
-      elements: o = "",
-    }
-  ) {
-    if (!_t(pn, n)) throw e.error("PatchElementsInvalidMode", { mode: n })
-    if (!t && n !== "outer" && n !== "replace") throw e.error("PatchElementsExpectedSelector")
-    if (!_t(gn, r)) throw e.error("PatchElementsInvalidNamespace", { namespace: r })
-    let i = {
-      selector: t,
-      mode: n,
-      namespace: r,
-      useViewTransition: s.trim() === "true",
+  apply(e, t) {
+    let n = typeof t.selector == "string" ? t.selector : "",
+      r = typeof t.mode == "string" ? t.mode : "outer",
+      s = typeof t.namespace == "string" ? t.namespace : "html",
+      i = typeof t.useViewTransition == "string" ? t.useViewTransition : "",
+      o = t.elements
+    if (!$t(En, r)) throw e.error("PatchElementsInvalidMode", { mode: r })
+    if (!n && r !== "outer" && r !== "replace") throw e.error("PatchElementsExpectedSelector")
+    if (!$t(Sn, s)) throw e.error("PatchElementsInvalidNamespace", { namespace: s })
+    let a = {
+      selector: n,
+      mode: r,
+      namespace: s,
+      useViewTransition: i.trim() === "true",
       elements: o,
     }
-    tt && s ? document.startViewTransition(() => Dt(e, i)) : Dt(e, i)
+    rt && a.useViewTransition ? document.startViewTransition(() => qt(e, a)) : qt(e, a)
   },
 })
-var Dt = ({ error: e }, { selector: t, mode: n, namespace: r, elements: s }) => {
-    let o = s.replace(/<svg(\s[^>]*>|>)([\s\S]*?)<\/svg>/gim, ""),
-      i = /<\/html>/.test(o),
-      a = /<\/head>/.test(o),
-      c = /<\/body>/.test(o),
-      l = r === "svg" ? "svg" : r === "mathml" ? "math" : "",
-      u = l ? `<${l}>${s}</${l}>` : s,
-      d = new DOMParser().parseFromString(
-        i || a || c ? s : `<body><template>${u}</template></body>`,
-        "text/html"
-      ),
-      h = document.createDocumentFragment()
-    if (i) h.appendChild(d.documentElement)
-    else if (a && c) (h.appendChild(d.head), h.appendChild(d.body))
-    else if (a) h.appendChild(d.head)
-    else if (c) h.appendChild(d.body)
-    else if (l) {
-      let f = d.querySelector("template").content.querySelector(l)
-      for (let m of f.childNodes) h.appendChild(m)
-    } else h = d.querySelector("template").content
-    if (!t && (n === "outer" || n === "replace"))
-      for (let f of h.children) {
-        let m
-        if (f instanceof HTMLHtmlElement) m = document.documentElement
-        else if (f instanceof HTMLBodyElement) m = document.body
-        else if (f instanceof HTMLHeadElement) m = document.head
-        else if (((m = document.getElementById(f.id)), !m)) {
-          console.warn(e("PatchElementsNoTargetsFound"), { element: { id: f.id } })
+var qt = ({ error: e }, { selector: t, mode: n, namespace: r, elements: s }) => {
+    let i = document.createDocumentFragment(),
+      o = typeof s != "string" && !!s
+    if (typeof s == "string") {
+      let a = s.replace(/<svg(\s[^>]*>|>)([\s\S]*?)<\/svg>/gim, ""),
+        c = /<\/html>/.test(a),
+        l = /<\/head>/.test(a),
+        u = /<\/body>/.test(a),
+        d = r === "svg" ? "svg" : r === "mathml" ? "math" : "",
+        h = d ? `<${d}>${s}</${d}>` : s,
+        f = new DOMParser().parseFromString(
+          c || l || u ? s : `<body><template>${h}</template></body>`,
+          "text/html"
+        )
+      if (c) i.appendChild(f.documentElement)
+      else if (l && u) (i.appendChild(f.head), i.appendChild(f.body))
+      else if (l) i.appendChild(f.head)
+      else if (u) i.appendChild(f.body)
+      else if (d) {
+        let p = f.querySelector("template").content.querySelector(d)
+        for (let m of p.childNodes) i.appendChild(m)
+      } else i = f.querySelector("template").content
+    } else s && (s instanceof DocumentFragment ? (i = s) : s instanceof Element && i.appendChild(s))
+    if (!t && (n === "outer" || n === "replace")) {
+      let a = Array.from(i.children)
+      for (let c of a) {
+        let l
+        if (c instanceof HTMLHtmlElement) l = document.documentElement
+        else if (c instanceof HTMLBodyElement) l = document.body
+        else if (c instanceof HTMLHeadElement) l = document.head
+        else if (((l = document.getElementById(c.id)), !l)) {
+          console.warn(e("PatchElementsNoTargetsFound"), { element: { id: c.id } })
           continue
         }
-        $t(n, f, [m])
+        jt(n, c, [l], o)
       }
-    else {
-      let f = document.querySelectorAll(t)
-      if (!f.length) {
+    } else {
+      let a = document.querySelectorAll(t)
+      if (!a.length) {
         console.warn(e("PatchElementsNoTargetsFound"), { selector: t })
         return
       }
-      $t(n, h, f)
+      let c = o && n !== "remove" ? [a[0]] : a
+      jt(n, i, c, o)
     }
   },
-  st = new WeakSet()
-for (let e of document.querySelectorAll("script")) st.add(e)
-var jt = (e) => {
+  ot = new WeakSet()
+for (let e of document.querySelectorAll("script")) ot.add(e)
+var Ut = (e) => {
     let t = e instanceof HTMLScriptElement ? [e] : e.querySelectorAll("script")
     for (let n of t)
-      if (!st.has(n)) {
+      if (!ot.has(n)) {
         let r = document.createElement("script")
-        for (let { name: s, value: o } of n.attributes) r.setAttribute(s, o)
-        ;((r.text = n.text), n.replaceWith(r), st.add(r))
+        for (let { name: s, value: i } of n.attributes) r.setAttribute(s, i)
+        ;((r.text = n.text), n.replaceWith(r), ot.add(r))
       }
   },
-  Vt = (e, t, n) => {
-    for (let r of e) {
-      let s = t.cloneNode(!0)
-      ;(jt(s), r[n](s))
+  Gt = (e, t, n, r) => {
+    let s = !1
+    for (let i of e) {
+      if (r && s) break
+      let o = r ? t : t.cloneNode(!0)
+      ;(Ut(o), i[n](o), (s = !0))
     }
   },
-  $t = (e, t, n) => {
+  jt = (e, t, n, r) => {
     switch (e) {
       case "remove":
-        for (let r of n) r.remove()
+        for (let s of n) s.remove()
         break
       case "outer":
       case "inner":
-        for (let r of n) (yn(r, t.cloneNode(!0), e), jt(r))
+        {
+          let s = !1
+          for (let i of n) {
+            if (r && s) break
+            let o = r ? t : t.cloneNode(!0)
+            ;(An(i, o, e), Ut(i))
+            let a = i.closest("[data-scope-children]")
+            ;(a && a.dispatchEvent(new CustomEvent("datastar:scope-children", { bubbles: !1 })),
+              (s = !0))
+          }
+        }
         break
       case "replace":
-        Vt(n, t, "replaceWith")
+        Gt(n, t, "replaceWith", r)
         break
       case "prepend":
       case "append":
       case "before":
       case "after":
-        Vt(n, t, e)
+        Gt(n, t, e, r)
     }
   },
-  H = new Map(),
-  ue = new Set(),
-  le = new Map(),
+  I = new Map(),
+  le = new Set(),
+  ce = new Map(),
   Se = new Set(),
-  fe = document.createElement("div")
-fe.hidden = !0
-var Te = G("ignore-morph"),
-  hn = `[${Te}]`,
-  yn = (e, t, n = "outer") => {
-    if ((K(e) && K(t) && e.hasAttribute(Te) && t.hasAttribute(Te)) || e.parentElement?.closest(hn))
+  ue = document.createElement("div")
+ue.hidden = !0
+var Te = B("ignore-morph"),
+  Tn = `[${Te}]`,
+  An = (e, t, n = "outer") => {
+    if ((z(e) && z(t) && e.hasAttribute(Te) && t.hasAttribute(Te)) || e.parentElement?.closest(Tn))
       return
     let r = document.createElement("div")
-    ;(r.append(t), document.body.insertAdjacentElement("afterend", fe))
+    ;(r.append(t), document.body.insertAdjacentElement("afterend", ue))
     let s = e.querySelectorAll("[id]")
-    for (let { id: a, tagName: c } of s) le.has(a) ? Se.add(a) : le.set(a, c)
-    ;(e instanceof Element && e.id && (le.has(e.id) ? Se.add(e.id) : le.set(e.id, e.tagName)),
-      ue.clear())
-    let o = r.querySelectorAll("[id]")
-    for (let { id: a, tagName: c } of o) ue.has(a) ? Se.add(a) : le.get(a) === c && ue.add(a)
-    for (let a of Se) ue.delete(a)
-    ;(le.clear(), Se.clear(), H.clear())
-    let i = n === "outer" ? e.parentElement : e
-    ;(qt(i, s), qt(r, o), Gt(i, r, n === "outer" ? e : null, e.nextSibling), fe.remove())
+    for (let { id: a, tagName: c } of s) ce.has(a) ? Se.add(a) : ce.set(a, c)
+    ;(e instanceof Element && e.id && (ce.has(e.id) ? Se.add(e.id) : ce.set(e.id, e.tagName)),
+      le.clear())
+    let i = r.querySelectorAll("[id]")
+    for (let { id: a, tagName: c } of i) le.has(a) ? Se.add(a) : ce.get(a) === c && le.add(a)
+    for (let a of Se) le.delete(a)
+    ;(ce.clear(), Se.clear(), I.clear())
+    let o = n === "outer" ? e.parentElement : e
+    ;(Bt(o, s), Bt(r, i), Jt(o, r, n === "outer" ? e : null, e.nextSibling), ue.remove())
   },
-  Gt = (e, t, n = null, r = null) => {
+  Jt = (e, t, n = null, r = null) => {
     ;(e instanceof HTMLTemplateElement &&
       t instanceof HTMLTemplateElement &&
       ((e = e.content), (t = t.content)),
       (n ??= e.firstChild))
     for (let s of t.childNodes) {
       if (n && n !== r) {
-        let o = bn(s, n, r)
-        if (o) {
-          if (o !== n) {
-            let i = n
-            for (; i && i !== o; ) {
-              let a = i
-              ;((i = i.nextSibling), it(a))
+        let i = wn(s, n, r)
+        if (i) {
+          if (i !== n) {
+            let o = n
+            for (; o && o !== i; ) {
+              let a = o
+              ;((o = o.nextSibling), at(a))
             }
           }
-          ;(rt(o, s), (n = o.nextSibling))
+          ;(it(i, s), (n = i.nextSibling))
           continue
         }
       }
-      if (s instanceof Element && ue.has(s.id)) {
-        let o = document.getElementById(s.id),
-          i = o
-        for (; (i = i.parentNode); ) {
-          let a = H.get(i)
-          a && (a.delete(s.id), a.size || H.delete(i))
+      if (s instanceof Element && le.has(s.id)) {
+        let i = document.getElementById(s.id),
+          o = i
+        for (; (o = o.parentNode); ) {
+          let a = I.get(o)
+          a && (a.delete(s.id), a.size || I.delete(o))
         }
-        ;(Bt(e, o, n), rt(o, s), (n = o.nextSibling))
+        ;(Kt(e, i, n), it(i, s), (n = i.nextSibling))
         continue
       }
-      if (H.has(s)) {
-        let o = s.namespaceURI,
-          i = s.tagName,
+      if (I.has(s)) {
+        let i = s.namespaceURI,
+          o = s.tagName,
           a =
-            o && o !== "http://www.w3.org/1999/xhtml"
-              ? document.createElementNS(o, i)
-              : document.createElement(i)
-        ;(e.insertBefore(a, n), rt(a, s), (n = a.nextSibling))
+            i && i !== "http://www.w3.org/1999/xhtml"
+              ? document.createElementNS(i, o)
+              : document.createElement(o)
+        ;(e.insertBefore(a, n), it(a, s), (n = a.nextSibling))
       } else {
-        let o = document.importNode(s, !0)
-        ;(e.insertBefore(o, n), (n = o.nextSibling))
+        let i = document.importNode(s, !0)
+        ;(e.insertBefore(i, n), (n = i.nextSibling))
       }
     }
     for (; n && n !== r; ) {
       let s = n
-      ;((n = n.nextSibling), it(s))
+      ;((n = n.nextSibling), at(s))
     }
   },
-  bn = (e, t, n) => {
+  wn = (e, t, n) => {
     let r = null,
       s = e.nextSibling,
-      o = 0,
       i = 0,
-      a = H.get(e)?.size || 0,
+      o = 0,
+      a = I.get(e)?.size || 0,
       c = t
     for (; c && c !== n; ) {
-      if (It(c, e)) {
+      if (Wt(c, e)) {
         let l = !1,
-          u = H.get(c),
-          d = H.get(e)
+          u = I.get(c),
+          d = I.get(e)
         if (d && u) {
           for (let h of u)
             if (d.has(h)) {
@@ -1714,29 +1781,29 @@ var Te = G("ignore-morph"),
             }
         }
         if (l) return c
-        if (!r && !H.has(c)) {
+        if (!r && !I.has(c)) {
           if (!a) return c
           r = c
         }
       }
-      if (((i += H.get(c)?.size || 0), i > a)) break
-      ;(r === null && s && It(c, s) && (o++, (s = s.nextSibling), o >= 2 && (r = void 0)),
+      if (((o += I.get(c)?.size || 0), o > a)) break
+      ;(r === null && s && Wt(c, s) && (i++, (s = s.nextSibling), i >= 2 && (r = void 0)),
         (c = c.nextSibling))
     }
     return r || null
   },
-  It = (e, t) => e.nodeType === t.nodeType && e.tagName === t.tagName && (!e.id || e.id === t.id),
-  it = (e) => {
-    H.has(e) ? Bt(fe, e, null) : e.parentNode?.removeChild(e)
+  Wt = (e, t) => e.nodeType === t.nodeType && e.tagName === t.tagName && (!e.id || e.id === t.id),
+  at = (e) => {
+    I.has(e) ? Kt(ue, e, null) : e.parentNode?.removeChild(e)
   },
-  Bt = it.call.bind(fe.moveBefore ?? fe.insertBefore),
-  vn = G("preserve-attr"),
-  rt = (e, t) => {
+  Kt = at.call.bind(ue.moveBefore ?? ue.insertBefore),
+  Rn = B("preserve-attr"),
+  it = (e, t) => {
     let n = t.nodeType
     if (n === 1) {
       let r = e,
         s = t,
-        o = r.hasAttribute("data-scope-children")
+        i = r.hasAttribute("data-scope-children")
       if (r.hasAttribute(Te) && s.hasAttribute(Te)) return e
       r instanceof HTMLInputElement && s instanceof HTMLInputElement && s.type !== "file"
         ? s.getAttribute("value") !== r.getAttribute("value") &&
@@ -1745,54 +1812,55 @@ var Te = G("ignore-morph"),
           s instanceof HTMLTextAreaElement &&
           (s.value !== r.value && (r.value = s.value),
           r.firstChild && r.firstChild.nodeValue !== s.value && (r.firstChild.nodeValue = s.value))
-      let i = (t.getAttribute(vn) ?? "").split(" ")
+      let o = (t.getAttribute(Rn) ?? "").split(" ")
       for (let { name: a, value: c } of s.attributes)
-        r.getAttribute(a) !== c && !i.includes(a) && r.setAttribute(a, c)
+        r.getAttribute(a) !== c && !o.includes(a) && r.setAttribute(a, c)
       for (let a = r.attributes.length - 1; a >= 0; a--) {
         let { name: c } = r.attributes[a]
-        !s.hasAttribute(c) && !i.includes(c) && r.removeAttribute(c)
+        !s.hasAttribute(c) && !o.includes(c) && r.removeAttribute(c)
       }
-      ;(o && !r.hasAttribute("data-scope-children") && r.setAttribute("data-scope-children", ""),
-        r.isEqualNode(s) || Gt(r, s),
-        o && r.dispatchEvent(new CustomEvent("datastar:scope-children", { bubbles: !1 })))
+      ;(i && !r.hasAttribute("data-scope-children") && r.setAttribute("data-scope-children", ""),
+        r instanceof HTMLTemplateElement && s instanceof HTMLTemplateElement
+          ? (r.innerHTML = s.innerHTML)
+          : r.isEqualNode(s) || Jt(r, s),
+        i && r.dispatchEvent(new CustomEvent("datastar:scope-children", { bubbles: !1 })))
     }
     return ((n === 8 || n === 3) && e.nodeValue !== t.nodeValue && (e.nodeValue = t.nodeValue), e)
   },
-  qt = (e, t) => {
+  Bt = (e, t) => {
     for (let n of t)
-      if (ue.has(n.id)) {
+      if (le.has(n.id)) {
         let r = n
         for (; r && r !== e; ) {
-          let s = H.get(r)
-          ;(s || ((s = new Set()), H.set(r, s)), s.add(n.id), (r = r.parentElement))
+          let s = I.get(r)
+          ;(s || ((s = new Set()), I.set(r, s)), s.add(n.id), (r = r.parentElement))
         }
       }
   }
 ve({
   name: "datastar-patch-signals",
   apply({ error: e }, { signals: t, onlyIfMissing: n }) {
-    if (t) {
-      let r = n?.trim() === "true"
-      O(ae(t), { ifMissing: r })
-    } else throw e("PatchSignalsExpectedSignals")
+    if (typeof t != "string") throw e("PatchSignalsExpectedSignals")
+    let r = typeof n == "string" && n.trim() === "true"
+    _(oe(t), { ifMissing: r })
   },
 })
 export {
-  k as action,
-  Rt as actions,
-  p as attribute,
+  V as action,
+  xt as actions,
+  g as attribute,
   M as beginBatch,
-  ke as computed,
-  S as effect,
+  Pe as computed,
+  T as effect,
   x as endBatch,
-  _ as filtered,
-  oe as getPath,
-  O as mergePatch,
-  T as mergePaths,
-  X as root,
+  $ as filtered,
+  ie as getPath,
+  _ as mergePatch,
+  A as mergePaths,
+  ne as root,
   pe as signal,
-  F as startPeeking,
-  P as stopPeeking,
+  k as startPeeking,
+  H as stopPeeking,
   ve as watcher,
 }
 //# sourceMappingURL=datastar.js.map
