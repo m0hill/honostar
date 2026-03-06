@@ -1,0 +1,533 @@
+{
+  "trackerVersion": 1,
+  "id": "honostar-production-readiness",
+  "title": "HonoStar Production Readiness and DX Tracker",
+  "description": "Standalone execution tracker for the major production-readiness and developer-experience work required to move HonoStar from a strong alpha toward a production-ready framework. This file is intended to be the single source of truth for the work plan and should be kept current as slices move.",
+  "lastReviewedOn": "2026-03-07",
+  "statusSummary": {
+    "overallStatus": "in_progress",
+    "doneSlices": 1,
+    "totalSlices": 13
+  },
+  "goals": [
+    "Make framework checks reproducible on a clean clone without relying on prebuilt artifacts.",
+    "Guarantee or explicitly model reliable event delivery for the server-authoritative CQRS model.",
+    "Establish release, test, CI, and support policies required for external production use.",
+    "Reduce authoring friction by making core APIs more typed, less stringly, and more opinionated."
+  ],
+  "nonGoals": [
+    "Rewriting the core hypermedia + SSE architecture away from server authority.",
+    "Adding client-owned state management or optimistic-sync-first design.",
+    "Broadening the public API surface before the golden path is stabilized."
+  ],
+  "executionOrder": [
+    "PR-001",
+    "PR-002",
+    "PR-003",
+    "PR-004",
+    "PR-005",
+    "PR-006",
+    "DX-001",
+    "DX-002",
+    "DX-003",
+    "DX-004",
+    "DX-005",
+    "DX-006",
+    "PR-007"
+  ],
+  "tracerSlices": [
+    {
+      "id": "PR-001",
+      "done": true,
+      "status": "done",
+      "category": "production-readiness",
+      "priority": "P0",
+      "title": "Make Typecheck and Codegen Hermetic",
+      "description": "Ensure demo/starter typecheck, prepare, and build flows work from a clean checkout without depending on stale or prebuilt package dist output.",
+      "whyItMatters": "A framework cannot be considered production-ready if its own validation pipeline is not reproducible in a fresh environment. Current app typechecking depends on build artifacts existing first.",
+      "problemsObserved": [
+        "apps/demo and apps/starter run `honostar prepare` before typecheck, but preparation imports Node helpers from built package output.",
+        "Workspace validation breaks on clean clones when package dist files are missing.",
+        "Consumers will hit brittle setup behavior and stale-artifact bugs."
+      ],
+      "expectedFiles": [
+        "/Users/mohil/projects/honostar/packages/cli/src/index.ts",
+        "/Users/mohil/projects/honostar/packages/core/package.json",
+        "/Users/mohil/projects/honostar/packages/core/src/server/node.ts",
+        "/Users/mohil/projects/honostar/apps/demo/package.json",
+        "/Users/mohil/projects/honostar/apps/starter/package.json",
+        "/Users/mohil/projects/honostar/pnpm-workspace.yaml",
+        "/Users/mohil/projects/honostar/docs/BUILD.md",
+        "/Users/mohil/projects/honostar/README.md"
+      ],
+      "implementationPlan": [
+        "Decouple `honostar prepare` from compiled workspace package output.",
+        "Use source-based imports, TS project references, or an internal codegen entrypoint that works before package build.",
+        "Make `pnpm typecheck` pass on a clean clone without a prior `pnpm build`.",
+        "Document the invariant in build docs."
+      ],
+      "acceptanceCriteria": [
+        "`git clean -xfd && pnpm install && pnpm typecheck` succeeds.",
+        "`pnpm --filter honostar-demo typecheck` succeeds without prebuilding `@honostar/core`.",
+        "No app-level scripts require stale dist files to exist."
+      ],
+      "dependencies": [],
+      "risks": [
+        "May require package export changes or internal source entrypoints.",
+        "Can expose hidden circular dependencies in the codegen path."
+      ]
+    },
+    {
+      "id": "PR-002",
+      "done": false,
+      "status": "todo",
+      "category": "production-readiness",
+      "priority": "P0",
+      "title": "Add Durable Event Publication",
+      "description": "Introduce a reliable event publication mechanism so shared-state mutations and CQRS event fanout cannot silently diverge after database commit.",
+      "whyItMatters": "The framework's core promise is server-authoritative shared truth. If state changes commit but events fail to publish, connected clients drift from canonical state and recovery becomes ad hoc.",
+      "problemsObserved": [
+        "`FxResponder.publish()` and `publishTo()` push directly to the bus after mutation.",
+        "Redis/NATS bus publish failures are logged but not retried or made transactional.",
+        "There is no outbox, durable log, or commit boundary tying state mutation to event emission."
+      ],
+      "expectedFiles": [
+        "/Users/mohil/projects/honostar/packages/core/src/server/sse/responder.ts",
+        "/Users/mohil/projects/honostar/packages/core/src/server/sse/pubsub/memory.ts",
+        "/Users/mohil/projects/honostar/packages/core/src/server/sse/pubsub/redis-bus.ts",
+        "/Users/mohil/projects/honostar/packages/core/src/server/sse/pubsub/nats-bus.ts",
+        "/Users/mohil/projects/honostar/packages/core/src/server/context.ts",
+        "/Users/mohil/projects/honostar/docs/DECISIONS.md",
+        "/Users/mohil/projects/honostar/docs/README.md",
+        "/Users/mohil/projects/honostar/apps/demo/src/pages/issues.tsx",
+        "/Users/mohil/projects/honostar/apps/demo/src/pages/issues/[id]/comments.tsx",
+        "/Users/mohil/projects/honostar/apps/demo/src/pages/issues/[id]/status.tsx",
+        "/Users/mohil/projects/honostar/apps/demo/src/pages/labels.tsx"
+      ],
+      "implementationPlan": [
+        "Choose an explicit reliability model: outbox pattern, durable log, or retryable publish contract.",
+        "Add first-class framework support for mutation plus event publication, not app-specific glue.",
+        "Make failure semantics visible to apps and tests.",
+        "Provide migration guidance for existing command handlers."
+      ],
+      "acceptanceCriteria": [
+        "Framework has a documented reliable publication story for production usage.",
+        "Mutation handlers can opt into durable publication through a first-class API.",
+        "Tests cover publish failure, retry/replay, and no-lost-event scenarios."
+      ],
+      "dependencies": ["PR-001"],
+      "risks": [
+        "Cross-runtime abstractions may be harder once persistence is introduced.",
+        "The API should avoid forcing a single ORM or database choice."
+      ]
+    },
+    {
+      "id": "PR-003",
+      "done": false,
+      "status": "todo",
+      "category": "production-readiness",
+      "priority": "P0",
+      "title": "Define and Test Failure Semantics for the Bus Layer",
+      "description": "Make pubsub error behavior explicit, testable, and observable across Memory, Redis, NATS, and Cloudflare adapters.",
+      "whyItMatters": "Even with durable publication, production users need clear semantics for backpressure, dropped connections, publish errors, retained patch behavior, and reconnect recovery.",
+      "problemsObserved": [
+        "Publish failures are mostly logged and swallowed.",
+        "Retention semantics differ by adapter and are only partially documented.",
+        "Operational behavior under disconnection or slow consumers is not exposed as a framework contract."
+      ],
+      "expectedFiles": [
+        "/Users/mohil/projects/honostar/packages/core/src/server/sse/pubsub/memory.ts",
+        "/Users/mohil/projects/honostar/packages/core/src/server/sse/pubsub/redis-bus.ts",
+        "/Users/mohil/projects/honostar/packages/core/src/server/sse/pubsub/nats-bus.ts",
+        "/Users/mohil/projects/honostar/packages/cloudflare/src/server/pubsub.ts",
+        "/Users/mohil/projects/honostar/packages/core/src/server/sse/endpoint.ts",
+        "/Users/mohil/projects/honostar/docs/DOCUMENTATION.md",
+        "/Users/mohil/projects/honostar/docs/STREAMING.md"
+      ],
+      "implementationPlan": [
+        "Document expected guarantees per adapter.",
+        "Add explicit hooks, metrics, or callback surfaces for publish and reconnect failures.",
+        "Standardize retained-patch behavior and limits where possible.",
+        "Expand tests around disconnects, adapter failures, and self-heal behavior."
+      ],
+      "acceptanceCriteria": [
+        "Each bus adapter has documented guarantees and limits.",
+        "Publish and subscription failure behavior is covered by tests.",
+        "Apps can observe critical bus failures instead of only console logging."
+      ],
+      "dependencies": ["PR-002"],
+      "risks": [
+        "Guarantee mismatches between in-memory and distributed adapters may require capability flags."
+      ]
+    },
+    {
+      "id": "PR-004",
+      "done": false,
+      "status": "todo",
+      "category": "production-readiness",
+      "priority": "P0",
+      "title": "Establish CI and Release Gates",
+      "description": "Add repository CI, required checks, and release-quality gating for lint, typecheck, unit tests, build, and app smoke coverage.",
+      "whyItMatters": "Without CI, the framework's quality bar only exists locally. Production-ready frameworks need repeatable enforcement on every change.",
+      "problemsObserved": [
+        "No repository CI workflow was found.",
+        "No enforced gate exists for cross-workspace validation.",
+        "No release workflow or publish policy is present."
+      ],
+      "expectedFiles": [
+        "/Users/mohil/projects/honostar/.github/workflows/ci.yml",
+        "/Users/mohil/projects/honostar/.github/workflows/release.yml",
+        "/Users/mohil/projects/honostar/package.json",
+        "/Users/mohil/projects/honostar/README.md",
+        "/Users/mohil/projects/honostar/docs/BUILD.md"
+      ],
+      "implementationPlan": [
+        "Add CI workflow covering install, lint, typecheck, unit tests, and build.",
+        "Run demo and starter smoke checks in CI.",
+        "Define release gates and branch protection expectations.",
+        "Document contributor expectations."
+      ],
+      "acceptanceCriteria": [
+        "Every PR runs CI successfully before merge.",
+        "Release workflow documents or automates publish steps.",
+        "Broken validation on a clean environment is caught in CI."
+      ],
+      "dependencies": ["PR-001"],
+      "risks": ["CI can initially reveal pre-existing flakiness that must be burned down."]
+    },
+    {
+      "id": "PR-005",
+      "done": false,
+      "status": "todo",
+      "category": "production-readiness",
+      "priority": "P0",
+      "title": "Add E2E and Multi-Tab Coverage",
+      "description": "Create browser-level test coverage for full hypermedia workflows, SSE updates, reconnect recovery, and distributed update behavior.",
+      "whyItMatters": "The hard parts of this framework are browser/runtime interactions, not isolated helpers. Unit tests are necessary but insufficient.",
+      "problemsObserved": [
+        "Core unit coverage is decent, but the demo app has no real tests.",
+        "No browser E2E suite was found for navigation, forms, modals, or SSE reconnect behavior.",
+        "No multi-tab or cross-instance smoke tests are present."
+      ],
+      "expectedFiles": [
+        "/Users/mohil/projects/honostar/apps/demo/tests/e2e/issues.spec.ts",
+        "/Users/mohil/projects/honostar/apps/demo/tests/e2e/comments.spec.ts",
+        "/Users/mohil/projects/honostar/apps/demo/tests/e2e/reconnect.spec.ts",
+        "/Users/mohil/projects/honostar/apps/demo/playwright.config.ts",
+        "/Users/mohil/projects/honostar/apps/demo/package.json",
+        "/Users/mohil/projects/honostar/.github/workflows/ci.yml"
+      ],
+      "implementationPlan": [
+        "Add Playwright or equivalent browser runner.",
+        "Cover create issue, label creation, status change, comment posting, auth fallback, modal flows, and reconnect self-heal.",
+        "Add at least one multi-tab test proving shared updates arrive and self-heal correctly.",
+        "Add one Redis or NATS integration path in CI or nightly builds."
+      ],
+      "acceptanceCriteria": [
+        "Demo app has automated browser tests for core framework promises.",
+        "At least one reconnect/self-heal scenario is verified in CI.",
+        "At least one multi-tab shared-state scenario is verified automatically."
+      ],
+      "dependencies": ["PR-001", "PR-004"],
+      "risks": [
+        "Browser tests can be flaky until dev server startup and test isolation are standardized."
+      ]
+    },
+    {
+      "id": "PR-006",
+      "done": false,
+      "status": "todo",
+      "category": "production-readiness",
+      "priority": "P1",
+      "title": "Publish a Runtime Capability Matrix and Support Policy",
+      "description": "Turn runtime-agnostic claims into a concrete support matrix with tested capabilities, limitations, and adapter ownership.",
+      "whyItMatters": "Production consumers need to know which runtimes are officially supported, which are experimental, and what features degrade in each environment.",
+      "problemsObserved": [
+        "The framework claims broad runtime support, but the tested and documented support boundaries are unclear.",
+        "Cloudflare has its own package, but there is no visible capability matrix.",
+        "Operational tradeoffs by runtime are not centralized."
+      ],
+      "expectedFiles": [
+        "/Users/mohil/projects/honostar/README.md",
+        "/Users/mohil/projects/honostar/docs/README.md",
+        "/Users/mohil/projects/honostar/docs/BUILD.md",
+        "/Users/mohil/projects/honostar/packages/cloudflare/README.md",
+        "/Users/mohil/projects/honostar/docs-v2/reference/runtime-support.md"
+      ],
+      "implementationPlan": [
+        "Define support tiers for Node, Bun, Cloudflare, Deno, and other targets.",
+        "Document feature support by runtime: SSE, compression, streaming, retained patches, codegen, asset pipeline.",
+        "Align docs and marketing claims with actual support."
+      ],
+      "acceptanceCriteria": [
+        "Support matrix exists in docs and is linked from the main README.",
+        "Unsupported or experimental combinations are clearly marked.",
+        "Adapter-specific limitations are easy to discover."
+      ],
+      "dependencies": ["PR-004", "PR-005"],
+      "risks": ["May require narrowing some current claims rather than expanding implementation."]
+    },
+    {
+      "id": "DX-001",
+      "done": false,
+      "status": "todo",
+      "category": "developer-experience",
+      "priority": "P1",
+      "title": "Ship a One-Call App Bootstrap",
+      "description": "Replace most manual middleware and route/SSE wiring with a first-class `createHonostarApp()` or equivalent bootstrapping API.",
+      "whyItMatters": "Both starter and demo require a lot of ordered setup boilerplate. This increases setup mistakes, weakens discoverability, and makes the framework feel lower-level than its pitch.",
+      "problemsObserved": [
+        "App setup requires manual ordering of csrf, renderer, initContext, bus, fxResponder, route collection, and SSE mount.",
+        "The SSE route and query collection are easy to forget or misorder.",
+        "The golden path is not encoded in a single entrypoint."
+      ],
+      "expectedFiles": [
+        "/Users/mohil/projects/honostar/packages/core/src/server/index.ts",
+        "/Users/mohil/projects/honostar/packages/core/src/server/app.ts",
+        "/Users/mohil/projects/honostar/packages/core/src/server/middleware.ts",
+        "/Users/mohil/projects/honostar/packages/core/src/server/router/index.ts",
+        "/Users/mohil/projects/honostar/apps/demo/src/index.ts",
+        "/Users/mohil/projects/honostar/apps/starter/src/index.ts",
+        "/Users/mohil/projects/honostar/docs/README.md"
+      ],
+      "implementationPlan": [
+        "Design a high-level server bootstrap API for the recommended stack.",
+        "Let apps opt into defaults while still allowing escape hatches.",
+        "Collapse query collection and SSE endpoint setup into the bootstrap flow.",
+        "Refactor starter and demo to use the golden path."
+      ],
+      "acceptanceCriteria": [
+        "Starter app setup becomes materially smaller and easier to read.",
+        "Common framework miswiring is no longer possible on the golden path.",
+        "Docs recommend one primary bootstrapping approach."
+      ],
+      "dependencies": ["PR-001"],
+      "risks": [
+        "Need to preserve extensibility without reintroducing too much configuration surface."
+      ]
+    },
+    {
+      "id": "DX-002",
+      "done": false,
+      "status": "todo",
+      "category": "developer-experience",
+      "priority": "P1",
+      "title": "Add Typed Datastar JSX Helpers",
+      "description": "Introduce typed helpers for common Datastar attribute patterns so app authors stop writing large inline strings and JSON blobs by hand.",
+      "whyItMatters": "The largest day-to-day authoring pain today is stringly Datastar markup. It weakens autocomplete, syntax predictability, and safe refactors.",
+      "problemsObserved": [
+        "Forms and buttons embed long inline action strings.",
+        "Signal initialization often uses raw JSON strings in JSX attributes.",
+        "Attribute composition is hard to reuse and easy to break."
+      ],
+      "expectedFiles": [
+        "/Users/mohil/projects/honostar/packages/core/src/client/index.ts",
+        "/Users/mohil/projects/honostar/packages/core/src/client/types/global.ts",
+        "/Users/mohil/projects/honostar/packages/core/src/common/index.ts",
+        "/Users/mohil/projects/honostar/packages/core/src/server/index.ts",
+        "/Users/mohil/projects/honostar/apps/demo/src/components/IssueModal.tsx",
+        "/Users/mohil/projects/honostar/apps/demo/src/pages/issues/[id].tsx",
+        "/Users/mohil/projects/honostar/apps/demo/src/pages/index.tsx",
+        "/Users/mohil/projects/honostar/docs/README.md"
+      ],
+      "implementationPlan": [
+        "Create ergonomic JSX helpers for `data-on`, `data-signals`, `data-bind`, `data-show`, `data-indicator`, and common network actions.",
+        "Prefer typed builder APIs over raw string templates where practical.",
+        "Refactor demo hotspots to prove the API reduces noise and improves autocomplete."
+      ],
+      "acceptanceCriteria": [
+        "Demo app removes most large inline Datastar strings from core flows.",
+        "Common Datastar authoring patterns have typed helper APIs.",
+        "Docs present helpers as the preferred authoring model."
+      ],
+      "dependencies": ["DX-001"],
+      "risks": ["Need to avoid a helper layer that becomes more verbose than raw attributes."]
+    },
+    {
+      "id": "DX-003",
+      "done": false,
+      "status": "todo",
+      "category": "developer-experience",
+      "priority": "P1",
+      "title": "Make Dynamic Topics and Query Handlers Typed",
+      "description": "Replace regex-heavy dynamic topic handling with typed topic definitions that flow params into query handlers and commands.",
+      "whyItMatters": "Pattern-based topics are currently powerful but awkward. Regex matching and manual `match.groups` parsing reduce readability and correctness.",
+      "problemsObserved": [
+        "Dynamic queries use regex patterns and manual id parsing.",
+        "Topic parameter shapes are not inferred into handlers.",
+        "Dynamic route params and dynamic topic params feel like separate systems."
+      ],
+      "expectedFiles": [
+        "/Users/mohil/projects/honostar/packages/core/src/server/contracts/api.ts",
+        "/Users/mohil/projects/honostar/packages/core/src/server/contracts/types.ts",
+        "/Users/mohil/projects/honostar/packages/core/src/server/sse/queries.ts",
+        "/Users/mohil/projects/honostar/packages/core/src/server/sse/endpoint.ts",
+        "/Users/mohil/projects/honostar/apps/demo/src/lib/topics.ts",
+        "/Users/mohil/projects/honostar/apps/demo/src/lib/contracts.ts",
+        "/Users/mohil/projects/honostar/apps/demo/src/pages/issues/[id].tsx"
+      ],
+      "implementationPlan": [
+        "Design typed topic builders or resource topics that encode params structurally.",
+        "Flow parsed params into query handlers directly.",
+        "Reduce direct regex handling in app code.",
+        "Keep contracts and topics aligned so publish/query surfaces share the same model."
+      ],
+      "acceptanceCriteria": [
+        "Dynamic query handlers receive typed params, not raw regex matches.",
+        "Demo issue-detail topics no longer rely on manual `match.groups` parsing.",
+        "Topic definitions and event contracts feel like one cohesive system."
+      ],
+      "dependencies": ["DX-001"],
+      "risks": ["Overdesigning topic builders could make simple string topics harder to use."]
+    },
+    {
+      "id": "DX-004",
+      "done": false,
+      "status": "todo",
+      "category": "developer-experience",
+      "priority": "P1",
+      "title": "Unify Enhanced and Full-Page Action Responses",
+      "description": "Provide a first-class action response abstraction so command handlers do not have to branch repeatedly between Datastar and non-Datastar request paths.",
+      "whyItMatters": "The current ergonomics for progressive enhancement are repetitive and leak transport details into app code.",
+      "problemsObserved": [
+        "Handlers frequently branch on `c.var.isDatastarRequest`.",
+        "Validation and success flows duplicate reply-vs-redirect logic.",
+        "The enhanced and full-page paths are conceptually one action but are authored as two."
+      ],
+      "expectedFiles": [
+        "/Users/mohil/projects/honostar/packages/core/src/server/page.ts",
+        "/Users/mohil/projects/honostar/packages/core/src/server/sse/responder.ts",
+        "/Users/mohil/projects/honostar/packages/core/src/server/index.ts",
+        "/Users/mohil/projects/honostar/apps/demo/src/pages/issues.tsx",
+        "/Users/mohil/projects/honostar/apps/demo/src/pages/issues/[id]/comments.tsx",
+        "/Users/mohil/projects/honostar/apps/demo/src/pages/issues/[id]/status.tsx",
+        "/Users/mohil/projects/honostar/apps/demo/src/pages/labels.tsx"
+      ],
+      "implementationPlan": [
+        "Add a helper for enhanced-action success/error outcomes with redirect fallback.",
+        "Keep the CQRS reply vs publish distinction, but hide transport branching.",
+        "Refactor demo commands to use the higher-level action API."
+      ],
+      "acceptanceCriteria": [
+        "Demo commands remove most direct `isDatastarRequest` branching.",
+        "Validation and redirect behavior remain explicit but not repetitive.",
+        "Docs present one canonical way to implement progressive-enhancement-safe actions."
+      ],
+      "dependencies": ["DX-001"],
+      "risks": ["The API must remain flexible enough for apps that need unusual response behavior."]
+    },
+    {
+      "id": "DX-005",
+      "done": false,
+      "status": "todo",
+      "category": "developer-experience",
+      "priority": "P2",
+      "title": "Replace Global Module Augmentation with App-Scoped Typing",
+      "description": "Move app variable typing away from global declaration merging toward app-scoped or bootstrap-scoped generics.",
+      "whyItMatters": "Global augmentation works, but it scales poorly across multiple apps, weakens locality, and still encourages escape hatches like non-null assertions.",
+      "problemsObserved": [
+        "Apps extend framework context via ambient module augmentation.",
+        "Context typing is less local and less predictable than an app-bound type model.",
+        "Demo handlers still rely on non-null assertions after auth middleware."
+      ],
+      "expectedFiles": [
+        "/Users/mohil/projects/honostar/packages/core/src/server/context.ts",
+        "/Users/mohil/projects/honostar/packages/core/src/server/middleware.ts",
+        "/Users/mohil/projects/honostar/packages/core/src/server/index.ts",
+        "/Users/mohil/projects/honostar/apps/demo/src/types/context.d.ts",
+        "/Users/mohil/projects/honostar/apps/demo/src/index.ts",
+        "/Users/mohil/projects/honostar/apps/starter/src/index.ts",
+        "/Users/mohil/projects/honostar/docs/README.md"
+      ],
+      "implementationPlan": [
+        "Design app-instance-scoped variable typing.",
+        "Make the bootstrap or app factory carry the variable shape.",
+        "Reduce reliance on ambient declarations in app code.",
+        "Tighten auth-aware helper patterns to reduce `!` usage."
+      ],
+      "acceptanceCriteria": [
+        "Framework examples no longer require module augmentation for normal usage.",
+        "App context typing is local to the app bootstrap.",
+        "Demo code removes avoidable non-null assertions tied to context."
+      ],
+      "dependencies": ["DX-001"],
+      "risks": [
+        "A new typing model must not become more complex than the current one for small apps."
+      ]
+    },
+    {
+      "id": "DX-006",
+      "done": false,
+      "status": "todo",
+      "category": "developer-experience",
+      "priority": "P2",
+      "title": "Curate and Simplify the Public API Surface",
+      "description": "Reduce redundant entrypoints and encode a clearer golden path across page creation, commands, queries, effects, and contracts.",
+      "whyItMatters": "The framework currently exposes power, but too many near-duplicate choices make it harder to learn and harder to recommend confidently.",
+      "problemsObserved": [
+        "`createPage` and `defineQueryPage` are aliases.",
+        "`createHandler` and `defineCommand` are aliases.",
+        "Query registration can happen in multiple places.",
+        "Contracts publishing has several related entrypoints."
+      ],
+      "expectedFiles": [
+        "/Users/mohil/projects/honostar/packages/core/src/server/index.ts",
+        "/Users/mohil/projects/honostar/packages/core/src/server/page.ts",
+        "/Users/mohil/projects/honostar/packages/core/src/server/sse/middleware.ts",
+        "/Users/mohil/projects/honostar/packages/core/src/server/sse/responder.ts",
+        "/Users/mohil/projects/honostar/docs/README.md",
+        "/Users/mohil/projects/honostar/docs/DECISIONS.md",
+        "/Users/mohil/projects/honostar/docs/COMMANDS_QUERIES_COOKBOOK.md"
+      ],
+      "implementationPlan": [
+        "Define which APIs are primary, which are advanced, and which should be deprecated.",
+        "Update docs to emphasize one recommended path.",
+        "Optionally add lint rules or codemods for deprecated aliases."
+      ],
+      "acceptanceCriteria": [
+        "Docs can explain the golden path without listing many equivalent choices.",
+        "Deprecated or advanced APIs are clearly labeled.",
+        "New users can follow one obvious route from starter to real app."
+      ],
+      "dependencies": ["DX-001", "DX-004"],
+      "risks": ["Need to avoid breaking existing examples abruptly without migration guidance."]
+    },
+    {
+      "id": "PR-007",
+      "done": false,
+      "status": "todo",
+      "category": "production-readiness",
+      "priority": "P2",
+      "title": "Formalize Release Policy, Versioning, and Adoption Docs",
+      "description": "Prepare the framework for real external adoption with release policy, semver expectations, changelog discipline, migration guidance, and production deployment docs.",
+      "whyItMatters": "Production readiness is partly technical and partly trust. Consumers need predictable releases, documented breaking-change policy, and deploy guidance.",
+      "problemsObserved": [
+        "Packages are still private and versioned as `0.0.0`.",
+        "No release policy or migration path is visible.",
+        "Production deployment guidance is fragmented."
+      ],
+      "expectedFiles": [
+        "/Users/mohil/projects/honostar/package.json",
+        "/Users/mohil/projects/honostar/packages/core/package.json",
+        "/Users/mohil/projects/honostar/packages/cli/package.json",
+        "/Users/mohil/projects/honostar/README.md",
+        "/Users/mohil/projects/honostar/CHANGELOG.md",
+        "/Users/mohil/projects/honostar/docs/README.md",
+        "/Users/mohil/projects/honostar/docs/BUILD.md"
+      ],
+      "implementationPlan": [
+        "Define pre-release and stable release channels.",
+        "Document versioning and breaking-change policy.",
+        "Add changelog and upgrade guidance.",
+        "Document production deployment prerequisites: secrets, adapter choice, build flow, CI expectations."
+      ],
+      "acceptanceCriteria": [
+        "Framework has a documented release policy.",
+        "Consumers can discover how to adopt and upgrade safely.",
+        "Publishing packages no longer depends on tribal knowledge."
+      ],
+      "dependencies": ["PR-004", "PR-006"],
+      "risks": ["Process work can lag implementation work unless explicitly owned."]
+    }
+  ]
+}

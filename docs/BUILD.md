@@ -55,10 +55,14 @@ const config = createConfig({
 
 The workspace provides `@honostar/cli` with a `honostar` binary.
 
+In this monorepo, the starter/demo apps invoke the CLI source via `bun ../../packages/cli/src/index.ts ...`
+instead of the built `honostar` binary. This keeps local `typecheck`, `test`, and `dev` flows hermetic on a
+clean checkout, because they do not depend on a prebuilt `packages/cli/dist`.
+
 In the starter/demo apps:
 
-- `pnpm dev` runs `honostar dev`
-- `pnpm start` runs `honostar start`
+- `pnpm dev` runs the Honostar CLI in source mode
+- `pnpm start` runs the Honostar CLI in source mode
 
 ### `honostar dev`
 
@@ -66,6 +70,8 @@ In the starter/demo apps:
 - runs codegen (`honostar prepare`: routes + contracts)
 - runs `vite build --watch`
 - waits for `dist/manifest.json` to exist (avoids a race)
+
+For published/external apps, the intended interface remains the `honostar` binary from `@honostar/cli`.
 
 ### `honostar start`
 

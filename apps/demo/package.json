@@ -3,16 +3,16 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "honostar dev",
-    "start": "honostar start",
-    "build": "honostar build && bun build src/index.ts --outdir dist --target bun",
-    "build:prod": "honostar build && bun build src/index.ts --outdir dist --target bun --minify --release",
+    "dev": "bun ../../packages/cli/src/index.ts dev",
+    "start": "bun ../../packages/cli/src/index.ts start",
+    "build": "bun ../../packages/cli/src/index.ts build && bun build src/index.ts --outdir dist --target bun",
+    "build:prod": "bun ../../packages/cli/src/index.ts build && bun build src/index.ts --outdir dist --target bun --minify --release",
     "lint": "oxlint --type-aware -c ../../.oxlintrc.json",
-    "typecheck": "honostar prepare && tsc -noEmit",
-    "test": "honostar prepare && bun test --pass-with-no-tests",
+    "typecheck": "bun ../../packages/cli/src/index.ts prepare && tsc -noEmit",
+    "test": "bun ../../packages/cli/src/index.ts prepare && bun test --pass-with-no-tests",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "start:prod": "honostar prepare && bun dist/index.js",
+    "start:prod": "bun ../../packages/cli/src/index.ts prepare && bun dist/index.js",
     "check": "pnpm run typecheck && pnpm run test"
   },
   "dependencies": {

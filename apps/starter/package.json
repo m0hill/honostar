@@ -3,10 +3,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "honostar dev",
-    "start": "honostar start",
+    "dev": "bun ../../packages/cli/src/index.ts dev",
+    "start": "bun ../../packages/cli/src/index.ts start",
     "lint": "oxlint --type-aware -c ../../.oxlintrc.json",
-    "typecheck": "honostar prepare && tsc -p tsconfig.json --noEmit"
+    "typecheck": "bun ../../packages/cli/src/index.ts prepare && tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "@hono/node-server": "^1.0.0",

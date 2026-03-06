@@ -637,6 +637,7 @@ data-on:honostar-theme-change__window="renderChart(evt.detail.resolved)"
   - Output paths are app-configurable (in this repo apps write to `src/generated/`)
   - Run via `honostar prepare` (used by `honostar dev`/`honostar start`)
   - Can be imported programmatically: `import { generateRouteManifest } from '@honostar/core/server/node'`
+  - In this monorepo, starter/demo call the CLI source through `bun ../../packages/cli/src/index.ts ...` so checks work on a clean checkout without relying on prebuilt CLI output
 - **Route configuration** (`scripts/routes.config.json`):
   - Maps routes to custom property paths for the `routes` object
   - Supports multiple aliases per route
